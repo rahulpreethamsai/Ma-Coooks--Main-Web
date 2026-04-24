@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Italiana&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Italiana&family=Nixie+One&family=Solway:wght@300;400;500;700;800&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "on-surface": "#241913",
+                        "tertiary": "#006782",
+                        "on-primary-fixed-variant": "#783100",
+                        "on-secondary-fixed": "#2e140a",
+                        "tertiary-container": "#00b1dd",
+                        "secondary": "#7b5647",
+                        "on-background": "#241913",
+                        "on-secondary": "#ffffff",
+                        "outline": "#8b7266",
+                        "inverse-surface": "#3b2e27",
+                        "surface-container-high": "#fae4da",
+                        "surface-container": "#ffeae0",
+                        "surface-bright": "#fff8f6",
+                        "surface": "#fff8f6",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#632700",
+                        "secondary-fixed-dim": "#ecbcaa",
+                        "surface-tint": "#9e4300",
+                        "secondary-fixed": "#ffdbce",
+                        "outline-variant": "#dfc0b2",
+                        "on-error": "#ffffff",
+                        "primary-container": "#ff7f32",
+                        "secondary-container": "#feccba",
+                        "surface-container-highest": "#f4ded4",
+                        "primary": "#9e4300",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#fff1eb",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#ffede6",
+                        "on-tertiary-fixed": "#001f29",
+                        "inverse-primary": "#ffb691",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#f4ded4",
+                        "on-secondary-container": "#7a5446",
+                        "surface-dim": "#ecd6cc",
+                        "on-surface-variant": "#574238",
+                        "on-primary-fixed": "#341100",
+                        "tertiary-fixed": "#baeaff",
+                        "on-tertiary-fixed-variant": "#004d62",
+                        "primary-fixed": "#ffdbcb",
+                        "primary-fixed-dim": "#ffb691",
+                        "background": "#fff8f6",
+                        "on-tertiary-container": "#003f51",
+                        "on-secondary-fixed-variant": "#613e31",
+                        "tertiary-fixed-dim": "#5cd4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "xs": "4px",
+                        "xl": "80px",
+                        "md": "24px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "h1": ["Solway, serif"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "h2": ["Newsreader"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "h1": ["48px", {
+                            "lineHeight": "1.1",
+                            "letterSpacing": "-0.02em",
+                            "fontWeight": "700"
+                        }],
+                        "h3": ["24px", {
+                            "lineHeight": "1.3",
+                            "fontWeight": "600"
+                        }],
+                        "label-sm": ["13px", {
+                            "lineHeight": "1.2",
+                            "letterSpacing": "0.05em",
+                            "fontWeight": "600"
+                        }],
+                        "body-lg": ["18px", {
+                            "lineHeight": "1.6",
+                            "fontWeight": "400"
+                        }],
+                        "h2": ["36px", {
+                            "lineHeight": "1.2",
+                            "fontWeight": "600"
+                        }],
+                        "body-md": ["16px", {
+                            "lineHeight": "1.6",
+                            "fontWeight": "400"
+                        }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .grain-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at top right, #ffdbcb 0%, #fff8f6 60%);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+            overflow-x: hidden;
+        }
+    </style>
+    <style>
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-title span {
+            display: inline-block;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* * {
+            will-change: transform;
+        } */
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+    <div class="fixed inset-0 grain-texture z-0 pointer-events-none"></div>
+    <!-- Navigation Header -->
+    <header
+        class="nav-anim fixed top-0 left-0 w-full z-[9999] flex justify-between items-center px-6 py-4 mx-auto backdrop-filter backdrop-blur-lg">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-orange-500 dark:text-orange-400"
+                data-icon="restaurant">restaurant</span>
+            <span class="text-2xl font-bold text-orange-600 dark:text-orange-400 tracking-tight font-['Newsreader']">Ma
+                Cooks</span>
+        </div>
+        <nav class="hidden md:flex gap-8 items-center">
+            <a class="text-orange-600 dark:text-orange-400 font-semibold font-['Newsreader'] transition-opacity hover:opacity-80"
+                href="#">Home</a>
+            <a class="text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
+                href="#">Explore</a>
+            <a class="text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
+                href="#">Story</a>
+            <button
+                class="bg-primary-container text-white px-6 py-2 rounded-full font-label-sm scale-95 active:scale-90 transition-transform duration-200">Join
+                as Chef</button>
+        </nav>
+        <button id="menuBtn" class="md:hidden text-3xl">
+            ☰
+        </button>
+        <div id="mobileMenu"
+            class="fixed top-0 right-[-100%] w-[70%] h-full bg-white p-6 transition-all duration-300 z-50">
+
+            <button onclick="closeMenu()" class="text-2xl mb-6"
+                onclick="document.getElementById('mobileMenu').style.right='-100%'">
+                ✕
+            </button>
+
+            <div class="flex flex-col gap-6 text-lg">
+                <a href="#">Home</a>
+                <a href="#">Why Us</a>
+                <a href="#">What We Offer</a>
+                <a href="#">Contact</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <!-- Section 1: HERO -->
+        <section
+            class="hero-gradient hero-bg min-h-screen pt-28 pb-lg px-6 flex flex-col items-center justify-center text-center">
+            <div class="max-w-4xl mx-auto">
+                <!-- <h1 class="font-h1 text-h1 text-on-surface mb-md">From Home Kitchens to Your Home</h1> -->
+                <h1 class="hero-title text-6xl font-semibold font-[Solway, serif]">
+                    <span class="left-text">From Home</span>
+                    <span class="center-text">Kitchens</span>
+                    <span class="right-text">to Your Home</span>
+                </h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mb-lg max-w-2xl mx-auto">
+                    Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that
+                    cares.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-md justify-center">
+                    <button
+                        class="bg-primary px-lg py-md rounded-full text-on-primary font-h3 flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-md">
+                        I WANT TO EAT
+                        <span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span>
+                    </button>
+                    <button
+                        class="bg-surface-container-highest px-lg py-md rounded-full text-primary font-h3 border-2 border-primary/10 transition-transform hover:scale-105 active:scale-95">
+                        I WANT TO COOK
+                    </button>
+                </div>
+            </div>
+            <div class="mt-lg w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl">
+                <img class="w-full h-[400px] object-cover"
+                    data-alt="warm and cozy home kitchen with steam rising from a pot, natural sunlight streaming through a window onto a rustic wooden table"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkdvd4kzyYPF7HoCtBJcSKJlhsHkcwhER5NvSsI5eb5psiVv8oth_uUrelBEm-iH9KGg1epV6DW5opg_Gy8lTsBqnipv52d3h2wupeo1qnQUcR7t6ZUwXIlwmJZcix7kKgd_M07dl4jTrG-P4e-02VdwzdCMt3lURb7JHwpYSxKImPWe8jOW6JUDkbP6DxY9qomCg-Ow--E6Gu2Ks9lgllEHznSenPK1H17F8ESrlpe16f4ofFcEsphw9gJoTCY6mfC9lrlh0cmF44" />
+            </div>
+        </section>
+        <!-- Section 2: STORYTELLING SCROLL -->
+        <section class="py-xl px-6 bg-on-surface text-surface text-center overflow-hidden">
+            <div class="max-w-3xl mx-auto flex flex-col items-center">
+                <div class="mb-lg relative w-32 h-32">
+                    <svg class="w-full h-full text-primary-container fill-current animate-pulse" viewbox="0 0 100 100">
+                        <path d="M50 5 C50 5 80 40 80 65 C80 85 65 95 50 95 C35 95 20 85 20 65 C20 40 50 5 50 5 Z">
+                        </path>
+                        <path class="opacity-50"
+                            d="M50 25 C50 25 70 50 70 70 C70 80 60 90 50 90 C40 90 30 80 30 70 C30 50 50 25 50 25 Z">
+                        </path>
+                    </svg>
+                </div>
+                <h2 class="font-h2 text-h2 mb-md italic">Cooking began with fire.</h2>
+                <p class="font-h3 text-h3 text-surface-variant">Today, it lives in our homes.</p>
+            </div>
+        </section>
+        <!-- Section 3: WHY US (Comparison) -->
+        <section class="py-xl px-6 max-w-7xl mx-auto">
+            <h2 class="font-h2 text-h2 text-center mb-lg">Why choose Ma Cooks?</h2>
+            <div class="grid md:grid-cols-2 gap-lg">
+                <!-- Other Apps -->
+                <div
+                    class="why-left bg-surface-container-low p-lg rounded-lg border border-outline-variant/30 flex flex-col gap-md opacity-70 grayscale">
+                    <h3 class="font-h3 text-h3">Other Apps</h3>
+                    <ul class="space-y-sm">
+                        <li class="flex items-center gap-xs font-body-md">
+                            <span class="material-symbols-outlined text-error" data-icon="close">close</span>
+                            High 30% commission per order
+                        </li>
+                        <li class="flex items-center gap-xs font-body-md">
+                            <span class="material-symbols-outlined text-error" data-icon="close">close</span>
+                            Industrial kitchen mass production
+                        </li>
+                        <li class="flex items-center gap-xs font-body-md">
+                            <span class="material-symbols-outlined text-error" data-icon="close">close</span>
+                            Anonymous, transactional experience
+                        </li>
+                    </ul>
+                </div>
+                <!-- Ma Cooks -->
+                <div
+                    class="why-right bg-surface-container-high p-lg rounded-lg border-2 border-primary/20 shadow-lg flex flex-col gap-md">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-h3 text-h3 text-primary">Ma Cooks</h3>
+                        <span
+                            class="bg-primary text-on-primary px-sm py-xs rounded-full text-label-sm">RECOMMENDED</span>
+                    </div>
+                    <ul class="space-y-sm">
+                        <li class="flex items-center gap-xs font-body-md font-semibold">
+                            <span class="material-symbols-outlined text-primary" data-icon="check">check</span>
+                            Low 8% commission — Chefs keep more
+                        </li>
+                        <li class="flex items-center gap-xs font-body-md font-semibold">
+                            <span class="material-symbols-outlined text-primary" data-icon="check">check</span>
+                            Real homemade food, small batches
+                        </li>
+                        <li class="flex items-center gap-xs font-body-md font-semibold">
+                            <span class="material-symbols-outlined text-primary" data-icon="check">check</span>
+                            Human stories behind every recipe
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <!-- Section 4: WHAT WE OFFER (Bento Grid) -->
+        <section class="py-xl bg-surface-container-low px-6">
+            <div class="offer-card max-w-7xl mx-auto">
+                <h2 class="font-h2 text-h2 text-center mb-lg">What we offer</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-md h-auto md:h-[600px]">
+                    <div
+                        class="md:col-span-2 md:row-span-2 bg-surface rounded-lg p-md overflow-hidden flex flex-col shadow-sm group">
+                        <img class="w-full h-2/3 object-cover rounded-md mb-md transition-transform group-hover:scale-105"
+                            data-alt="top-down view of several ceramic bowls filled with colorful home-cooked stews and salads on a linen tablecloth"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvpNdN_OEYraBwPEOYjDtuFWDKIT5t2oQT3bYjb_Uglbld5qrQqwF5tUU0GZM_FH0buScpefsLKaie7hbFIX2eX-ogVNICLHunBp6BZnoLR8iz5AArKm7euBu3fFdo0ZJlWwdXy_xg8V_FbhM5NaLr5de-AzAbK_AhinpsyLndq0fouVzRm5afs2BZEwvGeCnzvrvbr_z8-A6oBRD4anMigyWInvzksDAZQYRWpsG8rGMjDDQJWooDg8MXORHhTwtfEAYY32zG1yba" />
+                        <h3 class="font-h3 text-h3 mb-xs">Pre-order meals</h3>
+                        <p class="font-body-md text-on-surface-variant">Reserve authentic dishes 24h in advance for peak
+                            freshness.</p>
+                    </div>
+                    <div class="md:col-span-2 bg-secondary-container rounded-lg p-md flex items-center justify-between">
+                        <div>
+                            <h3 class="font-h3 text-h3 mb-xs text-on-secondary-container">Office meal plans</h3>
+                            <p class="font-body-md text-on-secondary-variant">Bring home-cooked warmth to your workspace
+                                lunch.</p>
+                        </div>
+                        <span class="material-symbols-outlined text-4xl text-on-secondary-container"
+                            data-icon="corporate_fare">corporate_fare</span>
+                    </div>
+                    <div
+                        class="bg-primary-container rounded-lg p-md flex flex-col justify-end text-on-primary-container">
+                        <span class="material-symbols-outlined text-3xl mb-sm" data-icon="groups">groups</span>
+                        <h3 class="font-label-sm font-bold uppercase mb-xs">Community Circles</h3>
+                        <p class="text-sm">Join local food swaps.</p>
+                    </div>
+                    <div class="bg-surface rounded-lg p-md border border-outline-variant/20 flex flex-col justify-end">
+                        <img class="w-12 h-12 rounded-full object-cover mb-sm"
+                            data-alt="smiling middle-aged woman in a clean apron holding a rolling pin in a bright kitchen"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuABSrnTvbFreixjqy14ilrZVwk8pU-8UX4aw6r3BQbzbAJhPYTJhXKHYmPF92uoMzAfO_6-JuB7d-BGgsmOCelwl9oGflzmoX7p9zJ1GuLLwS9NHU3vaK0H9gpEqOXtuH_dE1c-uWom71xSfiNmlcemfYPzm-aVT1b2V640If-rs6j6lipCgwedmNPTIl9KVPDg2C2ihzQgLWMdHB6i0ny13z50splL2fq2RTqw6AZokG77xJflRHGuw3TDVVPeQuHz7OyywMSQn6xh" />
+                        <h3 class="font-label-sm font-bold uppercase mb-xs">Chef Profiles</h3>
+                        <p class="text-sm">Meet the hands that cook.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Section 5: TRUST SECTION -->
+        <section class="py-xl px-6 text-center max-w-4xl mx-auto">
+            <h2 class="font-h2 text-h2 mb-md">Transparency You Can Feel</h2>
+            <p class="font-body-lg text-on-surface-variant mb-lg">We don't just vet the food; we know the people. Every
+                kitchen is inspected and every chef is verified.</p>
+            <div class="flex flex-wrap justify-center gap-md">
+                <div class="flex items-center gap-xs bg-surface-container-highest px-md py-sm rounded-full">
+                    <span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+                    <span class="font-label-sm">Inspected Kitchens</span>
+                </div>
+                <div class="flex items-center gap-xs bg-surface-container-highest px-md py-sm rounded-full">
+                    <span class="material-symbols-outlined text-primary"
+                        data-icon="health_and_safety">health_and_safety</span>
+                    <span class="font-label-sm">Hygiene Certified</span>
+                </div>
+                <div class="flex items-center gap-xs bg-surface-container-highest px-md py-sm rounded-full">
+                    <span class="material-symbols-outlined text-primary" data-icon="contact_page">contact_page</span>
+                    <span class="font-label-sm">Identity Verified</span>
+                </div>
+            </div>
+        </section>
+        <!-- Section 6: HOW IT WORKS -->
+        <section class="py-xl px-6 bg-surface-container-low">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="step-item">
+                        <h2 class="font-h2 text-h2 mb-lg">For the Hungry</h2>
+                        <div class="space-y-md">
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-primary-container text-on-primary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">1</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Browse Local Chefs</h4>
+                                    <p class="font-body-md text-on-surface-variant">Find neighbors who are cooking
+                                        something delicious today.</p>
+                                </div>
+                            </div>
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-primary-container text-on-primary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">2</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Pick a Time</h4>
+                                    <p class="font-body-md text-on-surface-variant">Pre-order for pickup or local
+                                        delivery at your convenience.</p>
+                                </div>
+                            </div>
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-primary-container text-on-primary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">3</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Enjoy Real Food</h4>
+                                    <p class="font-body-md text-on-surface-variant">Eat like you're part of the family,
+                                        because you are.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <h2 class="font-h2 text-h2 mb-lg">For the Cooks</h2>
+                        <div class="space-y-md">
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-secondary-container text-on-secondary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">1</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Set Your Menu</h4>
+                                    <p class="font-body-md text-on-surface-variant">Cook what you love, when you want to
+                                        cook it.</p>
+                                </div>
+                            </div>
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-secondary-container text-on-secondary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">2</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Pass Inspection</h4>
+                                    <p class="font-body-md text-on-surface-variant">We'll help you get your kitchen
+                                        certified for safety.</p>
+                                </div>
+                            </div>
+                            <div class="step-row flex gap-md">
+                                <span
+                                    class="bg-secondary-container text-on-secondary-container w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">3</span>
+                                <div>
+                                    <h4 class="font-h3 text-xl mb-xs">Earn Fairly</h4>
+                                    <p class="font-body-md text-on-surface-variant">Take home 92% of every meal you
+                                        sell. No hidden fees.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Section 7: EMOTIONAL BLOCK (Parallax Feel) -->
+        <section class="relative h-[530px] flex items-center justify-center overflow-hidden">
+            <img class="absolute inset-0 w-full h-full object-cover scale-110"
+                data-alt="dramatic lighting on a table spread with mediterranean dishes, olives, fresh bread, and wine"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyY5IZ9om0T4IR6jkvrPFILPh73j3D4C5P_8ZWuau3nJ6TGPkg1HBQx_XAw58RmI0Css-IuPkJcHvhKthvIA1fXEq4mUNnBrlo0zIaP2y2BkNynDAScUmaS0FzpxrIfaD7QNBQaagvDI8oJF-Ksq9fK_BUIgv47ILF3YSTDJFHxTq-IPhB-YPdU40Fgu55bhp4I8b_ls8ZvJoNJK-FRSLH0rRWmaLSkndpBsGBekJcub2kCARSxCVgqGbCj06WBgjoW3HI3S0M86eY" />
+            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"></div>
+            <div class="relative z-10 text-center text-surface px-6 max-w-2xl">
+                <blockquote class="font-h1 text-h2 italic mb-md">"Food is not just eaten. It is felt."</blockquote>
+                <p class="font-label-sm tracking-widest uppercase">— THE MA COOKS PHILOSOPHY</p>
+            </div>
+        </section>
+        <!-- Section 8: CTA SECTION -->
+        <section class="py-xl px-6 bg-surface-container text-center">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="font-h2 text-h2 mb-md">Ready to be part of something real?</h2>
+                <p class="font-body-lg text-on-surface-variant mb-lg">Join thousands of neighbors rediscovering the
+                    magic of a home-cooked meal.</p>
+                <div class="flex flex-col sm:flex-row gap-md justify-center">
+                    <button
+                        class="bg-primary text-on-primary px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95 shadow-lg">Start
+                        Eating</button>
+                    <button
+                        class="bg-on-surface text-surface px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95">Open
+                        Your Kitchen</button>
+                </div>
+            </div>
+        </section>
+        <!-- Section 9: CONTACT -->
+        <section class="py-xl px-6 max-w-7xl mx-auto">
+            <div
+                class="grid md:grid-cols-2 gap-xl bg-surface rounded-xl overflow-hidden border border-outline-variant/30">
+                <div class="p-lg bg-surface-container-low flex flex-col justify-between">
+                    <div>
+                        <h2 class="font-h2 text-h2 mb-sm text-primary">Get in touch</h2>
+                        <p class="font-body-md text-on-surface-variant">Have questions about becoming a chef or a
+                            customer? We're here to chat.</p>
+                    </div>
+                    <div class="space-y-sm">
+                        <div class="flex items-center gap-sm">
+                            <span class="material-symbols-outlined text-primary" data-icon="mail">mail</span>
+                            <span class="font-body-md">hello@macooks.com</span>
+                        </div>
+                        <div class="flex items-center gap-sm">
+                            <span class="material-symbols-outlined text-primary"
+                                data-icon="location_on">location_on</span>
+                            <span class="font-body-md">123 Hyderabad</span>
+                        </div>
+                    </div>
+                </div>
+                <form class="p-lg space-y-md">
+                    <div class="grid grid-cols-2 gap-md">
+                        <div class="flex flex-col gap-xs">
+                            <label class="font-label-sm uppercase">First Name</label>
+                            <input
+                                class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
+                                placeholder="Jane" type="text" />
+                        </div>
+                        <div class="flex flex-col gap-xs">
+                            <label class="font-label-sm uppercase">Last Name</label>
+                            <input
+                                class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
+                                placeholder="Doe" type="text" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-sm uppercase">Email Address</label>
+                        <input
+                            class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
+                            placeholder="jane@example.com" type="email" />
+                    </div>
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-sm uppercase">Message</label>
+                        <textarea
+                            class="w-full bg-surface-container-low border-outline-variant/30 rounded-lg px-md py-sm focus:ring-primary focus:border-primary"
+                            placeholder="Tell us what's on your mind..." rows="4"></textarea>
+                    </div>
+                    <button
+                        class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform active:scale-95">Send
+                        Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer
+        class="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800">
+        <div class="flex flex-col items-center md:items-start gap-2">
+            <span class="text-lg font-bold text-stone-800 dark:text-stone-200 font-['Newsreader']">Ma Cooks</span>
+            <span class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm">© 2026 Ma Cooks. Made with
+                love.</span>
+        </div>
+        <div class="flex gap-8">
+            <a class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm hover:text-orange-500 transition-colors"
+                href="#">About Us</a>
+            <a class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm hover:text-orange-500 transition-colors"
+                href="#">Privacy Policy</a>
+            <a class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm hover:text-orange-500 transition-colors"
+                href="#">Terms of Service</a>
+            <a class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm hover:text-orange-500 transition-colors"
+                href="#">Contact</a>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.from(".nav-anim", {
+            y: -80,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out",
+            clearProps: "all"
+        });
+
+        gsap.from(".left-text", {
+            x: -150,
+            opacity: 0,
+            duration: 1
+        });
+
+        gsap.from(".right-text", {
+            x: 150,
+            opacity: 0,
+            duration: 1
+        });
+
+        gsap.from(".center-text", {
+            scale: 0.5,
+            opacity: 0,
+            duration: 0.8,
+            delay: 0.5
+        });
+
+        const hero = document.querySelector(".hero-bg");
+
+        hero.addEventListener("mousemove", (e) => {
+            let x = (e.clientX / window.innerWidth - 0.5) * 20;
+            let y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+            gsap.fromTo(hero, {
+                backgroundPosition: `${50 + x}% ${50 + y}%`,
+                duration: 0.5
+            });
+        });
+
+        gsap.from(".why-left", {
+            x: -100,
+            opacity: 0,
+            duration: 1,
+            scrollTrigger: {
+                trigger: ".why-left",
+                start: "top 80%",
+                toggleActions: "play reverse play reverse"
+            }
+        });
+
+        gsap.from(".why-right", {
+            x: 100,
+            opacity: 0,
+            duration: 1,
+            scrollTrigger: {
+                trigger: ".why-right",
+                start: "top 80%",
+                toggleActions: "play reverse play reverse"
+            }
+        });
+        gsap.from(".offer-card", {
+            y: 60,
+            opacity: 0,
+            stagger: 0.2,
+            duration: 1,
+            scrollTrigger: {
+                trigger: ".offer-card",
+                start: "top 85%",
+                toggleActions: "play reverse play reverse"
+            }
+        });
+        gsap.from(".step-item", {
+            y: 40,
+            opacity: 0,
+            stagger: 0.3,
+            duration: 1,
+            scrollTrigger: {
+                trigger: ".step-item",
+                start: "top 85%",
+                toggleActions: "play reverse play reverse"
+            }
+        });
+        gsap.fromTo(".step-row",
+            { y: 40, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                stagger: 0.2,
+                scrollTrigger: {
+                    trigger: ".step-row",
+                    start: "top 90%",
+                    toggleActions: "play reverse play reverse"
+                }
+            }
+        );
+    </script>
+    <script>
+        const menuBtn = document.getElementById("menuBtn");
+        const menu = document.getElementById("mobileMenu");
+
+        menuBtn.addEventListener("click", () => {
+            menu.style.right = "0";
+        });
+
+        function closeMenu() {
+            menu.style.right = "-100%";
+        }
+
+        menu.addEventListener("click", () => {
+            menu.style.right = "-100%";
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+# robots.txt for ruchirush.com
+# Learn more: https://www.robotstxt.org/robotstxt.html
+
+# Allow all crawlers full access
+User-agent: *
+Allow: /
+
+# Block access to any admin or private paths (add as needed)
+# Disallow: /admin/
+# Disallow: /dashboard/
+# Disallow: /api/
+
+# Sitemap location — submit this URL to Google Search Console too!
+Sitemap: https://www.ruchirush.com/sitemap.xml

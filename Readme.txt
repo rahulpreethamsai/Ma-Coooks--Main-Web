@@ -1,16 +1,8012 @@
-next time give me only code where to chnage no need to full code but with calrity where to add under which section all these things
-and also i want to add some features like under hero section showing a stories of chefs in horizontal way like same exactly with insta stories and chefs stories will be like there making process , kitchen tidy and all these things todays specials and Y2lkPTc5MGI3NjExaG44YWZta2l3bWNzeGxxMmh3aHRvOTdneDR3YXRqaDJ1MGlrbzAzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cwnext point is to add a section again like how it works in animation gsap scroll triggers first chefs cooks food - delivery eater i think u got it with a roadmap like horizontal scroll is very better than horizontal and yeah i think is there anything missing 
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo, memo } from 'react';
+import { createPortal } from 'react-dom';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import TradingPanel from './TradingPanel';
+
+import axios from 'axios';
+import { store } from '../../Redux/store';
+import {
+  cancelOrder,
+  clearChartOrderEvent,
+  clearOrderState,
+  fetchOrderHistory,
+  modifyOrder,
+  setActiveMarket,
+  setActiveOcoConfirm,
+  clearActiveOcoConfirm,
+  setOcoAction,
+  updateActiveOcoPrices,
+  setOrderMetadata,
+  setOrderContract
+} from '../../Redux/Slice/ordersSlice';
+import { refreshToken } from '../../Redux/Slice/authSlice';
+import { Button, InputNumber, message } from 'antd';
+import { fetchTradingPositions, fetchUserAccounts, updateRealTimePositions, closePositionAndCancelOco } from '../../Redux/Slice/dxtradeAccSlice';
+import { BASE_URL } from '../../Redux/api';
+import axiosInstance from '../../Redux/axiosInstance';
+import { updateLayout } from '../../Redux/Slice/layoutSlice';
+import { resolveMarketId, setCachedMarketId, getCachedMarketId } from '../../utils/marketIdResolver';
+import { connectSocketForChart, disconnectSocket, subscribeToMarket } from '../../webSockets/newchart';
+import { connectT4, sendMessageWithResponse, closePosition, onTradingData, offTradingData } from '../../webSockets/t4Socket';
+import { debugStore } from '../DebugPanel/debugStore';
+import { onMarketData, offMarketData, subscribeMarket, unsubscribeMarket as UnsubscribeMarket, onMarketConnect, offMarketConnect, isMarketConnected } from '../../webSockets/marketSocket';
+import { HeaderTradeButtons, QuickTradeFloatingWindow } from './ChartControls';
+import { setLiveQuotes, onLiveQuotes, getLiveQuotes, clearLiveQuotes } from "../../webSockets/liveQuotesStore";
+import { getPositionPnl, getPositionPnlById, onPositionPnl } from "../../webSockets/livePnlStore";
+// import { formatPrice } from '../../helpers';
 
 
-hey my bike is 2009 model pulsar 150 UG4 and i had painted my bike newly again in year 2023 and now its 2026 and still the bike color is not faded and its red color and i use only good cloth never use rogh clothes and wash it water and rub with cloth 2-3 times in a week and thse days i have on=bserved it got something dulll like spiral round round on tank and body and like palm fingerprints round round spirals are visible and what to do now i need a clear and neat only glass refelction shiny body 
+// ========================================
+// UTILITY FUNCTIONS
+// ========================================
+
+// Safari detection utility
+const isSafari = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.indexOf('safari') !== -1 && ua.indexOf('chrome') === -1 && ua.indexOf('android') === -1;
+};
+
+function loadScript(src, targetDoc = document) {
+  return new Promise((resolve, reject) => {
+    if (targetDoc.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = targetDoc.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+    targetDoc.body.appendChild(script);
+  });
+}
+
+const extractPriceFromItems = (items) => {
+  if (!items || !Array.isArray(items)) return null;
+  for (const item of items) {
+    // TradingView Advanced Charts stores labels in _options.label
+    // Some versions might have it at the top level or as a getter
+    const label = item._options?.label || item.label || (typeof item.label === 'function' ? item.label() : '');
+    const actionId = item._options?.actionId || item.actionId;
+
+    if (label && typeof label === 'string') {
+      // Look for indicators that this label contains the cursor price
+      const isPriceIndicator =
+        label.includes('Alert') ||
+        label.includes('Limit') ||
+        label.includes('at') ||
+        label.includes('price') ||
+        actionId?.includes('CopyPrice');
+
+      if (isPriceIndicator) {
+        // Regex to find number with commas and dots: e.g. "7,001.64"
+        const match = label.match(/[\d,.]+/);
+        if (match) {
+          const cleaned = match[0].replace(/,/g, '');
+          const val = parseFloat(cleaned);
+          if (!isNaN(val) && val > 0) return val;
+        }
+      }
+    }
+  }
+  return null;
+};
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined) return "$0.00";
+  const numValue = parseFloat(value);
+  return `$${numValue.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+};
+
+const extractSymbolString = (symbolInput) => {
+  if (!symbolInput) return '2VT';
+  if (typeof symbolInput === 'string') return symbolInput;
+  if (typeof symbolInput === 'object' && symbolInput !== null) {
+    return (
+      symbolInput.symbol ||
+      symbolInput.name ||
+      symbolInput.display_name ||
+      symbolInput.ticker ||
+      '2VT'
+    );
+  }
+  return '2VT';
+};
+const getTickPrecision = (tick) => {
+  if (!tick || tick <= 0) return 2;
+  const tickStr = tick.toString();
+  if (tickStr.includes('.')) {
+    return tickStr.split('.')[1].length;
+  }
+  return 0;
+};
+
+const formatPrice = (price, tickSize) => {
+  if (price == null || isNaN(price)) return "0.00";
+  const precision = getTickPrecision(tickSize || 0.25);
+  return price.toFixed(precision);
+};
+
+const getTickSize = (orderOrSymbol, contracts, activeSymbol = null) => {
+  if (!orderOrSymbol || !contracts) return 0.25;
+
+  // Extract all possible identifiers
+  const ids = typeof orderOrSymbol === 'object'
+    ? [orderOrSymbol.market_id, orderOrSymbol.contract_id, orderOrSymbol.symbol].filter(Boolean)
+    : [orderOrSymbol];
+
+  const normalizedIds = ids.map(normalizeSym);
+
+  const match = (contracts || []).find(c => {
+    const cId1 = normalizeSym(c.market_id);
+    const cId2 = normalizeSym(c.contract_id);
+    const cId3 = normalizeSym(c.symbol);
+    return normalizedIds.some(s => s === cId1 || s === cId2 || s === cId3 || isSymbolMatch(c.market_id, s));
+  });
+
+  if (match) {
+    const tick = parseFloat(match.tick_size);
+    if (tick > 0) return tick;
+    console.warn(`[getTickSize] Contract found (${match.contract_id}) but tick_size is missing/zero — check contracts API response`, match);
+  } else {
+    console.warn(`[getTickSize] No contract match for`, ids, '— falling back to 0.25. Check normalizeSym logic.');
+  }
+
+  // Fallback to active symbol if provided
+  if (activeSymbol) {
+    const activeS = normalizeSym(activeSymbol);
+    const activeMatch = (contracts || []).find(c =>
+      normalizeSym(c.market_id) === activeS ||
+      normalizeSym(c.contract_id) === activeS ||
+      normalizeSym(c.symbol) === activeS
+    );
+    if (activeMatch) {
+      const tick = parseFloat(activeMatch.tick_size);
+      if (tick > 0) return tick;
+    }
+  }
+
+  return 0.25;
+};
+
+const snapToTick = (price, tickSize) => {
+  if (!tickSize || tickSize <= 0) return price;
+  const inv = 1.0 / tickSize;
+  return Math.round(price * inv) / inv;
+};
+
+const arePaneSymbolsEqual = (prevSymbols, nextSymbols) => (
+  prevSymbols.length === nextSymbols.length &&
+  prevSymbols.every((symbolValue, index) => symbolValue === nextSymbols[index])
+);
+
+const normalizeSym = (s) => {
+  if (!s) return '';
+  let cleaned = s.toString();
+  // Remove parentheses and their content (e.g., "ES (H26)" -> "ES", "MNQ (M26)" -> "MNQ")
+  cleaned = cleaned.replace(/\s*\([^)]*\)/g, '').trim();
+  // Strip exchange prefix for TradingView colon-format (e.g., "CME_Eq:MNQ" -> "MNQ")
+  if (cleaned.includes(':')) {
+    cleaned = cleaned.split(':').pop()?.trim() || cleaned;
+  }
+
+  const parts = cleaned.split(' ').filter(Boolean);
+  if (parts.length === 1) return parts[0] || '';
+
+  // Multiple space-separated parts (e.g., "CME_Eq XCME_Eq MNQ" or "XCME_Eq MNQ"):
+  // Exchange/prefix segments always contain underscores; the actual contract symbol
+  // is the last segment without one. Fall back to the last segment if all contain underscores.
+  // Old logic only handled 2-part symbols — 3-part like "CME_Eq XCME_Eq MNQ" returned
+  // parts[1]="XCME_Eq" instead of "MNQ", causing isSymbolMatch to always fail.
+  const symPart = [...parts].reverse().find(p => !p.includes('_'));
+  return symPart || parts[parts.length - 1] || '';
+};
 
 
-soft microfiber cloths
-mild bike/car shampoo
-using clay bar or detailing clay with lubricant
+
+// Helper for matching symbols across chart, contract_id, and market_id formats.
+const isSymbolMatch = (s1, s2) => {
+  if (!s1 || !s2) return false;
+  const v1 = String(s1).toUpperCase();
+  const v2 = String(s2).toUpperCase();
+  if (v1 === v2) return true;
+
+  const b1 = normalizeSym(v1);
+  const b2 = normalizeSym(v2);
+
+  if (b1 && b2 && b1 === b2) return true;
+
+  if (b1) {
+    const wordPattern1 = new RegExp(`\\b${b1}\\b`, 'i');
+    if (wordPattern1.test(v2)) return true;
+  }
+  if (b2) {
+    const wordPattern2 = new RegExp(`\\b${b2}\\b`, 'i');
+    if (wordPattern2.test(v1)) return true;
+  }
+
+  return false;
+};
+
+const normalizeAccountKey = (v) => String(v ?? '').toLowerCase();
+
+const normalizeAccountName = (v) => String(v ?? '').toLowerCase().trim();
+
+const getPaneKey = (symbol, resolution) => `${normalizeSym(symbol)}_${resolution}`;
+
+const safeParseTime = (val, offsetMinutes = 0) => {
+  if (!val) return 0;
+  let ms = 0;
+  if (typeof val === 'number') {
+    ms = val > 2e12 ? Math.floor(val / 1000) : (val > 1e11 ? val : val * 1000);
+  } else {
+    let str = String(val).trim();
+    if (!str) return 0;
+
+    // Handle numeric strings
+    if (/^\d+(\.\d+)?$/.test(str)) {
+      const n = parseFloat(str);
+      ms = n > 1e11 ? n : n * 1000;
+    } else {
+      // Professional normalization: If ISO-like but missing 'Z' or offset, assume UTC
+      let normalized = str;
+      if (normalized.includes(':') && !normalized.includes('Z') && !normalized.includes('+') && !/[-+]\d{2}(:?\d{2})?$/.test(normalized)) {
+        if (normalized.includes(' ')) normalized = normalized.replace(' ', 'T');
+        if (!normalized.includes('T') && normalized.includes('-')) { } else normalized += '-05:00';
+      }
+
+      const d = new Date(normalized);
+      ms = isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+  }
+
+  if (ms > 0 && offsetMinutes !== 0) {
+    ms += (offsetMinutes * 60 * 1000);
+  }
+  return ms;
+};
+
+const getAccountKey = (p) => normalizeAccountKey(
+  p?.account_id ?? p?.account ?? p?.accountId ?? p?.account_number ?? p?.accountNumber ?? p?.account_name
+);
+
+// Some APIs return different account identifiers (UUID vs account_number).
+// For filtering we consider multiple possible fields on both the "selected" state and the order.
+const getAccountKeys = (p) => ([
+  p?.account_id,
+  p?.account,
+  p?.accountId,
+  p?.account_number,
+  p?.accountNumber,
+].map(normalizeAccountKey).filter(Boolean));
+// The orders list is fetched per-account, but the individual order objects may not include `account_id`.
+// We use the pagination URL as a reliable hint to which account the list belongs to.
+const getOrderHistoryAccountHint = (h) => {
+  try {
+    const direct = h?.account_id;
+    if (direct) return normalizeAccountKey(direct);
+
+    const u = h?.next || h?.previous;
+    if (!u) return '';
+
+    const m = String(u).match(/[?&]account_id=([^&]+)/i);
+    if (!m) return '';
+    return normalizeAccountKey(decodeURIComponent(m[1]));
+  } catch (e) {
+    return '';
+  }
+};
+const getSymbolKey = (p) => {
+  const rawSym = p?.market_id ?? p?.symbol ?? p?.contract_id ?? p?.name ?? '';
+  return normalizeSym(rawSym);
+};
+
+const getPositionStableKey = (p) => {
+  if (!p) return "";
+
+  // 🛡️ V1 SIMPLIFICATION: A user can only have one aggregated position per symbol per account.
+  // Using ID causes flickering if the backend ID changes. We stick to Symbol + Account.
+  const rawSym = p?.market_id ?? p?.symbol ?? p?.contract_id ?? p?.name ?? "";
+  const sym = normalizeSym(rawSym);
+  const acc = getAccountKey(p);
+
+  if (sym && acc) return `${sym}__${acc}`.toLowerCase();
+  return (sym || "").toLowerCase();
+};
+
+// ========================================
+// MAPPINGS
+// ========================================
+
+const TIMEFRAME_MAP = {
+  '1S': 'one_second',
+  '10S': 'ten_second',
+  '15S': 'fifteen_second',
+  '30S': 'thirty_second',
+  '1': 'one_minute',
+  '2': 'two_minute',
+  '3': 'three_minute',
+  '4': 'four_minute',
+  '5': 'five_minute',
+  '10': 'ten_minute',
+  '15': 'fifteen_minute',
+  '30': 'thirty_minute',
+  '60': 'one_hour',
+  '240': 'four_hour',
+  '480': 'eight_hour',
+  '1D': 'one_day',
+  'D': 'one_day',
+  '1W': 'one_week',
+  'W': 'one_week',
+  '1M': 'one_month',
+  'M': 'one_month'
+};
+
+const REVERSE_TIMEFRAME_MAP = Object.entries(TIMEFRAME_MAP).reduce(
+  (acc, [key, value]) => {
+    acc[value] = key;
+    return acc;
+  },
+  {}
+);
+
+// Maps resolution to API bar_interval and bar_period
+const BAR_INTERVAL_MAP = {
+  '1S': { bar_interval: 'Second', bar_period: '1' },
+  '10S': { bar_interval: 'Second', bar_period: '10' },
+  '15S': { bar_interval: 'Second', bar_period: '15' },
+  '30S': { bar_interval: 'Second', bar_period: '30' },
+  '1': { bar_interval: 'Minute', bar_period: '1' },
+  '2': { bar_interval: 'Minute', bar_period: '2' },
+  '3': { bar_interval: 'Minute', bar_period: '3' },
+  '4': { bar_interval: 'Minute', bar_period: '4' },
+  '5': { bar_interval: 'Minute', bar_period: '5' },
+  '10': { bar_interval: 'Minute', bar_period: '10' },
+  '15': { bar_interval: 'Minute', bar_period: '15' },
+  '30': { bar_interval: 'Minute', bar_period: '30' },
+  '60': { bar_interval: 'Hour', bar_period: '1' },
+  '240': { bar_interval: 'Hour', bar_period: '4' },
+  '480': { bar_interval: 'Hour', bar_period: '8' },
+  '1D': { bar_interval: 'Day', bar_period: '1' },
+  'D': { bar_interval: 'Day', bar_period: '1' },
+  '1W': { bar_interval: 'Week', bar_period: '1' },
+  'W': { bar_interval: 'Week', bar_period: '1' },
+  '1M': { bar_interval: 'Month', bar_period: '1' },
+  'M': { bar_interval: 'Month', bar_period: '1' }
+};
+
+// Maps resolution to socket timeframe format (e.g., "1s", "10s", "30s", "1m", "5m", etc.)
+const SOCKET_TIMEFRAME_MAP = {
+  '1S': '1s',
+  '10S': '10s',
+  '15S': '15s',
+  '30S': '30s',
+  '1': '1m',
+  '2': '2m',
+  '3': '3m',
+  '4': '4m',
+  '5': '5m',
+  '10': '10m',
+  '15': '15m',
+  '30': '30m',
+  '60': '1h',
+  '240': '4h',
+  '480': '8h',
+  '1D': '1d',
+  '1W': '1w',
+  '1M': '1M'
+};
+
+// ========================================
+// MARKET ID RESOLVER (Chart API Only)
+// ========================================
+// resolveMarketId, getCachedMarketId, setCachedMarketId are imported from
+// src/utils/marketIdResolver.js — shared with Dom.jsx and PageLayout.jsx.
+// Never use contract-metadata market_id; always resolve from the Chart API (today's date).
+
+// ========================================
+// CUSTOM DROPDOWN FUNCTION
+// ========================================
+
+
+const createCustomTimeframeDropdown = (widget, setCurrentTimeframe, setSelectedInterval, timeframeMap, socketTimeframeRef, resolutionFreshLoadNeededRef, resetCacheCallbacksRef, visitedResolutionsRef) => {
+  const groupedResolutions = {
+    'SECONDS': ['1S', '10S', '15S', '30S'],
+    'MINUTES': ['1', '2', '3', '4', '5', '10', '15', '30'],
+    'HOURS': ['60', '240', '480'],
+    'DAYS': ['1D'],
+    'WEEKS': ['1W'],
+    'MONTHS': ['1M'],
+  };
+
+  let dropdownItems = [];
+  const SEPARATOR_CHAR = '-';
+  const groups = Object.entries(groupedResolutions);
+
+  for (let i = 0; i < groups.length; i++) {
+    const [groupName, resolutions] = groups[i];
+
+    dropdownItems.push({
+      title: `${SEPARATOR_CHAR} ${groupName} ${SEPARATOR_CHAR}`,
+      onSelect: () => { },
+      disabled: true,
+    });
+
+    resolutions.forEach(tvResolution => {
+      const internalTimeframeKey = timeframeMap[tvResolution];
+      let formattedTitle;
+
+      if (tvResolution === "60") formattedTitle = "1 hour";
+      else if (tvResolution === "240") formattedTitle = "4 hours";
+      else if (tvResolution === "480") formattedTitle = "8 hours";
+      else if (tvResolution.includes("S")) formattedTitle = tvResolution;
+      else if (tvResolution === "1") formattedTitle = "1 minute";
+      else if (tvResolution === "2") formattedTitle = "2 minutes";
+      else if (tvResolution === "3") formattedTitle = "3 minutes";
+      else if (tvResolution === "4") formattedTitle = "4 minutes";
+      else if (!isNaN(tvResolution)) formattedTitle = tvResolution + " minutes";
+      else if (tvResolution === "1D") formattedTitle = "1 day";
+      else if (tvResolution.endsWith("D")) formattedTitle = tvResolution.replace("D", "") + " days";
+      else if (tvResolution === "1W") formattedTitle = "1 week";
+      else if (tvResolution.endsWith("W")) formattedTitle = tvResolution.replace("W", "") + " weeks";
+      else if (tvResolution === "1M") formattedTitle = "1 month";
+      else if (tvResolution.endsWith("M")) formattedTitle = tvResolution.replace("M", "") + " months";
+
+      dropdownItems.push({
+        title: formattedTitle,
+        onSelect: () => {
+          const chart = widget.activeChart();
+          chart.setResolution(tvResolution, () => {
+            // Cache-bust is handled entirely by onIntervalChanged (which fires for both
+            // dropdown and toolbar switches). Do NOT duplicate it here — doing so causes
+            // two back-to-back getBars(firstDataRequest=true) calls which reset
+            // historyLoadedRef=false a second time and block live ticks mid-session.
+          });
+
+          if (internalTimeframeKey) {
+            socketTimeframeRef.current = internalTimeframeKey; //  socket TF
+            setCurrentTimeframe(internalTimeframeKey);         // UI TF
+            setSelectedInterval(tvResolution);
+
+            // Commenting out auto-save for now
+            // localStorage.setItem('df_tf', tvResolution);
+          }
+          // console.log(tvResolution, 'tvResolution');
+        },
+      });
+    });
+  }
+
+  widget.headerReady().then(() => {
+    widget.createDropdown(
+      {
+        title: widget.activeChart().resolution() || 'TF',
+        tooltip: 'Change Timeframe',
+        items: dropdownItems,
+        order: 1,
+      }
+    ).then(myDropdownApi => {
+      const updateButtonTitle = () => {
+        const r = widget.activeChart().resolution();
+        let displayedTitle;
+        if (r === "60") displayedTitle = "1 hour";
+        else if (r === "240") displayedTitle = "4 hours";
+        else if (r === "480") displayedTitle = "8 hours";
+        else if (r.includes("S")) displayedTitle = r;
+        else if (r === "1") displayedTitle = "1 minute";
+        else if (r === "2") displayedTitle = "2 minutes";
+        else if (r === "3") displayedTitle = "3 minutes";
+        else if (r === "4") displayedTitle = "4 minutes";
+        else if (!isNaN(r)) displayedTitle = r + " minutes";
+        else if (r === "1D") displayedTitle = "1 day";
+        else if (r === "1W") displayedTitle = "1 week";
+        else if (r === "1M") displayedTitle = "1 month";
+        else if (r.endsWith("D") || r.endsWith("W") || r.endsWith("M")) displayedTitle = r;
+        myDropdownApi.applyOptions({ title: displayedTitle });
+      };
+
+      updateButtonTitle();
+      widget.activeChart().onIntervalChanged().subscribe(null, updateButtonTitle);
+      // widget.load() (called just before this dropdown is created) restores a saved chart state
+      // which changes the resolution asynchronously. The immediate updateButtonTitle() above may
+      // read the old resolution before the load completes, and widget.load() can reset internal
+      // subscriptions so onIntervalChanged may not fire. A short delayed call ensures the dropdown
+      // title always reflects the actual restored resolution.
+      setTimeout(updateButtonTitle, 1000);
+    }).catch(err => console.error("Failed to create custom dropdown:", err));
+  });
+};
+
+// ========================================
+// CUSTOM HOOK: useTVSymbolSearch
+// ========================================
+const useTVSymbolSearch = () => {
+  const searchSymbols = useCallback(async (userInput, exchange, symbolType, onResult) => {
+    const contractsList = store.getState().symbols.contracts || [];
+    const syms = store.getState().symbols.data || [];
+    const allSymbols = [...contractsList, ...syms];
+
+    if (!allSymbols.length || !userInput || userInput.length < 1) {
+      onResult([]);
+      return;
+    }
+
+    const searchLower = userInput.toLowerCase();
+
+    const results = allSymbols.filter(item => {
+      const name = (item.contract_id || item.name || '')?.toLowerCase();
+      const description = (item.description || item.display_name || '')?.toLowerCase();
+      return name.includes(searchLower) || description.includes(searchLower);
+    });
+
+    const tvSymbols = results.map(s => {
+      const symbolName = s.contract_id || s.name;
+      const description = s.description || s.display_name || symbolName;
+
+      let pricescale = Math.pow(10, s.digits || 2);
+      let minmov = 1;
+
+      if (s.tick_size) {
+        const tickStr = String(s.tick_size);
+        const decimals = tickStr.includes('.') ? tickStr.split('.')[1].length : 0;
+        pricescale = Math.pow(10, Math.max(s.digits || 2, decimals));
+        minmov = Math.round(pricescale * s.tick_size);
+      }
+
+      return {
+        symbol: symbolName,
+        full_name: description,
+        description: description,
+        exchange: s.exchange_id || 'MultiSource',
+        ticker: symbolName,
+        type: s.asset_class || 'futures',
+        pricescale: pricescale,
+        minmov: minmov,
+      };
+    });
+
+    onResult(tvSymbols);
+
+  }, []);
+
+  return searchSymbols;
+};
+
+// ========================================
+// CUSTOM HOOK: useMarketData (FIXED)
+// ========================================
+// Added 'enableTickUpdates' to safely prevent conflict between Chart Hook and Button Hook
+const useMarketData = (symbol, timeframe, accessToken, onTickHandlers, dispatch, priceCache, enableTickUpdates = true, orderExchange,
+  orderContract, activeMarket, isActive) => {
+  const [connectionStatus, setConnectionStatus] = useState(false);
+  const contracts = useSelector(state => state.symbols.contracts);
+  const globalMarketId = useSelector(state => state.orders.activeMarketId);
+  const globalExchangeId = useSelector(state => state.orders.orderExchange);
+  const globalContractId = useSelector(state => state.orders.orderContract);
+
+
+  const [currentPrice, setCurrentPrice] = useState(() => {
+    if (priceCache?.current && symbol) {
+      // Try to find any cached key that contains this symbol (e.g. "ES" in "XCME ES (H25)")
+      const matchingKey = Object.keys(priceCache.current).find(k => k.toLowerCase().includes(symbol.toLowerCase()));
+      if (matchingKey) return priceCache.current[matchingKey];
+    }
+    return { bid: 0, ask: 0, mid: 0 };
+  });
+
+  const shouldTrackUiPrice = !onTickHandlers;
+  const latestUiPriceRef = useRef({ bid: 0, ask: 0, mid: 0 });
+  const uiPriceTimeoutRef = useRef(null);
+  //  SYNC: Reset price when symbol changes to prevent "stickiness"
+  useEffect(() => {
+    if (priceCache?.current && symbol) {
+      const matchingKey = Object.keys(priceCache.current).find(k => k.toLowerCase().includes(symbol.toLowerCase()));
+      if (matchingKey) {
+        setCurrentPrice(priceCache.current[matchingKey]);
+        return;
+      }
+    }
+    setCurrentPrice({ bid: 0, ask: 0, mid: 0 });
+  }, [symbol]);
+
+  useEffect(() => {
+    return () => {
+      if (uiPriceTimeoutRef.current) {
+        clearTimeout(uiPriceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const getWebSocketType = useCallback((tf) => {
+    const alphaTimeframes = ['one_second', 'ten_second', 'fifteen_second', 'thirty_second', 'one_minute'];
+    return alphaTimeframes.includes(tf) ? 'alpha' : 'market';
+  }, []);
+
+  // --- Live Tick Feed ---
+  useEffect(() => {
+    if (!enableTickUpdates || !accessToken || !symbol) return;
+    const wordPattern = new RegExp(`\\b${symbol}\\b`, 'i');
+
+    const handleTick = (data) => {
+      try {
+        // Ensure data exists (V1 used data.data, V2 uses top-level fields)
+        if (!data) return;
+
+        // Extract market_id safely
+        const marketId = data?.market_id ?? data?.data.market_id ?? "unknown";
+
+        //  SYNC: If we have onTickHandlers, this is a multi-symbol listener (Hook 1).
+        // If not, it's a single-symbol listener (Hook 2).
+        if (!onTickHandlers) {
+          const wordPattern = new RegExp(`\\b${symbol}\\b`, 'i');
+          if (!wordPattern.test(marketId)) return;
+        }
+
+        // Extract bid/ask safely
+        // Support both old 'MarketData' (data.bid) and new 'MarketDepth' (bids array)
+        let bidPrice = 0;
+        let askPrice = 0;
+        let bidVol = 0;
+        let askVol = 0;
+        let lastPrice = 0;
+        let lastVol = 0;
+
+        if (Array.isArray(data.bids) && data.bids.length > 0) {
+          // V2 MarketDepth
+          bidPrice = Number(data.bids[0].price);
+          bidVol = Number(data.bids[0].volume || data.bids[0].size || 0);
+          if (Array.isArray(data.asks) && data.asks.length > 0) {
+            askPrice = Number(data.asks[0].price);
+            askVol = Number(data.asks[0].volume || data.asks[0].size || 0);
+          }
+          lastPrice = Number(data.last_trade_price || data.last_price || data.last || 0);
+          lastVol = Number(data.last_trade_volume || data.last_volume || 0);
+        } else if (data.data) {
+          // V1 or other nested format
+          const d = data.data;
+          bidPrice = Number(d.bid?.price || d.Bid?.Price || 0);
+          bidVol = Number(d.bid?.volume || d.bid?.size || d.Bid?.Size || 0);
+          askPrice = Number(d.ask?.price || d.Ask?.Price || 0);
+          askVol = Number(d.ask?.volume || d.ask?.size || d.Ask?.Size || 0);
+          lastPrice = Number(d.last?.price || d.Last?.Price || 0);
+          lastVol = Number(d.last?.volume || d.last?.size || d.Last?.Size || 0);
+        } else {
+          // V2 Top-level fallback (if not array)
+          bidPrice = Number(data.bid?.price || data.Bid?.Price || 0);
+          bidVol = Number(data.bid?.volume || data.bid?.size || data.Bid?.Size || 0);
+          askPrice = Number(data.ask?.price || data.Ask?.Price || 0);
+          askVol = Number(data.ask?.volume || data.ask?.size || data.Ask?.Size || 0);
+          lastPrice = Number(data.last?.price || data.Last?.Price || 0);
+          lastVol = Number(data.last?.volume || data.last?.size || data.Last?.Size || 0);
+        }
+
+        if (!bidPrice && !askPrice && !lastPrice) return;
+
+        const midPrice = lastPrice || (bidPrice + askPrice) / 2;
+
+        // Construct update object (only include non-zero fields to allow merging)
+        const priceUpdate = {
+          symbol: symbol,
+          mid: midPrice,
+        };
+        if (bidPrice) {
+          priceUpdate.bid = bidPrice;
+          priceUpdate.bidVolume = bidVol;
+        }
+        if (askPrice) {
+          priceUpdate.ask = askPrice;
+          priceUpdate.askVolume = askVol;
+        }
+        if (lastPrice) {
+          priceUpdate.last = lastPrice;
+          priceUpdate.lastVolume = lastVol;
+        }
+
+        // Update local cache
+        if (priceCache?.current) {
+          priceCache.current[marketId] = {
+            ...(priceCache.current[marketId] || { bid: 0, ask: 0, mid: 0 }),
+            ...priceUpdate
+          };
+        }
+
+        // Update global module store for other components (symbol-aware).
+        // Also store under orderContract (contract_id) so CreateOrder can look it up
+        // even when the TradingView symbol string differs (e.g. "CME_Eq MGC" vs "MGC").
+        setLiveQuotes({ symbol: symbol, bid: bidPrice, ask: askPrice, mid: midPrice });
+        if (orderContract && orderContract !== symbol) {
+          setLiveQuotes({ symbol: orderContract, bid: bidPrice, ask: askPrice, mid: midPrice });
+        }
+
+        //  Update Global Redux Quote Metadata (Stable fields only)
+        if (symbol === orderContract) {
+          if (activeMarket !== globalMarketId && dispatch) {
+            const matchingDetails = (contracts || []).find(c => c.contract_id === symbol);
+            if (matchingDetails) {
+              dispatch(setOrderMetadata({
+                symbol: symbol,
+                market_id: activeMarket,
+                exchange_id: matchingDetails.exchange_id || orderExchange,
+                contract_id: symbol,
+              }));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("handleTick failed:", err, data);
+      }
+    };
+
+    //  STRICT: Resolve market_id ONLY from the API-sourced activeMarket state.
+    const marketId = activeMarket;
+
+    //  STRICT: Derive exchange/contract from THIS hook's own symbol, NOT from Redux globals
+    // This prevents mixing (e.g., ES's exchange with MNQ's market_id)
+    const symDetails = (contracts || []).find(c => c.contract_id === symbol);
+    const finalExchange = symDetails?.exchange_id || orderExchange || 'CME_Eq';
+    const finalContract = symbol;
+
+    if (marketId && isActive) {
+      console.log(`[useMarketData] SYNC: Subscribing to ${marketId} (Fast Feed) with ${finalExchange}:${finalContract}`);
+      subscribeMarket(marketId, finalExchange, finalContract);
+      onMarketData(handleTick);
+    }
+
+    return () => {
+      console.log(`[useMarketData] UNSUB: Cleaning up ${activeMarket} (${symbol})`);
+      offMarketData(handleTick);
+
+      // ✅ 3. EXPLICIT UNSUBSCRIBE
+      if (activeMarket) {
+        UnsubscribeMarket(activeMarket);
+      }
+    };
+  }, [accessToken, enableTickUpdates, dispatch, priceCache, orderContract, orderExchange, symbol, timeframe, contracts, isActive, activeMarket, shouldTrackUiPrice]);
+
+
+
+
+  // Sockets are now managed globally in PageLayout.jsx
+
+
+  //  PROACTIVE CLAIM: If we become active and have a valid market for the global symbol, sync it
+  useEffect(() => {
+    if (isActive && activeMarket && symbol === orderContract && dispatch) {
+      console.log(` [useMarketData] Active & Found Market: Syncing ${activeMarket} with ${orderExchange}:${symbol} for Global UI`);
+      dispatch(setOrderMetadata({
+        symbol: symbol,
+        market_id: activeMarket,
+        exchange_id: orderExchange,
+        contract_id: symbol
+      }));
+    }
+  }, [isActive, activeMarket, symbol, orderContract, orderExchange, dispatch]);
+
+  return { connectionStatus, currentPrice };
+};
+
+
+//  BACKGROUND SYNC: Ensure ALL charts have live prices (Bid/Ask) immediately
+const GlobalMarketDataSync = ({ layoutSyncId, widgetRef, lastSyncedSymbolsRef, isInitialized }) => {
+  const contractsList = useSelector(state => state.symbols.contracts || []);
+  const dispatch = useDispatch();
+  const accessToken = useSelector(state => state.auth.token);
+  const syncTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (!isInitialized || !widgetRef.current) return;
+
+    // Debounce the sync to catch rapid updates (e.g. layout changes)
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+
+    syncTimeoutRef.current = setTimeout(() => {
+      try {
+        const widget = widgetRef.current;
+        if (!widget) return;
+
+        const count = typeof widget.chartsCount === 'function' ? widget.chartsCount() : 0;
+        const currentSymbols = new Set();
+
+        if (count > 0) {
+          for (let i = 0; i < count; i++) {
+            try {
+              const chart = widget.chart(i);
+              const sym = chart.symbol();
+              if (sym) currentSymbols.add(sym);
+            } catch (e) { }
+          }
+        }
+
+        // Only fire messages if symbols change
+        const symbolsArray = Array.from(currentSymbols);
+        const prevArray = Array.from(lastSyncedSymbolsRef.current);
+        const isSameSymbols = symbolsArray.length === prevArray.length && symbolsArray.every(s => lastSyncedSymbolsRef.current.has(s));
+
+        if (isSameSymbols) return;
+
+        // SYMMETRIC SYNC: Only subscribe to NEW, and unsubscribe from REMOVED
+        // 1. Unsubscribe from symbols that were removed from the layout
+        lastSyncedSymbolsRef.current.forEach(sym => {
+          if (!currentSymbols.has(sym)) {
+            // Use cache if available (no need for API call on unsub)
+            const cachedId = getCachedMarketId(sym);
+            if (cachedId) {
+              console.log(`[GlobalSync] Unsubscribing from removed symbol: ${cachedId}`);
+            }
+          }
+        });
+
+        // 2. Subscribe to NEW symbols that just appeared in the layout
+        currentSymbols.forEach(async (sym) => {
+          if (!lastSyncedSymbolsRef.current.has(sym)) {
+            const details = (contractsList || []).find(s => s.contract_id === sym);
+            const exchange = details?.exchange_id || 'CME_Eq';
+
+            //  STRICT: Use Chart API to get verified market_id, NOT contract metadata
+            const marketId = await resolveMarketId(exchange, sym);
+            if (marketId) {
+              dispatch(setActiveMarket(marketId))
+              subscribeMarket(marketId, exchange, sym);
+            } else {
+              console.warn(`[GlobalSync] Could not resolve market_id for: ${sym}`);
+            }
+          }
+        });
+
+        lastSyncedSymbolsRef.current = currentSymbols;
+
+      } catch (e) {
+        console.error("[GlobalSync] Failed:", e);
+      }
+    }, 500);
+
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    };
+  }, [layoutSyncId, contractsList.length, isInitialized]);
+
+  return null;
+};
+
+
+// ========================================
+// MAIN COMPONENT
+// ========================================
+function ChartWrapper({
+  symbol: defaultSymbol = '2VT',
+  onSymbolChange,
+  timeframe = 'one_minute',
+  chartId = null,
+  layoutType = 1,
+  isActive,
+  showOcoModal = false,
+  chartRef = null,
+  orderHistory: propsOrderHistory,
+  selectedAccountId: propsSelectedAccountId,
+  selectedAccountName: propsSelectedAccountName,
+  onChartChange = null,
+  initialChartState = null,
+}) {
+  const containerRef = useRef(null);
+  const widgetRef = useRef(null);
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+  const accessToken = auth.token;
+  const ohlcWsUrl = auth.wsUrls.ohlc;
+  const lastFocusedRequestIdRef = useRef(0);
+  const isSwitchingPaneRef = useRef(false);
+
+  const pendingChartStateRef = useRef(initialChartState); // chart state to apply once widget is ready
+  const onChartChangeRef = useRef(onChartChange);
+  useEffect(() => {
+    onChartChangeRef.current = onChartChange;
+    if (initialChartState) console.log(`[Chart] Received initialChartState (${Math.round(JSON.stringify(initialChartState).length / 1024)}KB)`);
+  }, [onChartChange, initialChartState]);
+  const lastSyncedSymbolsRef = useRef(new Set());
+  const lastHiddenTimeRef = useRef(Date.now());
+  const iframeEventCleanupRef = useRef(null);
+  const headerButtonCleanupRef = useRef(null);
+  const lastBufferedSymbolRef = useRef(defaultSymbol);
+  const [layoutSyncId, setLayoutSyncId] = useState(0);
+
+
+  // Stable ref to setLayoutSyncId so the visibility handler ([] deps) can call it
+  const layoutSyncIdSetterRef = useRef(null);
+  useEffect(() => { layoutSyncIdSetterRef.current = setLayoutSyncId; }, [setLayoutSyncId]);
+
+  // --- PROACTIVE CHART REFRESH ON TAB RETURN ---
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        const now = Date.now();
+        const durationHidden = now - lastHiddenTimeRef.current;
+
+        // ALWAYS force a position + order line resync on ANY tab return.
+        // Browsers throttle/pause setInterval when the tab is hidden, so the runSync
+        // heartbeat may not have fired. Fills/cancels that happened while away (OCO
+        // orders, limit fills, etc.) update Redux but the frozen heartbeat never
+        // cleaned up the stale chart lines. Incrementing layoutSyncId restarts the
+        // effect with a fresh closure so stale lines are removed immediately.
+        if (layoutSyncIdSetterRef.current) {
+          layoutSyncIdSetterRef.current(prev => prev + 1);
+          console.log('[Chart] Tab return  forcing position/order line resync');
+        }
+
+        // For longer absences (> 5s): reconnect dead sockets and clear stale line refs.
+        // We do NOT gap-fill by pushing bars via onTick — that floods the UI thread when
+        // many bars have accumulated (e.g. 1S resolution after 30s away = 30 synchronous
+        // onTick calls per pane). Instead we just call resetData() which triggers a single
+        // clean getBars fetch per pane — the same path used on symbol/timeframe change.
+        if (durationHidden > 5000 && widgetRef.current) {
+          console.warn(`[Chart] Tab return after ${Math.round(durationHidden / 1000)}s — reconnecting sockets and refreshing data.`);
+
+          // Step 1: Reconnect any closed pane sockets
+          let reconnectedCount = 0;
+          paneSocketsRef.current.forEach((ws, uid) => {
+            const isClosed = !ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING;
+            if (isClosed) {
+              const handlerInfo = onTickHandlers.current.get(uid);
+              if (!handlerInfo) return;
+              try { disconnectSocket(ws); } catch (_) { }
+              const newWs = connectSocketForChart(
+                ohlcWsUrl,
+                handlerInfo.mId,
+                accessToken,
+                handlerInfo.timeframe || '1m',
+                (candle) => {
+                  if (candle && (candle.start_time || candle.time)) {
+                    const bar = toTvBar(candle);
+                    const paneKey = getPaneKey(handlerInfo.contract, handlerInfo.resolution || selectedIntervalRef.current);
+                    const lastBarTime = lastBarTimeRef.current[paneKey];
+                    if (!lastBarTime || bar.time >= lastBarTime) {
+                      handlerInfo.handler(bar);
+                      lastBarTimeRef.current[paneKey] = bar.time;
+                    }
+                  }
+                },
+                null, null,
+                handlerInfo.exchange,
+                handlerInfo.contract
+              );
+              paneSocketsRef.current.set(uid, newWs);
+              reconnectedCount++;
+            }
+          });
+          if (reconnectedCount > 0) {
+            console.log(`[Chart] Reconnected ${reconnectedCount} dead socket(s)`);
+          }
+
+          // Step 2: Clear stale line tracking refs so the heartbeat redraws them cleanly
+          Object.values(positionLinesRef.current).forEach(pos => {
+            if (pos && pos !== 'PENDING') try { pos.lineInstance?.remove(); } catch (_) { }
+          });
+          positionLinesRef.current = {};
+          Object.values(childLinesRef.current).forEach(ch => {
+            if (ch?.TP) try { ch.TP.remove(); } catch (_) { }
+            if (ch?.SL) try { ch.SL.remove(); } catch (_) { }
+          });
+          childLinesRef.current = {};
+          Object.values(limitOrderLinesRef.current).forEach(lo => {
+            if (lo) try { lo.lineInstance?.remove(); } catch (_) { }
+          });
+          limitOrderLinesRef.current = {};
+
+          // Step 3: resetData() per pane — triggers a single clean getBars fetch each.
+          // Stagger panes by 300ms so they don't all hit the API simultaneously.
+          setTimeout(() => {
+            try {
+              if (!widgetRef.current) return;
+              const count = typeof widgetRef.current.chartsCount === 'function'
+                ? widgetRef.current.chartsCount() : 1;
+              for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                  try {
+                    const chart = widgetRef.current?.chart(i);
+                    if (chart && typeof chart.resetData === 'function') chart.resetData();
+                  } catch (_) { }
+                }, i * 300);
+              }
+              console.log(`[Chart] resetData scheduled for ${count} pane(s) after tab return.`);
+            } catch (e) {
+              console.error('[Chart] Tab return refresh failed:', e);
+            }
+          }, 500);
+        }
+      } else {
+        lastHiddenTimeRef.current = Date.now();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (chartAutoSaveTimeout.current) clearTimeout(chartAutoSaveTimeout.current);
+    };
+  }, []);
+
+  // --- NETWORK RECONNECTION: Backfill gaps after network outage ---
+  useEffect(() => {
+    let offlineAt = null;
+
+    const handleOffline = () => {
+      offlineAt = Date.now();
+      console.warn('[Chart] Network offline — recording timestamp for gap fill on reconnect.');
+    };
+
+    const handleOnline = () => {
+      const gapMs = offlineAt ? Date.now() - offlineAt : 0;
+      offlineAt = null;
+      console.warn(`[Chart] Network back online after ${Math.round(gapMs / 1000)}s — triggering gap fill.`);
+
+      if (!widgetRef.current) return;
+
+      // Reconnect any dead pane sockets (same logic as tab-return handler)
+      paneSocketsRef.current.forEach((ws, uid) => {
+        const isClosed = !ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING;
+        if (isClosed) {
+          const handlerInfo = onTickHandlers.current.get(uid);
+          if (!handlerInfo) return;
+          try { disconnectSocket(ws); } catch (_) { }
+          const newWs = connectSocketForChart(
+            ohlcWsUrl,
+            handlerInfo.mId,
+            accessToken,
+            handlerInfo.timeframe || '1m',
+            (candle) => {
+              if (candle && (candle.start_time || candle.time)) {
+                const bar = toTvBar(candle);
+                const paneKey = getPaneKey(handlerInfo.contract, handlerInfo.resolution || selectedIntervalRef.current);
+                const lastBarTime = lastBarTimeRef.current[paneKey];
+                if (!lastBarTime || bar.time >= lastBarTime) {
+                  handlerInfo.handler(bar);
+                  lastBarTimeRef.current[paneKey] = bar.time;
+                }
+              }
+            },
+            null, null,
+            handlerInfo.exchange,
+            handlerInfo.contract
+          );
+          paneSocketsRef.current.set(uid, newWs);
+        }
+      });
+
+      // Trigger resetData() per pane to backfill the gap via getBars
+      setTimeout(() => {
+        try {
+          if (!widgetRef.current) return;
+          const count = typeof widgetRef.current.chartsCount === 'function'
+            ? widgetRef.current.chartsCount() : 1;
+          for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+              try {
+                const chart = widgetRef.current?.chart(i);
+                if (chart && typeof chart.resetData === 'function') chart.resetData();
+              } catch (_) { }
+            }, i * 300);
+          }
+          console.log(`[Chart] Gap fill resetData scheduled for ${count} pane(s) after network reconnect.`);
+        } catch (e) {
+          console.error('[Chart] Network reconnect gap fill failed:', e);
+        }
+      }, 1000); // 1s delay to let sockets stabilize before fetching history
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [ohlcWsUrl, accessToken]);
+
+
+
+  // Expose saveChartState / loadChartState to parent via chartRef prop
+  useEffect(() => {
+    if (!chartRef) return;
+    chartRef.current = {
+      saveChartState: () => new Promise((resolve) => {
+        if (!widgetRef.current) { resolve(null); return; }
+        try { widgetRef.current.save((state) => resolve(state)); }
+        catch { resolve(null); }
+      }),
+      loadChartState: (state) => {
+        if (!state) return;
+        if (widgetRef.current) {
+          try {
+            // Block runSync BEFORE calling widget.load(). TradingView applies the
+            // saved state asynchronously over ~1s — any lines drawn during that window
+            // get silently destroyed by TV's internal restore, causing the
+            // "shows for a second then disappears" race condition.
+            isLoadingChartStateRef.current = true;
+            widgetRef.current.load(state);
+            // Clear stale refs immediately (lines were destroyed by widget.load())
+            positionLinesRef.current = {};
+            childLinesRef.current = {};
+            limitOrderLinesRef.current = {};
+            pendingOcoRef.current = {};
+            pendingClosesRef.current.clear();
+            // After TV finishes its async restore (~1.5s), lift the block, wipe refs
+            // one more time, and nudge layoutSyncId so runSync redraws from scratch.
+            clearTimeout(loadingFlagTimeoutRef.current);
+            loadingFlagTimeoutRef.current = setTimeout(() => {
+              isLoadingChartStateRef.current = false;
+              positionLinesRef.current = {};
+              childLinesRef.current = {};
+              limitOrderLinesRef.current = {};
+              pendingOcoRef.current = {};
+              pendingClosesRef.current.clear();
+              // NOTE: tradeArrowsRef is intentionally NOT cleared here.
+              // The datafeed's getBars callback already calls clearAllTradeArrows()
+              // (~1300ms after widget.load()) which removes shapes and clears refs,
+              // then triggers a fresh redraw via setArrowRedrawTrigger. Wiping
+              // tradeArrowsRef here would duplicate that work and create two overlapping
+              // arrow sets (the datafeed-drawn ones + re-created ones from layoutSyncId++).
+              // Kick runSync so it re-evaluates immediately after the block lifts
+              layoutSyncIdSetterRef.current?.(prev => prev + 1);
+            }, 1500);
+          } catch { }
+        } else {
+          // Widget not ready yet — store and apply in onChartReady
+          pendingChartStateRef.current = state;
+        }
+      },
+    };
+    return () => { if (chartRef) chartRef.current = null; };
+  }, [chartRef]);
+
+  // Auto-save chart_state state tracking
+  const activeLayoutId = useSelector(state => state.layout.activeLayoutId);
+  const activeLayoutIdRef = useRef(activeLayoutId);
+  const chartAutoSaveTimeout = useRef(null);
+  // Suppresses auto-save while widget.load() is restoring drawings (avoids overwriting good state)
+  const isRestoringChartStateRef = useRef(false);
+  // Hook ref so save_load_adapter.saveChart (defined before onChartReady) can trigger the API save.
+  // TV calls saveChart on every auto-save — including settings changes (timezone, countdown, etc.)
+  const tvAutoSaveHookRef = useRef(null);
+
+
+  useEffect(() => {
+    activeLayoutIdRef.current = activeLayoutId;
+  }, [activeLayoutId]);
+
+
+
+  const paneSocketsRef = useRef(new Map());
+  const currentWindowRef = useRef(typeof window !== 'undefined' ? window : null); // Track current window for popout detection
+  const [windowContextKey, setWindowContextKey] = useState(0); // Forces re-init when window context changes
+  const [ocoModalPosition, setOcoModalPosition] = useState({ x: 24, y: 24 });
+  const ocoModalDragRef = useRef({ dragging: false, offsetX: 0, offsetY: 0 });
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 750);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 750);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // console.log(`[ChartWrapper] Render symbol=${defaultSymbol}, hasHistory=${!!propsOrderHistory}, acc=${propsSelectedAccountId}`);
+
+  const getOcoDollarAmount = (positionLike, priceDistance, quantity) => {
+    const searchList = fullContractsRef.current.length > 0 ? fullContractsRef.current : (contracts || []);
+    const contractMatch = searchList.find((contractItem) =>
+      isSymbolMatch(contractItem.market_id, positionLike?.market_id) ||
+      isSymbolMatch(contractItem.contract_id, positionLike?.contract_id) ||
+      isSymbolMatch(contractItem.contract_id, positionLike?.symbol) ||
+      isSymbolMatch(contractItem.market_id, positionLike?.symbol)
+    );
+    const tickSize = parseFloat(contractMatch?.tick_size || 0);
+    const tickValue = parseFloat(contractMatch?.tick_value || 0);
+    const distance = priceDistance || 0;
+    const absQty = Math.abs(parseFloat(quantity || 0));
+
+    if (tickSize > 0 && tickValue > 0) {
+      const ticks = distance / tickSize;
+      const amount = ticks * tickValue * absQty;
+      return { amount, ticks };
+    }
+
+    // Fallback: derive dollar value from contract_size (point value), preserving sign
+    const pointValue = parseFloat(contractMatch?.contract_size || contractMatch?.point_value || 0);
+    if (pointValue > 0) {
+      return { amount: distance * pointValue * absQty, ticks: 0 };
+    }
+
+    return { amount: distance * absQty, ticks: 0 };
+  };
+
+  const formatOcoPnlLabel = (orderOrPos, posSide, entry, target, qty) => {
+    const effectiveEntry = entry || parseFloat(
+      orderOrPos?.avg_open_price || orderOrPos?.average_open_price ||
+      orderOrPos?.avg_price || orderOrPos?.avg_fill_price ||
+      orderOrPos?.fill_price || orderOrPos?.entry_price || orderOrPos?.price || 0
+    );
+    if (!effectiveEntry || effectiveEntry === 0 || !target || target === 0) return '';
+    const contractMatch = (contracts || []).find((contractItem) =>
+      isSymbolMatch(contractItem.market_id, orderOrPos?.market_id) ||
+      isSymbolMatch(contractItem.contract_id, orderOrPos?.contract_id) ||
+      isSymbolMatch(contractItem.contract_id, orderOrPos?.symbol) ||
+      isSymbolMatch(contractItem.market_id, orderOrPos?.symbol)
+    );
+    const tickSize = getTickSizeFull(orderOrPos);
+
+    // Snap target price to tick size if available
+    let snappedTarget = snapToTick(target, tickSize);
+
+    // P&L Direction: If we are LONG (BUY), Target > Entry is profit (+).
+    // If we are SHORT (SELL), Target < Entry is profit (+).
+    const isActuallyBuySide = String(posSide).toUpperCase() === 'BUY';
+    const pnlPerUnit = isActuallyBuySide ? (snappedTarget - effectiveEntry) : (effectiveEntry - snappedTarget);
+    const { amount } = getOcoDollarAmount(orderOrPos, pnlPerUnit, qty);
+
+    return `(${amount >= 0 ? '+' : '-'}$${Math.abs(amount).toFixed(2)})`;
+  };
+
+  const getOrderGroupKey = (o) => {
+    // Each working order gets its own chart line so multiple orders at the same
+    // price/side/type can be dragged individually. Key by unique_id so the line
+    // stays bound to the same order across price changes (drags).
+    const id = o.unique_id || o.id || o.order_id;
+    if (id) return `id_${id}`;
+    // Fallback for events that arrive before the order has an id assigned.
+    const price = parseFloat(o.limit_price ?? o.stop_price ?? o.trail_price ?? 0);
+    const side = String(o.side || "").toUpperCase();
+    let typeLabel = "Order";
+    if (o.limit_price != null) typeLabel = "Limit";
+    else if (o.stop_price != null) typeLabel = "Stop";
+    else if (o.trail_price != null) typeLabel = "Trail";
+    return `${price.toFixed(8)}_${side}_${typeLabel}`;
+  };
+
+  // Count how many working orders share this order's price + side + type + symbol + account.
+  // Used to append a "×N" indicator on chart lines when multiple orders stack at the same price.
+  const getStackCount = (o) => {
+    if (!o) return 1;
+    const oh = orderHistoryRef.current;
+    const list = Array.isArray(oh) ? oh : (oh?.results || oh?.data || []);
+    const refPrice = parseFloat(o.limit_price ?? o.stop_price ?? o.trail_price ?? 0);
+    const refSide = String(o.side || '').toUpperCase();
+    const refType = o.limit_price != null ? 'limit' : (o.stop_price != null ? 'stop' : (o.trail_price != null ? 'trail' : 'order'));
+    const refSym = o.market_id || o.symbol || o.contract_id || '';
+    const refAcc = String(o.account_id || o.account || '').toLowerCase();
+    let count = 0;
+    list.forEach(x => {
+      const status = String(x.status || '').toLowerCase();
+      if (!(status === 'working' || status === 'pending' || status === 'submitted' || status === 'modified' || status === 'modify_requested')) return;
+      const xType = x.limit_price != null ? 'limit' : (x.stop_price != null ? 'stop' : (x.trail_price != null ? 'trail' : 'order'));
+      if (xType !== refType) return;
+      const xPrice = parseFloat(x.limit_price ?? x.stop_price ?? x.trail_price ?? 0);
+      if (Math.abs(xPrice - refPrice) > 1e-8) return;
+      if (String(x.side || '').toUpperCase() !== refSide) return;
+      const xAcc = String(x.account_id || x.account || '').toLowerCase();
+      if (refAcc && xAcc && xAcc !== refAcc) return;
+      const symMatch = isSymbolMatch(x.market_id, refSym) || isSymbolMatch(x.symbol, refSym) || isSymbolMatch(x.contract_id, refSym);
+      if (!symMatch) return;
+      count += 1;
+    });
+    return count || 1;
+  };
+
+  //  IMPLEMENTING MULTI-CHART MAP
+  const onTickHandlers = useRef(new Map());
+
+  const positionLinesRef = useRef({});
+  const limitOrderLinesRef = useRef({}); // New ref for limit orders
+  const childLinesRef = useRef({});
+  const tradeArrowsRef = useRef({});
+  const showTradeArrowsRef = useRef(true);   // toggle controlled by header button
+  const barsCacheRef = useRef({});
+  const ohlcSocketRef = useRef(null);
+  const liveBarBufferRef = useRef([]);
+  const pendingOcoRef = useRef({});
+  // Debounce timer per OCO order UID for volume-only modifies.
+  // Fills can arrive one-by-one (4→5→6→7→8→9) — each intermediate state would
+  // trigger a modify. We cancel and reschedule so only the final stable volume is sent.
+  const ocoModifyTimerRef = useRef(new Map()); // uid → timerId
+  // Permanent full-contracts cache: only grows, never shrinks.
+  // Prevents search-filtered fetchContracts dispatches from wiping the
+  // full list that resolveSymbol needs for correct pricescale/minmov.
+  const fullContractsRef = useRef([]);
+  const activeMarketRef = useRef({ id: '', symbol: '' });
+  const activeChartIndexRef = useRef(0);
+  const onSymbolChangeRef = useRef(onSymbolChange);
+  const prevAccountIdRef = useRef(null);
+
+  useEffect(() => {
+    onSymbolChangeRef.current = onSymbolChange;
+  }, [onSymbolChange]);
+
+
+  // Ref to store the container DIV inside the iframe (for buttons)
+  const iframeFloatingContainerRef = useRef(null);
+  const [isIframeReady, setIsIframeReady] = useState(false);
+
+  const isDraggingRef = useRef(false);
+  const dragTimeoutRef = useRef(null);
+  // Per-order pending drag prices. After the user drops a line, the modify
+  // request is in flight and orderHistory still shows the old price for ~one
+  // heartbeat. runSync uses this map to treat the dropped price as authoritative
+  // so the line doesn't snap back to the stale price and then forward again.
+  // Shape: { [unique_id]: { price: number, expiresAt: number } }
+  const pendingDragModifyRef = useRef({});
+  const ocoPointerDownRef = useRef(false);
+  const isPosLineDraggingRef = useRef(false); // true only while a position line is being dragged
+  const activeDragCompIdRef = useRef(null);
+  // Guards runSync while widget.load() is asynchronously applying saved chart state (~1.5s window).
+  // Lines created during this window get destroyed by TradingView's internal restore — blocking
+  // prevents the "shows for 1 second then disappears" race condition.
+  const isLoadingChartStateRef = useRef(false);
+  const loadingFlagTimeoutRef = useRef(null);
+
+  const shadeTimeoutRefs = useRef({}); // { chartIndex: timeoutId }
+
+  const historyLoadedRef = useRef({}); // Map of chartIndex -> boolean
+  const lastBarTimeRef = useRef({});    // Map of chartIndex -> timestamp
+  const lastHistoricalBarRef = useRef({}); // last bar from getBars per pane (for OHLC merge)
+  // Cache for second-level (1S/10S/15S/30S) bars. Stores today's full session once so
+  // that scrollback requests are served from memory with zero extra API calls.
+  const secondsBarCacheRef = useRef({}); // key: `${contract}_${resolution}` → { bars, fetchedAt }
+  // Deduplication for minute/hour/day resolution getBars calls.
+  // inflightRef holds in-progress promises so duplicate concurrent calls share one API call.
+  // responseCacheRef holds recent responses (TTL: 30s) so rapid repeated calls skip the API.
+  // Per-pane buffer for ticks that arrive after subscribeBars but before onResult fires.
+  // Ensures onTick is NEVER called before onResult (TV requirement).
+  // Entry exists (array) while getBars is in-flight; deleted after onResult + flush.
+  const pendingSubBufferRef = useRef({}); // paneKey → bar[]
+  // Resolutions that must be treated as a first-data-request on the next getBars call.
+  // Populated whenever the user switches to a resolution (via dropdown or TV toolbar),
+  // so that even if TV calls getBars with firstDataRequest=false (scrollback re-call after
+  // resetData), we still do a full fresh fetch and reset all per-pane refs.
+  const resolutionFreshLoadNeededRef = useRef(new Set());
+  // Stores the onResetCacheNeededCallback TV passes to subscribeBars.
+  // Calling this tells TV "your bar cache for this subscription is stale — re-call getBars
+  // with firstDataRequest=true". This is the official TV mechanism for cache invalidation,
+  // far more reliable than chart.resetData() which is ignored when called mid-transition.
+  const resetCacheCallbacksRef = useRef({}); // paneKey → onResetCacheNeededCallback fn
+  const blankChartRetryCountRef = useRef({}); // paneKey → number of auto-retries attempted
+  // Tracks consecutive empty scrollback responses per pane. TV caches noData:true and never
+  // re-requests that range, so we return noData:false on scrollback until this limit is hit
+  // (~300 days of empty range searched), then finally return noData:true to stop pagination.
+  const scrollbackEmptyCountRef = useRef({}); // paneKey → consecutive empty scrollback count
+  // Tracks resolutions that have been fully loaded at least once (getBars → onResult succeeded).
+  // Used to distinguish REVISITS (TV has bar cache → we need to call onResetCacheNeededCallback
+  // to force fresh data) from FIRST VISITs (TV calls getBars naturally, no cache to bust).
+  // Calling the callback on first visits causes a double-getBars that blocks live ticks.
+  const visitedResolutionsRef = useRef(new Set()); // resolution strings e.g. "1", "5", "1D"
+  // Set when a timeframe switch occurs. Any scrollback getBars call while this flag is set
+  // is immediately returned as noData:false (no API call) — TV's burst scrollback calls for
+  // the old scroll position are discarded. Cleared 1s after the initial load completes so
+  // user-initiated scrollback works freely afterwards.
+  const blockScrollbackRef = useRef({});
+  // Scrollback onResult callbacks queued while blockScrollbackRef is set.
+  // Flushed with noData:false once the block clears so TV retries those ranges
+  // instead of caching them permanently as "no data".
+  const pendingScrollbackRef = useRef({});
+  const liveFormingBarRef = useRef({});    // accumulates OHLC for forming bar when histBar unavailable
+  const pendingNewBarFetchRef = useRef({}); // paneKey -> true while API fetch for new bar open is in flight
+  const gapFillDoneRef = useRef({});   // Map of paneKey -> boolean — tracks per-pane gap fill
+  const pendingClosesRef = useRef(new Set());
+  const pendingFillsRef = useRef(new Set()); // lookupKey (symbol_groupKey)
+  const pendingOptimisticIdsRef = useRef(new Set()); // orderId
+  const tradingInfoRef = useRef({
+    selectedAccountId: null,
+    orderExchange: null,
+    orderContract: null,
+    selectedAccount: null // Track the full account object/ID for dispatch
+  });
+
+
+  // GLOBAL PRICE CACHE (Persists across re-renders)
+  const priceCache = useRef({});
+
+  const endOfHistoryRef = useRef({});
+  const activePositionsRef = useRef([]);
+  const orderHistoryRef = useRef([]);
+  // Ref duplicates removed here
+
+
+  // STATE
+  const [symbol, setSymbol] = useState(() => extractSymbolString(defaultSymbol));
+  const [activeMarket, setActiveMarket] = useState('')
+
+  // SYNC STATE: activeSymbol must start matching symbol
+  const [activeSymbol, setActiveSymbol] = useState(() => extractSymbolString(defaultSymbol));
+
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [currentTimeframe, setCurrentTimeframe] = useState(() => {
+    // const saved = localStorage.getItem('df_tf');
+    // if (saved && TIMEFRAME_MAP[saved]) return TIMEFRAME_MAP[saved];
+    return timeframe;
+  });
+  const [selectedInterval, setSelectedInterval] = useState(() => {
+    // const saved = localStorage.getItem('df_tf');
+    // if (saved && TIMEFRAME_MAP[saved]) return saved;
+    return REVERSE_TIMEFRAME_MAP[timeframe] || '1';
+  });
+  const [currentRange, setCurrentRange] = useState('1D');
+  // console.log(currentRange, 'currentRangecurrentRange');
+
+  const [showTradingPanel, setShowTradingPanel] = useState(false);
+  const [tradingPanelSide, setTradingPanelSide] = useState('Buy');
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  // console.log(selectedInterval, 'currentTimeframecurredfdfdfntTimeframe');
+  const [headerContainer, setHeaderContainer] = useState(null);
+  const [isQuickTradeCollapsed, setIsQuickTradeCollapsed] = useState(false);
+  const socketTimeframeRef = useRef(currentTimeframe);
+  const selectedIntervalRef = useRef(selectedInterval); // Stable ref for [] visibility-handler closure
+  const [paneSymbols, setPaneSymbols] = useState([]);
+  const [arrowRedrawTrigger, setArrowRedrawTrigger] = useState(0);
+  const activeOcoConfirm = useSelector(state => state.orders.activeOcoConfirm);
+  const ocoAction = useSelector(state => state.orders.ocoAction);
+
+  const renderCount = useRef(0);
+  renderCount.current++;
+  console.debug(`[Chart] Render #${renderCount.current} for ${symbol}`);
+
+  const allSymbols = useSelector(state => state.symbols.data);
+  const isSymbolsLoading = useSelector(state => state.symbols.loading);
+
+  const reduxSelectedAccount = useSelector((state) => state.dxtrade.selectedAccount);
+  const selectedAccountId = propsSelectedAccountId ?? (typeof reduxSelectedAccount === 'object' ? (reduxSelectedAccount?.account_id || reduxSelectedAccount?.id) : reduxSelectedAccount);
+
+  const reduxOrderHistory = useSelector((state) => state.orders.orderHistory);
+  const orderHistory = propsOrderHistory ?? reduxOrderHistory;
+
+
+  // Keep selectedIntervalRef in sync so the []dep visibility handler always reads the correct resolution
+  useEffect(() => { selectedIntervalRef.current = selectedInterval; }, [selectedInterval]);
+
+  //  Reset market_id ONLY when physical symbol changes
+  useEffect(() => {
+    setActiveMarket('');
+    activeMarketRef.current = { id: '', symbol: '' };
+    clearLiveQuotes();
+
+    // Clear API request caches when symbol changes to ensure fresh data
+    inflightRequestsRef.current.clear();
+    responseCacheRef.current.clear();
+    console.log('[Chart] Cleared API caches due to symbol change');
+  }, [symbol]);
+
+  //  Keep ref in sync for long-lived closures (datafeed)
+  useEffect(() => {
+    activeMarketRef.current = { id: activeMarket, symbol: symbol };
+  }, [activeMarket, symbol]);
+
+  useEffect(() => {
+    if (!isInitialized || !widgetRef.current || typeof widgetRef.current.chartsCount !== 'function') return;
+
+    try {
+      const count = widgetRef.current.chartsCount();
+      const nextPaneSymbols = [];
+
+      for (let i = 0; i < count; i++) {
+        const chart = widgetRef.current.chart(i);
+        const paneSymbol = chart?.symbol?.();
+        if (paneSymbol) {
+          nextPaneSymbols.push(paneSymbol);
+        }
+      }
+
+      setPaneSymbols((prevPaneSymbols) => (
+        arePaneSymbolsEqual(prevPaneSymbols, nextPaneSymbols) ? prevPaneSymbols : nextPaneSymbols
+      ));
+    } catch (error) {
+      console.warn("[Chart] Failed to capture pane symbols:", error);
+    }
+  }, [isInitialized, layoutSyncId, symbol]);
+
+
+  //  Reset buffering state for the main pane on SYMBOL change only
+  // CRITICAL: Do NOT clear liveBarBufferRef on timeframe switch!
+  // The buffer tags each tick with its resolution, and the flush logic filters by resolution.
+  // Clearing on timeframe switch destroys ticks needed to bridge the gap.
+  useEffect(() => {
+    if (liveBarBufferRef.current) liveBarBufferRef.current = [];
+    pendingClosesRef.current.clear();
+    onTickHandlers.current.clear(); // SYNC: Immediate clear to prevent cross-symbol leaks
+    barsCacheRef.current = {};      // Clear cache on symbol change
+    // Clear all pending OCO lines on symbol change
+    Object.values(pendingOcoRef.current).forEach(p => {
+      if (p.tpLine) try { p.tpLine.remove(); } catch (e) { }
+      if (p.slLine) try { p.slLine.remove(); } catch (e) { }
+    });
+    pendingOcoRef.current = {};
+  }, [symbol]); // ← Only symbol, NOT selectedInterval
+
+  // Reset pane-level tracking on timeframe change (but preserve the live buffer)
+  useEffect(() => {
+    onTickHandlers.current.clear();
+    barsCacheRef.current = {};
+    // Clear stale arrow shapes so they're redrawn at the correct bar positions
+    // for the new timeframe. getBars will call setArrowRedrawTrigger once bars load.
+    clearAllTradeArrows();
+  }, [selectedInterval]);
+
+  // ACCOUNT SWITCH RECOVERY: Reset bar tracking and force a full chart refresh
+  // This prevents ticks from being rejected as "STALE" if the new account's
+  // timeline doesn't perfectly align with the previous account's cursor.
+  useEffect(() => {
+    if (!selectedAccountId) return;
+
+    // Only trigger if we actually have an account switch (ignore initial mount if already handled)
+    if (prevAccountIdRef.current && prevAccountIdRef.current !== selectedAccountId) {
+      console.log(`[Chart] Account switch detected: ${prevAccountIdRef.current} -> ${selectedAccountId}. Full chart reinit...`);
+
+      // Clear all bar-tracking state so the new account starts clean
+      lastBarTimeRef.current = {};
+      historyLoadedRef.current = {};
+      lastHistoricalBarRef.current = {};
+      liveFormingBarRef.current = {};
+      pendingNewBarFetchRef.current = {};
+      if (liveBarBufferRef.current) liveBarBufferRef.current = [];
+
+      // Destroy existing widget then reinitialize from scratch
+      if (widgetRef.current) {
+        try { widgetRef.current.remove(); } catch (e) { }
+        widgetRef.current = null;
+      }
+      tvAutoSaveHookRef.current = null;
+      onTickHandlers.current.clear();
+      setIsInitialized(false);
+      setWindowContextKey(prev => prev + 1); // triggers initChart useEffect
+    }
+
+    prevAccountIdRef.current = selectedAccountId;
+  }, [selectedAccountId]);
+
+  //  MULTI-PANE SYMBOL SYNC: Keep all charts in sync with the header search
+  useEffect(() => {
+    if (layoutType > 1 && widgetRef.current && defaultSymbol && isInitialized) {
+      console.log(`[MultiChartSync] Syncing all panes to ${defaultSymbol}`);
+      try {
+        const count = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function')
+          ? widgetRef.current.chartsCount()
+          : 0;
+
+        const forceSym = extractSymbolString(defaultSymbol);
+        for (let i = 0; i < count; i++) {
+          try {
+            const chart = widgetRef.current.chart(i);
+            if (chart && chart.symbol() !== forceSym) {
+              chart.setSymbol(forceSym, () => {
+                try { chart.scrollToRealTime?.(); } catch (_) { }
+              });
+            }
+          } catch (e) {
+            console.warn(`Chart ${i} symbol sync skipped:`, e);
+          }
+        }
+      } catch (e) {
+        console.error("[MultiChartSync] Error syncing panes:", e);
+      }
+    }
+  }, [defaultSymbol, layoutType, isInitialized]);
+
+  //  SYNC SYMBOL PROP TO STATE
+  useEffect(() => {
+    const cleanPropSym = extractSymbolString(defaultSymbol);
+    if (cleanPropSym && cleanPropSym !== symbol) {
+      console.log("[Chart] Prop symbol changed, updating state to:", cleanPropSym);
+      setSymbol(cleanPropSym);
+      setActiveSymbol(cleanPropSym);
+      if (widgetRef.current && isInitialized) {
+        try {
+          const activeChartInstance = widgetRef.current.activeChart?.();
+          if (activeChartInstance && activeChartInstance.symbol?.() !== cleanPropSym) {
+            activeChartInstance.setSymbol(cleanPropSym, () => {
+              try { activeChartInstance.scrollToRealTime?.(); } catch (_) { }
+            });
+          }
+        } catch (error) {
+          console.warn("[Chart] Failed to sync active chart symbol:", error);
+        }
+      }
+    }
+  }, [defaultSymbol, isInitialized, symbol]);
+
+  //  SYNC TIMEFRAME PROP TO STATE
+  useEffect(() => {
+    if (timeframe && timeframe !== currentTimeframe) {
+      console.log("[Chart] Prop timeframe changed, updating state to:", timeframe);
+      setCurrentTimeframe(timeframe);
+      const tvRes = REVERSE_TIMEFRAME_MAP[timeframe];
+      if (tvRes) setSelectedInterval(tvRes);
+    }
+  }, [timeframe]);
+  useEffect(() => {
+    const handleUpdate = (data) => {
+      const isProfitUpdate = data?.type === "PositionProfitUpdate";
+      const isPositionUpdate = data?.type === "PositionUpdate" || data?.type === "position.update" || data?.type === "trading.position";
+      const isOrderUpdate = data?.type === "OrderUpdate";
+
+      if (!isProfitUpdate && !isPositionUpdate && !isOrderUpdate) return;
+
+      const p = data.data || data;
+
+      // PositionProfitUpdate is only a P&L ticker — livePnlStore is already fed by
+      // t4Socket directly, so there's nothing else to do here.
+      if (isProfitUpdate) return;
+
+      const id = String(p.position_id || p.id || p.unique_id);
+      const market = normalizeSym(p.market_id || p.symbol || p.contract_id);
+
+      if (isOrderUpdate) {
+        const status = String(p.status || "").toLowerCase();
+        const isFlatten = p.order_type === 'flatten' || p.status_detail?.includes("Flatten") || p.status_detail?.includes("Close Position");
+        const isRejected = status === 'rejected';
+        const isConfirmedClose = status === 'filled' || status === 'closed' || p.change === 'TRADE_COMPLETED';
+
+        if (isFlatten && !isRejected && isConfirmedClose) {
+          console.log(`[Chart] Flatten/Close confirmed. Cleaning order lines, deferring position cleanup...`);
+          const closeData = { ...p, net_position: 0, average_open_price: 0, margin: 0, is_close: true };
+          // 🛡️ PARTIAL CLOSE GUARD: Do NOT immediately dispatch net_position:0 to Redux.
+          // For partial closes (e.g. sell 1 of 2), the PositionUpdate event arrives ~50ms later
+          // with the remaining quantity. Dispatching 0 here triggers a brief orphan-cleanup
+          // in runSync that removes the line, causing a visible flicker.
+          // The actual PositionUpdate will update Redux to the correct remaining quantity.
+          // Fallback: if no PositionUpdate arrives within 400ms (full close or slow socket),
+          // apply the close to Redux then.
+          setTimeout(() => {
+            const currentPos = (store.getState().dxtrade.positions || []).find(pos =>
+              normalizeSym(pos.market_id || pos.symbol) === normalizeSym(p.market_id || p.symbol)
+            );
+            const remaining = Math.abs(parseFloat(currentPos?.net_position ?? 0));
+            if (remaining < 0.001) {
+              // Position already gone or confirmed closed — apply close to keep Redux clean
+              dispatch(updateRealTimePositions(closeData));
+            }
+            // If remaining > 0, the PositionUpdate already set the correct quantity — no-op
+          }, 400);
+          handleOrderPlaced(closeData, true);
+          return;
+        }
+
+        // Pass regular order updates (limit, stop, etc) to handleOrderPlaced
+        handleOrderPlaced(p, false);
+        return;
+      }
+
+      //  SYNC: Find existing position to merge fields
+      const existingPos = (store.getState().dxtrade.positions || []).find(ap =>
+        String(ap.position_id || ap.id || ap.unique_id) === id ||
+        normalizeSym(ap.market_id || ap.symbol) === market
+      );
+
+      const mergedUpdate = existingPos ? { ...existingPos, ...p } : p;
+
+      if (p.status || p.net_position !== undefined || p.average_open_price !== undefined || p.margin !== undefined || p.change === "TRADE_COMPLETED") {
+        const selAccObj = store.getState()?.dxtrade?.selectedAccount;
+        const selAcc = selAccObj?.account_id ?? selAccObj?.account ?? selAccObj;
+        const updAcc = p?.account_id ?? p?.account;
+
+        if (selAcc && updAcc) {
+          if (String(updAcc).toLowerCase() !== String(selAcc).toLowerCase()) return;
+        }
+
+        // 🛡️ REVERSAL / PARTIAL-CLOSE UNBLOCK:
+        // A non-zero position update means the position is still alive (partial close or reversal).
+        // 1. Clear pendingClosesRef so runSync can draw/update the line (prevents 10s block).
+        // 2. Cancel any _pendingRemoval timer on existing lines for this symbol so the line
+        //    doesn't disappear during the brief close→update transition (no flicker).
+        const freshVol = Math.abs(parseFloat(p.net_position ?? p.quantity ?? 0));
+        if (freshVol > 0.001) {
+          const stableKey = getPositionStableKey(p) || market;
+          if (stableKey) {
+            pendingClosesRef.current.delete(stableKey);
+            // Cancel deferred line removals for this position
+            const chartsCountNow = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+            for (let ci = 0; ci < chartsCountNow; ci++) {
+              const cid = `${ci}_${stableKey}`;
+              const existingLine = positionLinesRef.current[cid];
+              if (existingLine && existingLine._pendingRemoval) {
+                existingLine._pendingRemoval = null;
+              }
+            }
+          }
+        }
+
+        // REDUX REACTIONARY MODEL:
+        // We no longer trigger manual line removal here.
+        // 🛡️ RE-ANIMATION PROTECTION:
+        // We NO LONGER call handleOrderPlaced here for position updates.
+        // Merging stale ProfitUpdate volume with old prices was re-creating ghost lines.
+        // The Redux-driven runSync heartbeat is the only source of truth for drawing positions.
+        // handleUpdate's role for positions is now LIMITED to triggering flattens/closings.
+      }
+    };
+
+    onTradingData(handleUpdate);
+    return () => offTradingData(handleUpdate);
+  }, []);
+  const allAccounts = useSelector((state) => state.dxtrade.accounts);
+  const accountsArr = useMemo(() => {
+    return Array.isArray(allAccounts) ? allAccounts
+      : Array.isArray(allAccounts?.data) ? allAccounts.data
+        : Array.isArray(allAccounts?.accounts) ? allAccounts.accounts
+          : Array.isArray(allAccounts?.accounts?.data) ? allAccounts.accounts.data
+            : Array.isArray(allAccounts?.accounts?.accounts) ? allAccounts.accounts.accounts
+              : Array.isArray(allAccounts?.accounts?.accounts?.data) ? allAccounts.accounts.accounts.data
+                : Array.isArray(allAccounts?.results) ? allAccounts.results
+                  : Array.isArray(allAccounts?.accounts?.results) ? allAccounts.accounts.results
+                    : [];
+  }, [allAccounts]);
+
+  const selectedAccountRecord = useMemo(() => {
+    return (accountsArr || []).find((acc) => {
+      const sel = normalizeAccountKey(selectedAccountId);
+      if (!sel) return false;
+      const k1 = normalizeAccountKey(acc?.account_id);
+      const k2 = normalizeAccountKey(acc?.id);
+      return (k1 && k1 === sel) || (k2 && k2 === sel);
+    });
+  }, [accountsArr, selectedAccountId]);
+
+  const selectedAccount = selectedAccountRecord || selectedAccountId;
+  const accountId = selectedAccountRecord?.account_number;
+  const selectedAccountName = propsSelectedAccountName ?? (selectedAccountRecord?.account_name || '');
+
+  const orderContract = useSelector((state) => state.orders.orderContract);
+  const orderExchange = useSelector((state) => state.orders.orderExchange);
+  const isOrdersLoading = useSelector((state) => state.orders.loading);
+  // workingOrders is derived from orderHistory inside runSync — not from a separate Redux field
+  const allPositions = useSelector((state) => state.dxtrade.positions);
+  const activePositions = useMemo(() => {
+    return (allPositions || []).filter((position) => {
+      const accMatch = !selectedAccountId || String(position.account_id || position.account).toLowerCase() === String(selectedAccountId).toLowerCase();
+      const vol = Math.abs(parseFloat(position.net_position || position.quantity || position.volume || 0));
+      const price = parseFloat(position.average_open_price || position.avg_open_price || position.avg_price || position.entryPrice || position.entry_price || 0);
+
+      // SYNC RIGOR: Only show positions that have ACTIVE volume AND a valid entry price.
+      // This prevents 'ghost lines' from appearing if a stale update re-creates a position 
+      // in Redux without its accompanying entry price.
+      return accMatch && vol > 0.01 && price > 0.0001;
+    });
+  }, [allPositions, selectedAccountId]);
+
+  console.log(activePositions, 'activePositions');
+
+  const exchanges = useSelector((state) => state.symbols.exchanges);
+  const contracts = useSelector((state) => state.symbols.contracts);
+
+  // Keep fullContractsRef as the largest-ever contracts list.
+  // Symbol searches dispatch fetchContracts({ search: term }) which replaces
+  // state.contracts with filtered results. resolveSymbol must never see a
+  // filtered list or pricescale/minmov fall back to the 0.01 default.
+  useEffect(() => {
+    if (contracts.length > fullContractsRef.current.length) {
+      const wasEmpty = fullContractsRef.current.length === 0;
+      fullContractsRef.current = contracts;
+
+      // Race-condition fix: if resolveSymbol fired before contracts were loaded
+      // (wasEmpty === true), TradingView cached wrong pricescale/minmov.
+      // Force a setSymbol() on every chart pane so resolveSymbol re-runs now
+      // that fullContractsRef has the correct data.
+      if (wasEmpty && widgetRef.current && isInitialized) {
+        try {
+          const count = widgetRef.current.chartsCount?.() || 1;
+          for (let i = 0; i < count; i++) {
+            const chart = widgetRef.current.chart(i);
+            const sym = chart?.symbol?.();
+            if (sym) {
+              console.log(`[Chart] Contracts loaded — forcing resolveSymbol re-run for pane ${i}: ${sym}`);
+              chart.setSymbol(sym);
+            }
+          }
+        } catch (e) {
+          console.warn('[Chart] Could not force symbol re-resolve after contracts load:', e);
+        }
+      }
+    }
+  }, [contracts, isInitialized]);
+
+  const globalMarketId = useSelector(state => state.orders.activeMarketId);
+  const globalExchangeId = useSelector(state => state.orders.orderExchange);
+  const globalContractId = useSelector(state => state.orders.orderContract);
+
+  // Always use fullContractsRef for tick size — state.contracts can be filtered
+  // by symbol searches and may not contain the active symbol's contract.
+  const getTickSizeFull = (orderOrSymbol, sym) => {
+    const c = fullContractsRef.current?.length ? fullContractsRef.current : contracts;
+    return getTickSize(orderOrSymbol, c, sym ?? activeSymbol);
+  };
+
+  // Sync refs for the heartbeat — always immediate
+  useEffect(() => {
+    activePositionsRef.current = activePositions;
+  }, [activePositions]);
+
+  // activePositions is now used directly to ensure sequential updates (1, 2, 3...) 
+  // without the stepped jumps caused by debouncing.
+
+  useEffect(() => {
+    orderHistoryRef.current = orderHistory || [];
+  }, [orderHistory]);
+
+  // workingOrdersRef removed — working orders are now sourced directly from orderHistory inside runSync
+
+  // Sync ref for context menu to avoid stale closures
+  useEffect(() => {
+    const activeContract = (contracts || []).find(c => c.contract_id === orderContract);
+
+    tradingInfoRef.current = {
+      selectedAccountId,
+      orderExchange,
+      orderContract,
+      selectedAccount,
+      marketId: activeMarket || (orderContract === symbol ? globalMarketId : null)
+    };
+  }, [selectedAccountId, orderExchange, orderContract, contracts, activeMarket, selectedAccount]);
+
+
+  // console.log(selectedInterval, 'currentTimeframe');
+
+  // --- DATA FETCHING ---
+  // const fetchHistoricalData = useHistoricalDataFetcher(accessToken);
+  // Map 'contracts' array from the nested Redux structure if available, otherwise fallback to 'allSymbols'
+  const contractsList = contracts || [];
+  const searchSymbols = useTVSymbolSearch();
+
+  // -------------------------------------------------------------
+  // HOOK 1: CANDLES ONLY (disableTickUpdates = true)
+  // This drives the chart candles. It does NOT touch the live prices for buttons.
+  // -------------------------------------------------------------
+  useMarketData(
+    symbol,
+    currentTimeframe, // USE STATE NOT REF to trigger re-subscription
+    accessToken,
+    onTickHandlers, // Passed as Map ref
+    null,
+    priceCache,
+    false,
+    orderExchange,
+    orderContract,
+    activeMarket,
+    isActive
+  );
+
+
+  // -------------------------------------------------------------
+  // HOOK 2: SOCKET SUBSCRIPTION
+  // This maintains the live websocket connection for the active symbol.
+  // It no longer returns a price state to avoid triggering chart re-renders.
+  // -------------------------------------------------------------
+  useMarketData(
+    activeSymbol,
+    'one_second', // Force fast socket
+    accessToken,
+    null,
+    dispatch,
+    priceCache,
+    true, // <--- ENABLE TICK UPDATES HERE
+    orderExchange,
+    orderContract,
+    activeMarket,
+    isActive
+  );
+
+  // DISPLAY LOGIC
+  const isMultiChart = (layoutType !== 1 && layoutType !== '1');
+  const shouldShowOcoModal = (showOcoModal || isMobile) && !!activeOcoConfirm;
+  const activeContractDetails = (contracts || []).find((contract) => {
+    const orderMarketId = activeOcoConfirm?.originalOrder?.market_id;
+    const orderSymbol = activeOcoConfirm?.originalOrder?.symbol;
+    const orderContractId = activeOcoConfirm?.originalOrder?.contract_id;
+    return (
+      contract.contract_id === orderContract ||
+      contract.contract_id === orderContractId ||
+      contract.contract_id === orderSymbol ||
+      contract.market_id === orderMarketId
+    );
+  });
+  const ocoTickSize = parseFloat(activeContractDetails?.tick_size || 0.01);
+  const ocoPrecision = getTickPrecision(ocoTickSize);
+  const ocoEntryPrice = parseFloat(
+    activeOcoConfirm?.originalOrder?.entry_price ||
+    activeOcoConfirm?.originalOrder?.avg_open_price ||
+    activeOcoConfirm?.originalOrder?.avg_price ||
+    activeOcoConfirm?.originalOrder?.price ||
+    activeOcoConfirm?.originalOrder?.avg_fill_price ||
+    activeOcoConfirm?.originalOrder?.fill_price ||
+    activeOcoConfirm?.originalOrder?.entryPrice ||
+    activeOcoConfirm?.originalOrder?.average_open_price ||
+    0
+  );
+  const ocoQuantity = activeOcoConfirm?.quantity ?? Math.abs(
+    activeOcoConfirm?.originalOrder?.net_position ||
+    activeOcoConfirm?.originalOrder?.quantity ||
+    activeOcoConfirm?.originalOrder?.volume ||
+    1
+  );
+  const ocoSide = activeOcoConfirm?.originalOrder?.side?.toUpperCase() ||
+    ((activeOcoConfirm?.originalOrder?.net_position ?? 0) >= 0 ? 'BUY' : 'SELL');
+  const ocoIsBuy = ocoSide === 'BUY';
+  const ocoRewardPoints = ocoTickSize > 0 && activeOcoConfirm?.tp != null
+    ? (ocoIsBuy ? activeOcoConfirm.tp - ocoEntryPrice : ocoEntryPrice - activeOcoConfirm.tp)
+    : 0;
+  const ocoRiskPoints = ocoTickSize > 0 && activeOcoConfirm?.sl != null
+    ? (ocoIsBuy ? ocoEntryPrice - activeOcoConfirm.sl : activeOcoConfirm.sl - ocoEntryPrice)
+    : 0;
+  const ocoTickValue = parseFloat(activeContractDetails?.tick_value || 0);
+  const ocoContractSize = parseFloat(activeContractDetails?.contract_size || 50);
+  const ocoRewardTicks = ocoTickSize > 0 ? ocoRewardPoints / ocoTickSize : ocoRewardPoints;
+  const ocoRiskTicks = ocoTickSize > 0 ? ocoRiskPoints / ocoTickSize : ocoRiskPoints;
+  const ocoRewardUsd = ocoTickValue > 0
+    ? ocoRewardTicks * ocoTickValue * ocoQuantity
+    : ocoRewardPoints * ocoQuantity * ocoContractSize;
+  const ocoRiskUsd = ocoTickValue > 0
+    ? ocoRiskTicks * ocoTickValue * ocoQuantity
+    : ocoRiskPoints * ocoQuantity * ocoContractSize;
+  const ocoRatio = ocoRiskPoints !== 0 && activeOcoConfirm?.tp != null && activeOcoConfirm?.sl != null
+    ? (ocoRewardPoints / ocoRiskPoints).toFixed(2)
+    : '0.00';
+  const displaySymbol = activeSymbol;
+  const displayPrice = getLiveQuotes(activeSymbol);
+
+  // Returns the bar duration in milliseconds for a given TV resolution string.
+  // Used by gap-fill logic to determine whether a gap between history and live data exists.
+  const getBarPeriodMs = (resolution) => {
+    const cfg = BAR_INTERVAL_MAP[resolution];
+    if (!cfg) return 60000; // default: 1 minute
+    const period = parseInt(cfg.bar_period) || 1;
+    switch (cfg.bar_interval) {
+      case 'Second': return period * 1000;
+      case 'Hour': return period * 60 * 60 * 1000;
+      case 'Day': return period * 24 * 60 * 60 * 1000;
+      case 'Week': return period * 7 * 24 * 60 * 60 * 1000;
+      case 'Month': return period * 30 * 24 * 60 * 60 * 1000;
+      default: return period * 60 * 1000; // Minute
+    }
+  };
+
+  // Helper functions for getBars (kept same)
+  const getTargetBars = (resolution) => {
+    switch (resolution) {
+      case '1': return 300;
+      case '5': return 200;
+      case '15': return 150;
+      case '30': return 200;
+      case '60': return 80;
+      case '1D': return 10;
+      default: return 200;
+    }
+  };
+
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined) return "$0.00";
+    const numValue = parseFloat(value);
+    return `${numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  };
+
+  const PRICE_SCALE = 100;
+
+  const toTvBar = (candle) => {
+    let ts = candle.start_time || candle.time;
+
+    if (typeof ts === 'number' && ts < 1e12) {
+      ts = ts * 1000;
+    }
+
+    if (typeof ts === 'string') {
+      const tsTrim = ts.trim();
+      // Robust detection: Does it have 'Z', a '+' offset, or a '-' offset that isn't just a date dash?
+      // A '-' offset typically appears after time info or at the end (e.g., T10:00:00-05:00 or ... 10:00:00 -0500)
+      const hasZone = /Z|[+]|([-]\d{2}(:?\d{2})?$)/.test(tsTrim);
+      if (!hasZone) {
+        // MATCH: Interpret as Central Time (-05:00) to align with historical API strings.
+        ts = new Date(tsTrim + '-05:00').getTime();
+      } else {
+        ts = new Date(tsTrim).getTime();
+      }
+    }
+
+    return {
+      time: ts,
+      open: Number(candle.open),
+      high: Number(candle.high),
+      low: Number(candle.low),
+      close: Number(candle.close),
+      volume: candle.volume || 0,
+    };
+  };
+
+
+  // EARLY BACKGROUND BUFFERING (Eliminate gaps during refresh)
+  useEffect(() => {
+    if (!accessToken || !symbol || !selectedInterval || !ohlcWsUrl) return;
+
+    let bgSocket = null;
+    let mounted = true;
+
+    const startBuffering = async () => {
+      // 1. Resolve market_id for the current symbol
+      // Use the helper which uses the Chart API and caches results
+      const mId = await resolveMarketId(orderExchange, symbol);
+
+      if (!mId || !mounted) return;
+
+      // SYNC: Update local state immediately so useMarketData (Fast Feed) starts early.
+      // This prevents the 10-15s delay where we wait for TradingView getBars to set it.
+      if (mId !== activeMarket) {
+        console.log(`[Buffering] Early market_id resolution: ${symbol} -> ${mId}`);
+        setActiveMarket(mId);
+      }
+
+      // 2. WAIT FOR MARKET SOCKET (New Rust Gateway Requirement)
+      if (!isMarketConnected()) {
+        console.log(`[Buffering] Market socket not ready. Waiting for connection...`);
+        const p = new Promise(resolve => {
+          const cb = (connected) => {
+            if (connected) {
+              offMarketConnect(cb);
+              resolve();
+            }
+          };
+          onMarketConnect(cb);
+        });
+        await p;
+        if (!mounted) return;
+      }
+
+      const tf = SOCKET_TIMEFRAME_MAP[selectedInterval] || '1m';
+      console.log(`[Buffering] Starting background sync for ${symbol} (${mId}) at ${tf}`);
+
+      // 3. Connect a dedicated socket for background buffering
+      bgSocket = connectSocketForChart(
+        ohlcWsUrl,
+        mId,
+        accessToken,
+        tf,
+        (candle) => {
+          if (candle && candle.start_time && mounted) {
+            const bar = toTvBar(candle);
+            // STRICT SYMBOL PARSING: Trust the incoming tick payload's symbol
+            // This prevents "leftover" ticks from a previous symbol from spilling 
+            // into the newly selected activeMarket's queue!
+            const incomingSym = candle.market_id || candle.symbol || candle.contract_id;
+            const currentBufferingSymbol = incomingSym
+              ? String(incomingSym).toUpperCase()
+              : String(activeMarketRef.current.symbol || symbol).toUpperCase();
+
+            // SYNC: Push to buffer. getBars will flush this once historical data arrives.
+            if (liveBarBufferRef.current) {
+              liveBarBufferRef.current.push({ bar, tickSymbol: currentBufferingSymbol, resolution: tf });
+            }
+
+            // SHARED SOCKET EMISSION
+            // If subscribeBars opted to share this background socket (isMainSymbol),
+            // we must emit ticks directly to its handler ONCE history is loaded.
+            if (onTickHandlers.current && onTickHandlers.current.size > 0) {
+              onTickHandlers.current.forEach((item, uid) => {
+                if (isSymbolMatch(currentBufferingSymbol, item.symbol)) {
+                  const resolution = item.resolution || item.timeframe || '1m';
+                  const paneKey = getPaneKey(item.symbol, resolution);
+
+                  // For second-resolution bars (1S/10S/15S/30S) the server may have
+                  // sub-second drift so we snap to the nearest period boundary.
+                  // For minute+ bars (1m, 1h, 4h, 1D …) the server already aligns
+                  // start_time to the correct period start — do NOT round here.
+                  // Math.round on a 4h bar would snap e.g. 22:00 UTC (5.5 × 4h periods
+                  // from epoch) to midnight, producing a timestamp that never matches
+                  // the historical bar stored at 22:00 UTC → live ticks silently lost.
+                  const periodMs = getBarPeriodMs(resolution);
+                  const isSecondRes = resolution.endsWith('S');
+                  let alignedBar = (isSecondRes && periodMs > 0)
+                    ? { ...bar, time: Math.round(bar.time / periodMs) * periodMs }
+                    : bar;
+
+                  // Session-start snap for daily/weekly bars:
+                  // CME 1D sessions begin at 17:00 CT (22:00 UTC) the PREVIOUS calendar
+                  // day, but the API uses trade-date midnight (00:00 CT = 05:00 UTC) as
+                  // the bar's open time. The socket tick therefore arrives with a timestamp
+                  // several hours BEFORE the stored lastBarTimeRef, making isNewOrCurrent
+                  // fail and silently discarding every 1D live tick.
+                  // Fix: if the tick is within one bar-period before the last known bar
+                  // time, snap it forward to that time so SAME-BAR comparison works.
+                  {
+                    const ltSnap = lastBarTimeRef.current[paneKey];
+                    if (!isSecondRes && ltSnap && alignedBar.time < ltSnap && (ltSnap - alignedBar.time) < periodMs) {
+                      alignedBar = { ...alignedBar, time: ltSnap };
+                    }
+                  }
+
+                  // If getBars is still in-flight for this pane, buffer the tick.
+                  // onTick must never be called before onResult — TV's API contract.
+                  // The buffer is flushed immediately after onResult fires in getBars.
+                  if (pendingSubBufferRef.current[paneKey] !== undefined) {
+                    pendingSubBufferRef.current[paneKey].push(alignedBar);
+                    return; // skip emit until onResult has fired
+                  }
+
+                  if (historyLoadedRef.current[paneKey]) {
+                    const lastBarTime = lastBarTimeRef.current[paneKey];
+
+                    const isNewOrCurrent = !lastBarTime || alignedBar.time >= lastBarTime;
+
+                    if (isNewOrCurrent) {
+                      const histBar = lastHistoricalBarRef.current[paneKey];
+                      let tickBar = alignedBar;
+                      let deferEmit = false;
+
+                      if (histBar && alignedBar.time === histBar.time) {
+                        // SAME BAR — preserve API open/high/low, use socket close
+                        pendingNewBarFetchRef.current[paneKey] = false;
+                        tickBar = {
+                          ...alignedBar,
+                          open: histBar.open,
+                          high: (alignedBar.high > 0) ? Math.max(histBar.high, alignedBar.high) : histBar.high,
+                          low: (alignedBar.low > 0) ? Math.min(histBar.low, alignedBar.low) : histBar.low,
+                          volume: (histBar.volume || 0) + (alignedBar.volume || 0),
+                        };
+                        lastHistoricalBarRef.current[paneKey] = tickBar;
+                        liveFormingBarRef.current[paneKey] = tickBar;
+                        console.info(`[bgSocket MERGE] ${paneKey} | SAME BAR | histBar O:${histBar.open} H:${histBar.high} L:${histBar.low} C:${histBar.close} t:${new Date(histBar.time).toISOString()} | merged O:${tickBar.open} H:${tickBar.high} L:${tickBar.low} C:${tickBar.close}`);
+
+                      } else if (histBar && alignedBar.time > histBar.time) {
+                        // NEW BAR — hold emission, fetch true open from API silently
+                        deferEmit = true;
+                        pendingNewBarFetchRef.current[paneKey] = true;
+                        lastHistoricalBarRef.current[paneKey] = null;
+                        liveFormingBarRef.current[paneKey] = { ...alignedBar };
+                        console.info(`[bgSocket MERGE] ${paneKey} | NEW BAR | fetching API open silently...`);
+
+                        const snapTime = alignedBar.time;
+                        const snapExchange = item.exchange;
+                        const snapContract = item.contract;
+                        const snapResolution = item.resolution;
+
+                        const emitCorrected = () => {
+                          pendingNewBarFetchRef.current[paneKey] = false;
+                          const forming = liveFormingBarRef.current[paneKey];
+                          if (forming && forming.time === snapTime) {
+                            item.handler(forming);
+                          }
+                        };
+
+                        // Fallback: if API takes > 1s, emit whatever we have
+                        const fallbackTimer = setTimeout(emitCorrected, 1000);
+
+                        fetchHistoricalMarket(
+                          store.getState().auth.token,
+                          snapExchange, snapContract, snapResolution,
+                          snapTime, Date.now(), false
+                        ).then(result => {
+                          clearTimeout(fallbackTimer);
+                          const apiBars = convertToTVCandles(result?.chart?.bars || [])
+                            .filter(b => b.time === snapTime);
+                          if (apiBars.length > 0) {
+                            const apiBar = apiBars[0];
+                            const forming = liveFormingBarRef.current[paneKey];
+                            if (forming && forming.time === snapTime) {
+                              const corrected = {
+                                ...forming,
+                                open: apiBar.open,
+                                high: Math.max(apiBar.high, forming.high),
+                                low: Math.min(apiBar.low, forming.low),
+                              };
+                              lastHistoricalBarRef.current[paneKey] = corrected;
+                              liveFormingBarRef.current[paneKey] = corrected;
+                              pendingNewBarFetchRef.current[paneKey] = false;
+                              item.handler(corrected);
+                              console.info(`[bgSocket MERGE] ${paneKey} | NEW BAR CORRECTED | O:${corrected.open} H:${corrected.high} L:${corrected.low} C:${corrected.close}`);
+                            } else {
+                              emitCorrected();
+                            }
+                          } else {
+                            emitCorrected();
+                          }
+                        }).catch(() => { clearTimeout(fallbackTimer); emitCorrected(); });
+
+                      } else {
+                        // NO HISTBAR — accumulate via liveFormingBarRef
+                        const forming = liveFormingBarRef.current[paneKey];
+                        if (forming && alignedBar.time === forming.time) {
+                          tickBar = {
+                            ...alignedBar,
+                            open: forming.open,
+                            high: (alignedBar.high > 0) ? Math.max(forming.high, alignedBar.high) : forming.high,
+                            low: (alignedBar.low > 0) ? Math.min(forming.low, alignedBar.low) : forming.low,
+                          };
+                          liveFormingBarRef.current[paneKey] = tickBar;
+                          // Suppress emit while waiting for API open
+                          if (pendingNewBarFetchRef.current[paneKey]) deferEmit = true;
+                          console.info(`[bgSocket MERGE] ${paneKey} | NO HISTBAR (forming) | forming O:${forming.open} H:${forming.high} L:${forming.low} | socket C:${alignedBar.close} | merged O:${tickBar.open} H:${tickBar.high} L:${tickBar.low} C:${tickBar.close}`);
+                        } else {
+                          liveFormingBarRef.current[paneKey] = { ...alignedBar };
+                          if (pendingNewBarFetchRef.current[paneKey]) deferEmit = true;
+                          console.info(`[bgSocket MERGE] ${paneKey} | NO HISTBAR (new forming) | socket O:${alignedBar.open} H:${alignedBar.high} L:${alignedBar.low} C:${alignedBar.close} t:${new Date(alignedBar.time).toISOString()}`);
+                        }
+                      }
+
+                      if (!deferEmit) {
+                        item.handler(tickBar);
+                      }
+                      lastBarTimeRef.current[paneKey] = alignedBar.time;
+                    }
+                  }
+                }
+              });
+            }
+          }
+        },
+        null, // onError
+        null, // onClose
+        orderExchange,
+        symbol
+      );
+      ohlcSocketRef.current = bgSocket;
+    };
+
+    startBuffering();
+
+    return () => {
+      mounted = false;
+      if (iframeEventCleanupRef.current) {
+        try { iframeEventCleanupRef.current(); } catch (e) { }
+        iframeEventCleanupRef.current = null;
+      }
+      if (headerButtonCleanupRef.current) {
+        try { headerButtonCleanupRef.current(); } catch (e) { }
+        headerButtonCleanupRef.current = null;
+      }
+      if (bgSocket) {
+        console.log(`[Buffering] Final cleanup of session-long background socket`);
+        disconnectSocket(bgSocket);
+      }
+      ohlcSocketRef.current = null;
+    };
+  }, [accessToken, orderExchange, ohlcWsUrl]); // Absolute Singleton: Only restart on token/exchange/URL changes.
+
+
+  // SINGLETON SOCKET UPDATER: Push symbol/timeframe changes down the existing pipe
+  useEffect(() => {
+    if (ohlcSocketRef.current && isInitialized) {
+      const tf = SOCKET_TIMEFRAME_MAP[selectedInterval] || '1m';
+      const mId = activeMarketRef.current.id;
+      const currentSym = activeMarketRef.current.symbol;
+
+      // 🛡️ SYMBOL SWITCH GUARD: If switching symbols, clear buffers to avoid "mapping" old ticks onto new chart
+      if (lastBufferedSymbolRef.current && lastBufferedSymbolRef.current !== symbol) {
+        console.log(`[Buffering] Symbol switched: ${lastBufferedSymbolRef.current} -> ${symbol}. Clearing buffers.`);
+        if (liveBarBufferRef.current) liveBarBufferRef.current = [];
+
+        // NOTE: Do NOT clear historyLoadedRef here. getBars resets per-pane before each fetch
+        // (historyLoadedRef.current[paneKey] = false). Clearing ALL entries here causes permanent
+        // tick silence when TV reuses cached bars and skips calling getBars again.
+        gapFillDoneRef.current = {};
+      }
+      lastBufferedSymbolRef.current = symbol;
+
+      if (tf && currentSym) {
+        console.log(`[Singleton] Pushing interest update: ${currentSym} (${tf})`);
+        ohlcSocketRef.current.updateSubscription(tf, mId, currentSym);
+      }
+    }
+  }, [symbol, selectedInterval, isInitialized]);
+
+  //  DEDICATED SOCKET CLEANUP
+  useEffect(() => {
+    return () => {
+      console.log("[Chart] Cleaning up all dedicated pane sockets...");
+      paneSocketsRef.current.forEach((ws) => disconnectSocket(ws));
+      paneSocketsRef.current.clear();
+    };
+  }, []);
+
+  // ========================================
+  // INIT TRADINGVIEW
+  // ========================================
+
+
+  const convertToTVCandles = (rawDataArray) => {
+    return rawDataArray
+      .map((item, i) => {
+        let ts = item.time || item.start_time;
+
+        if (typeof ts === 'number' && ts < 1e12) {
+          ts = ts * 1000;
+        }
+
+        if (typeof ts === 'string') {
+          const tsTrim = ts.trim();
+          const hasZone = /Z|[+]|([-]\d{2}(:?\d{2})?$)/.test(tsTrim);
+          if (!hasZone) {
+            // Historical API returns times in Central Time (CDT = UTC-5) without timezone suffix.
+            // Live WebSocket sends UTC with explicit +00:00. Treating history as UTC ('Z') placed bars
+            // 5 hours too early, creating a visible 5-hour gap to the live feed.
+            ts = new Date(tsTrim + '-05:00').getTime();
+          } else {
+            ts = new Date(tsTrim).getTime();
+          }
+        }
+
+        return {
+          time: ts,
+          open: Number(item.open_price ?? item.open),
+          high: Number(item.high_price ?? item.high),
+          low: Number(item.low_price ?? item.low),
+          close: Number(item.close_price ?? item.close),
+          volume: Number(item.volume) || 0,
+          isClosed: i < rawDataArray.length - 1
+        };
+      })
+      .filter(bar => !isNaN(bar.time) && !isNaN(bar.close))
+      .sort((a, b) => a.time - b.time);
+  };
+
+
+
+  const getTomorrowISODate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10); // YYYY-MM-DD
+  };
+
+
+  // ========================================
+  // API REQUEST DEDUPLICATION & CACHING
+  // ========================================
+  // Prevents redundant API calls with identical parameters
+  const inflightRequestsRef = useRef(new Map()); // Stores in-flight promises
+  const responseCacheRef = useRef(new Map());    // Stores recent responses with TTL
+
+  const fetchHistoricalMarket = async (
+    accessToken,
+    exchange,
+    contract,
+    resolution,
+    from,
+    to,
+    isFirstRequest = false
+  ) => {
+    // UTC-based YYYY-MM-DD formatter. Must use UTC methods — local timezone causes wrong dates
+    // when the client is in CDT (UTC-5): e.g. 03:33 UTC → 22:33 CDT April 5 (wrong day).
+    const formatLocal = (ts) => {
+      const d = new Date(ts);
+      const y = d.getUTCFullYear();
+      const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const r = String(d.getUTCDate()).padStart(2, '0');
+      return `${y}-${m}-${r}`;
+    };
+
+    const barConfig = BAR_INTERVAL_MAP[resolution];
+
+    // Use target date exactly (API is usually inclusive)
+    const startDate = formatLocal(from);
+
+    // Extend endDate to tomorrow ONLY for the initial live session load (isFirstRequest=true).
+    // This ensures in-progress bars that haven't been archived into previous-day buckets are included.
+    // Scrollback calls and gap fills use formatLocal(to) as-is — the API returns the full day for
+    // any date, so gap fills still receive today's forming bars without bleeding into tomorrow.
+    const endDate = isFirstRequest ? getTomorrowISODate() : formatLocal(to);
+
+    // ── REQUEST DEDUPLICATION ──────────────────────────────────────────────
+    // Create a unique cache key based on all request parameters
+    const cacheKey = `${exchange}|${contract}|${barConfig.bar_interval}|${barConfig.bar_period}|${startDate}|${endDate}`;
+
+    // Check if an identical request is already in-flight
+    if (inflightRequestsRef.current.has(cacheKey)) {
+      return inflightRequestsRef.current.get(cacheKey);
+    }
+
+    // Check response cache with adaptive TTL based on timeframe
+    // TTL scales with bar period to prevent cache expiration before next bar forms
+    if (responseCacheRef.current.has(cacheKey)) {
+      const cached = responseCacheRef.current.get(cacheKey);
+      const age = Date.now() - cached.timestamp;
+
+      // Calculate adaptive TTL based on bar period (in milliseconds)
+      const barPeriodMs = parseInt(barConfig.bar_period) *
+        (barConfig.bar_interval === 'Second' ? 1000 :
+          barConfig.bar_interval === 'Minute' ? 60000 :
+            barConfig.bar_interval === 'Hour' ? 3600000 :
+              barConfig.bar_interval === 'Day' ? 86400000 : 60000);
+
+      // TTL Strategy:
+      // - First requests: 50% of bar period (e.g., 1min bar = 30s cache, 5min bar = 2.5min cache)
+      // - Subsequent requests: 100% of bar period (full bar duration)
+      // - Minimum: 5 seconds (for very short timeframes)
+      // - Maximum: 5 minutes (for very long timeframes)
+      const baseTTL = isFirstRequest ? barPeriodMs * 0.5 : barPeriodMs;
+      const TTL = Math.max(5000, Math.min(300000, baseTTL));
+
+      if (age < TTL) {
+        return cached.data;
+      } else {
+        // Cache expired, remove it
+        responseCacheRef.current.delete(cacheKey);
+      }
+    }
+
+    // Create the API request promise with up to 10 retries (500 ms apart).
+    // Handles both HTTP 503 (thrown by axios) and HTTP 200 with success:false (SERVICE_UNAVAILABLE).
+    const CHART_MAX_RETRIES = 10;
+    const CHART_RETRY_DELAY_MS = 500;
+
+
+    const requestPromise = (async () => {
+      let lastError;
+      for (let attempt = 0; attempt < CHART_MAX_RETRIES; attempt++) {
+        try {
+          const response = await axiosInstance.get(
+            `/api/v1/t4/markets/chart/`,
+            {
+              params: {
+                exchange_id: exchange,
+                contract_id: contract,
+                bar_interval: barConfig.bar_interval,
+                bar_period: barConfig.bar_period,
+                trade_date_start: startDate,
+                trade_date_end: endDate,
+              }
+            }
+          );
+
+          // HTTP 200 but API returned success:false (e.g. SERVICE_UNAVAILABLE) — retry
+          if (response.data?.success === false) {
+            const errCode = response.data?.error_code || 'UNKNOWN';
+            console.warn(`[Chart] fetchHistoricalMarket attempt ${attempt + 1}/${CHART_MAX_RETRIES} failed (${errCode}), retrying in ${CHART_RETRY_DELAY_MS}ms…`);
+            lastError = new Error(response.data?.message || `Chart API error: ${errCode}`);
+            if (attempt < CHART_MAX_RETRIES - 1) {
+              await new Promise(r => setTimeout(r, CHART_RETRY_DELAY_MS));
+            }
+            continue;
+          }
+
+          // Only cache responses that contain actual bar data — empty responses must NOT be
+          // cached because the gap-search retry loop would get the cached empty back without
+          // making a real network call, making the API appear "never called" for gap ranges.
+          const hasData = (response.data.data?.chart?.bars?.length ?? 0) > 0;
+          if (hasData) {
+            responseCacheRef.current.set(cacheKey, {
+              data: response.data.data,
+              timestamp: Date.now()
+            });
+          }
+
+          // Clean up in-flight tracker
+          inflightRequestsRef.current.delete(cacheKey);
+
+          return response.data.data;
+        } catch (error) {
+          // Network error or HTTP 503 thrown by axios — retry
+          console.warn(`[Chart] fetchHistoricalMarket attempt ${attempt + 1}/${CHART_MAX_RETRIES} network error, retrying…`, error?.message);
+          lastError = error;
+          if (attempt < CHART_MAX_RETRIES - 1) {
+            await new Promise(r => setTimeout(r, CHART_RETRY_DELAY_MS));
+          }
+        }
+      }
+
+      // All retries exhausted — clean up and propagate last error
+      inflightRequestsRef.current.delete(cacheKey);
+      throw lastError;
+    })();
+
+    // Store the in-flight promise so concurrent requests can share it
+    inflightRequestsRef.current.set(cacheKey, requestPromise);
+
+    return requestPromise;
+  };
+
+
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initChart = async (retryCount = 0) => {
+      const MAX_INIT_RETRIES = 3;
+      try {
+        if (!containerRef.current || !mounted) return;
+
+        const targetDoc = containerRef.current?.ownerDocument || document;
+        const targetWindow = targetDoc.defaultView || window;
+        const isPopout = targetWindow !== window;
+
+        // Stabilize popout window context before initializing
+        if (isPopout && retryCount === 0) {
+          console.log('[Chart] Popout detected, waiting for window stabilization...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          if (!mounted || !containerRef.current) return;
+        }
+
+        setIsLoadingData(true);
+        await loadScript('/charting_library/charting_library.standalone.js', targetDoc);
+        await loadScript('/datafeeds/udf/dist/bundle.js', targetDoc);
+
+        if (!targetWindow.TradingView || !mounted) {
+          // Retry if TradingView didn't load (common in popout race condition)
+          if (retryCount < MAX_INIT_RETRIES) {
+            console.warn(`[Chart] TradingView not ready (attempt ${retryCount + 1}/${MAX_INIT_RETRIES}), retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            return initChart(retryCount + 1);
+          }
+          console.error('[Chart] TradingView failed to load after retries.');
+          setIsLoadingData(false);
+          return;
+        }
+
+        const datafeed = {
+          onReady: (cb) => cb({ supported_resolutions: Object.keys(TIMEFRAME_MAP) }),
+          searchSymbols: searchSymbols,
+          resolveSymbol: async (symbolName, onResolve, onError, extension) => {
+            // Use fullContractsRef (the largest-ever seen list) instead of
+            // store.getState().symbols.contracts which may be filtered by a
+            // symbol search query, causing wrong pricescale/minmov for switched symbols.
+            const contractsList = fullContractsRef.current.length > 0
+              ? fullContractsRef.current
+              : (store.getState().symbols.contracts || []);
+            const allSymbols = store.getState().symbols.data || [];
+
+            // 1️⃣ Exact contract_id match (fastest, covers most cases)
+            // 2️⃣ Normalized fallback: handles when symbolName is a full market_id like
+            //    "XCME_Eq ES (H26)" — normalizeSym strips the exchange prefix and contract
+            //    month so it reduces to "ES", matching the plain contract_id.
+            // 3️⃣ Final fallback to legacy allSymbols list.
+            const normalizedSymbolName = normalizeSym(symbolName);
+            const currentSymbolDetails =
+              contractsList.find(s => s.contract_id === symbolName) ||
+              contractsList.find(s =>
+                normalizeSym(s.market_id) === normalizedSymbolName ||
+                normalizeSym(s.contract_id) === normalizedSymbolName
+              ) ||
+              allSymbols.find(s => s.name === symbolName);
+
+            // --- EARLY MARKET RESOLUTION ---
+            // As per manager's requirement: Minimal API call for market_id to start socket immediately.
+            const exchangeId = currentSymbolDetails?.exchange_id || orderExchange || 'MultiSource';
+            let mId = getCachedMarketId(symbolName);
+            if (!mId) {
+              mId = await resolveMarketId(exchangeId, symbolName);
+            }
+            if (mId) {
+              setCachedMarketId(symbolName, mId);
+              if (mId !== activeMarket) {
+                console.log(`[EARLY-SYNC] Starting socket for ${symbolName} -> ${mId}`);
+                setActiveMarket(mId);
+              }
+            }
+            const tickSize = getTickSize(symbolName, contractsList, activeSymbol);
+            const tickFloat = parseFloat(tickSize);
+            const precision = getTickPrecision(tickFloat);
+
+            // Force pricescale to match the precision of the tick_size for accurate snapping.
+            let pricescale = Math.pow(10, precision);
+            let minmov = Math.round(tickFloat * pricescale);
+
+            // Guard: minmov must always be a positive integer
+            if (!Number.isFinite(minmov) || minmov <= 0) {
+              minmov = 1;
+              pricescale = 100;
+            }
+
+            const requestedSessionId = extension?.subsession_id || 'extended';
+            console.log("[DEBUG-SESSION] resolveSymbol request:", {
+              symbolName,
+              requestedSessionId,
+              subsession_id: extension?.subsession_id
+            });
+
+            const subsessions = [
+              { id: 'regular', description: 'RTH', session: '1330-2000' }, // 9:30-16:00 ET in UTC (DST)
+              { id: 'extended', description: 'ETH', session: '24x7' }
+            ];
+
+            const activeSubsession = subsessions.find(s => s.id === requestedSessionId) || subsessions[1];
+
+            onResolve({
+              name: symbolName,
+              ticker: symbolName,
+              type: currentSymbolDetails?.asset_class || 'futures',
+              session: activeSubsession.session,
+              subsession_id: activeSubsession.id,
+              subsessions: subsessions,
+              timezone: 'Etc/UTC',
+              minmov: minmov,
+              pricescale: pricescale,
+              minmove2: 0,
+              fractional: false,
+              has_intraday: true,
+              has_seconds: true,
+              seconds_multipliers: ['1', '10', '15', '30'],
+              supported_resolutions: Object.keys(TIMEFRAME_MAP).filter(res => !res.includes('T')),
+              data_status: 'streaming',
+              exchange: exchangeId,
+              format: 'price',
+              description: currentSymbolDetails?.description || symbolName,
+              currency_code: 'USD',
+            });
+          },
+          getBars: async (symbolInfo, resolution, periodParams, onResult, onError) => {
+            console.error("[DEBUG-SESSION] getBars called:", {
+              symbol: symbolInfo.name,
+              session: symbolInfo.session,
+              subsession: symbolInfo.subsession_id,
+              resolution
+            });
+            try {
+              //  RETRY LOGIC: If token is missing, wait a bit and try again (up to 3 times)
+              // This handles race conditions where TV calls getBars exactly as the token is refreshing/loading.
+              let token = accessToken;
+              let retries = 0;
+              while (!token && retries < 3) {
+                console.warn(`[getBars] Access token missing for ${symbolInfo.name}, retrying ${retries + 1}/3...`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                token = store.getState().auth.token; // Refresh from store
+                retries++;
+              }
+
+              if (!token) {
+                console.error(`[getBars] Giving up on ${symbolInfo.name}: No access token after retries.`);
+                onResult([], { noData: true });
+                return;
+              }
+
+              const apiInterval = TIMEFRAME_MAP[resolution];
+              if (!apiInterval) {
+                onResult([], { noData: true });
+                return;
+              }
+
+              // Resolve exchange / contract
+              const symbolName = symbolInfo.name;
+              const contractsList = (store.getState().symbols.contracts || []);
+              const symbolDetails =
+                contractsList.find(s => s.contract_id === symbolName) ||
+                allSymbols.find(s => s.name === symbolName);
+
+              // Use tradingInfoRef (always kept fresh via useEffect) as the authoritative
+              // exchange source. The closure `orderExchange` is captured at widget creation
+              // time and may be null/stale if Redux hadn't loaded the exchange yet.
+              let exchange = symbolDetails?.exchange_id
+                || tradingInfoRef.current?.orderExchange
+                || orderExchange;
+              let contract = symbolDetails?.contract_id || symbolName;
+
+              if (!exchange || !contract) {
+                onResult([], { noData: true });
+                return;
+              }
+
+              // ── SECOND-RESOLUTION CACHE HANDLER ──────────────────────────────────
+              // The API is date-based, so every getBars call for a 1S/10S/15S/30S chart
+              // returns the full trading session (20 000–40 000 bars). Feeding that to
+              // TradingView freezes it, and repeated scrollback calls hammer the API.
+              //
+              // Strategy:
+              //   • firstDataRequest → ALWAYS fetch fresh from API (no cache reuse) so
+              //     bars processed since the last cache build are never missing.
+              //     Store the result in memory for scrollback.
+              //   • Scrollback → slice the in-memory cache (zero extra API calls).
+              //   • Past the cache window → noData:true (stops TV requesting older days).
+              if (resolution.endsWith('S')) {
+                const cacheKey = `${contract}_${resolution}`;
+                const MAX_RENDER = { '1S': 3600, '10S': 1080, '15S': 720, '30S': 360 };
+                const cap = MAX_RENDER[resolution] ?? 3600;
+                const paneKey = getPaneKey(symbolName, resolution);
+
+                // onResetCacheNeededCallback (called on revisits) causes TV to call
+                // getBars with firstDataRequest=true — no need for an override here.
+                const isFirstLoad = periodParams.firstDataRequest;
+
+                if (isFirstLoad) {
+                  // Always fresh-fetch on initial load — cached bars may be stale if
+                  // the API processed new bars after the last cache was built, which
+                  // would leave a visible gap at the right edge of the chart.
+                  const sessionStart = new Date();
+                  sessionStart.setUTCHours(0, 0, 0, 0);
+                  sessionStart.setUTCDate(sessionStart.getUTCDate() - 1); // yesterday UTC midnight
+                  let allDayBars = [];
+                  let secAttempt = 0;
+                  const SEC_MAX_RETRIES = 2;
+                  while (secAttempt < SEC_MAX_RETRIES) {
+                    try {
+                      const result = await fetchHistoricalMarket(
+                        store.getState().auth.token, exchange, contract, resolution,
+                        sessionStart.getTime(), Date.now(), true
+                      );
+                      if (!mounted) return;
+                      // Server returned HTTP 200 but chart processing failed — retry
+                      if (result?.chart?.status === 'Failed') {
+                        console.warn('[getBars] Second-res chart status=Failed:', result.chart.status_message);
+                        if (secAttempt < SEC_MAX_RETRIES - 1) {
+                          secAttempt++;
+                          continue;
+                        }
+                        onResult([], { noData: true });
+                        return;
+                      }
+                      allDayBars = convertToTVCandles(result?.chart?.bars || [])
+                        .sort((a, b) => a.time - b.time);
+                      secondsBarCacheRef.current[cacheKey] = { bars: allDayBars, fetchedAt: Date.now() };
+                      break;
+                    } catch (e) {
+                      console.warn('[getBars] Second-resolution fetch failed:', e?.message);
+                      if (secAttempt < SEC_MAX_RETRIES - 1) {
+                        secAttempt++;
+                        continue;
+                      }
+                      onResult([], { noData: true });
+                      return;
+                    }
+                  }
+                  // Return only the most recent cap bars so TradingView doesn't freeze
+                  const capped = allDayBars.slice(-cap);
+                  onResult(capped, { noData: false });
+                  if (capped.length > 0) {
+                    const lastBar = capped[capped.length - 1];
+                    historyLoadedRef.current[paneKey] = true;
+                    lastBarTimeRef.current[paneKey] = lastBar.time;
+                    lastHistoricalBarRef.current[paneKey] = lastBar;
+                  }
+                } else {
+                  // Scrollback: serve from in-memory cache; fetch older days on demand.
+                  const cached = secondsBarCacheRef.current[cacheKey];
+                  if (!cached) { onResult([], { noData: true }); return; }
+
+                  const fromMs = periodParams.from * 1000;
+                  const toMs = periodParams.to * 1000;
+
+                  // Try cache first
+                  const slice = cached.bars.filter(b => b.time >= fromMs && b.time < toMs);
+                  const page = slice.length > cap ? slice.slice(-cap) : slice;
+                  if (page.length > 0) {
+                    onResult(page, { noData: false });
+                    return;
+                  }
+
+                  // Cache miss. Decide what to do based on whether the requested range
+                  // is already covered by what we have fetched.
+                  const oldestCachedMs = cached.bars.length > 0
+                    ? cached.bars[0].time
+                    : Date.now();
+
+                  if (fromMs >= oldestCachedMs) {
+                    // The range sits inside the already-fetched window but has no bars
+                    // (e.g. pre-market gap, lunch break). Use noData:false so TV
+                    // keeps paginating to earlier ranges rather than stopping here.
+                    onResult([], { noData: false });
+                    return;
+                  }
+
+                  // The range starts before our oldest cached bar — fetch that calendar day.
+                  const fetchDayStart = new Date(fromMs);
+                  fetchDayStart.setUTCHours(0, 0, 0, 0);
+                  const fetchDayEnd = new Date(fetchDayStart.getTime() + 86400000); // +1 day
+
+                  try {
+                    const olderResult = await fetchHistoricalMarket(
+                      store.getState().auth.token, exchange, contract, resolution,
+                      fetchDayStart.getTime(), fetchDayEnd.getTime(), false
+                    );
+                    if (!mounted) return;
+
+                    if (olderResult?.chart?.status === 'Failed') {
+                      // Server-side failure — let TV retry rather than stopping scrollback
+                      onResult([], { noData: false });
+                      return;
+                    }
+
+                    const olderBars = convertToTVCandles(olderResult?.chart?.bars || [])
+                      .sort((a, b) => a.time - b.time);
+
+                    // Prepend new bars to the cache so future scrollback calls are free
+                    cached.bars = [...olderBars, ...cached.bars];
+
+                    if (olderBars.length > 0) {
+                      const newSlice = cached.bars.filter(b => b.time >= fromMs && b.time < toMs);
+                      const newPage = newSlice.length > cap ? newSlice.slice(-cap) : newSlice;
+                      if (newPage.length > 0) {
+                        onResult(newPage, { noData: false });
+                        return;
+                      }
+                    }
+                    // The fetched day had no bars in this exact time window (e.g. market
+                    // closed on that day or the window straddles midnight). Return
+                    // noData:false so TV continues scrolling to earlier dates.
+                    onResult([], { noData: false });
+                  } catch (e) {
+                    console.warn('[getBars] Second-res scrollback fetch failed:', e?.message);
+                    // Transient network error — noData:false lets TV retry
+                    onResult([], { noData: false });
+                  }
+                }
+                return; // skip the normal getBars flow for second-level resolutions
+              }
+
+              // onResetCacheNeededCallback (called on revisits from onIntervalChanged)
+              // causes TV to invoke getBars with firstDataRequest=true — no override needed.
+              const isFirstDataRequest = periodParams.firstDataRequest;
+              // Block scrollback calls that TV fires in burst for the old scroll position
+              // after a timeframe switch. Return noData:false (no API call) until the initial
+              // load completes and the flag is cleared.
+              const needsFreshLoad = resolutionFreshLoadNeededRef.current.has(resolution);
+              if (isFirstDataRequest || needsFreshLoad) {
+                resolutionFreshLoadNeededRef.current.delete(resolution);
+              }
+              const treatAsFirst = isFirstDataRequest || needsFreshLoad;
+
+              if (!isFirstDataRequest) {
+                console.warn(`[SCROLLBACK-DIAG] res=${resolution} firstDataRequest=${isFirstDataRequest} needsFreshLoad=${needsFreshLoad} treatAsFirst=${treatAsFirst} blocked=${!treatAsFirst && !!blockScrollbackRef.current[resolution]} blockVal=${blockScrollbackRef.current[resolution]}`);
+              }
+
+              if (!treatAsFirst && blockScrollbackRef.current[resolution]) {
+                // Queue the callback instead of calling onResult(noData:false) immediately.
+                // TV permanently caches ranges that return noData:false, so firing it now
+                // (while the initial load is in-flight) would break scrollback for those
+                // ranges even after the block clears. We flush all queued callbacks with
+                // noData:false once the block clears, prompting TV to retry cleanly.
+                if (!pendingScrollbackRef.current[resolution]) {
+                  pendingScrollbackRef.current[resolution] = [];
+                }
+                pendingScrollbackRef.current[resolution].push(onResult);
+                return;
+              }
+
+              if (isFirstDataRequest) {
+                // Reset historical trackers before history fetches.
+                const paneKey = getPaneKey(symbolName, resolution);
+                lastBarTimeRef.current[paneKey] = 0;
+                historyLoadedRef.current[paneKey] = false;
+                scrollbackEmptyCountRef.current[paneKey] = 0; // reset gap-search budget on fresh load
+                // Open a per-pane pending buffer so ticks that arrive between now and
+                // onResult are captured rather than emitted early (TV requires onResult
+                // before onTick) or lost (liveBarBufferRef is flushed by subscribeBars
+                // before the API returns, so any mid-fetch ticks vanish without this).
+                pendingSubBufferRef.current[paneKey] = [];
+
+                const mId = getCachedMarketId(contract) || await resolveMarketId(exchange, contract);
+                if (mId && mId !== activeMarket) {
+                  setActiveMarket(mId);
+                }
+              }
+
+              // TradingView sends seconds — convert to ms
+              let fromTs = periodParams.from * 1000;
+
+              // ── PER-RESOLUTION LOOKBACK LIMITS ────────────────────────────────────
+              // MIN_DAYS: on firstDataRequest, ensure TV gets enough bars in one shot
+              //           so it doesn't make repeated scrollback API calls.
+              // MAX_DAYS: hard cap so a wide scroll position (or remembered scroll)
+              //           never triggers a massive request (e.g. 19 days of 1-min bars).
+              // Initial load window — MIN and MAX are equal so the first request
+              // always fetches exactly this many days. Scrollback uses 5-day chunks.
+              // Keep initial load windows small for longer timeframes so the window
+              // doesn't extend back into a futures rollover gap. A large initial window
+              // (e.g. 500 days for 1W) would land inside a 16-month data gap, causing TV
+              // to mark that entire range as "already loaded" and never call getBars for it.
+              // Scrollback handles loading older data via the retry loop.
+              // Initial-load cap is derived from TV's requested countBack so it always
+              // covers what TV asked for. If we capped below TV's requested `from`, TV's
+              // pagination uses its original `from` as the next scrollback `to`, creating
+              // a permanent unfetched hole between (our cap) and (TV's request) that
+              // shows up as a price-jump gap on the chart.
+              //
+              // Required calendar days = countBack × bar period × density multiplier.
+              // - bar period: how much real time one bar represents
+              // - density multiplier: pads for non-trading time. Intraday bars miss
+              //   weekends and the daily maintenance break; daily bars miss weekends;
+              //   weekly bars are roughly 1:1.
+              const PERIOD_MS_BY_RES = {
+                '1S': 1000, '10S': 10000, '15S': 15000, '30S': 30000,
+                '1': 60000, '2': 120000, '3': 180000, '4': 240000, '5': 300000,
+                '10': 600000, '15': 900000,
+                '30': 1800000, '60': 3600000, '240': 14400000, '480': 28800000,
+                '1D': 86400000, '1W': 604800000,
+              };
+              const DENSITY_MULT = {
+                // sub-day: ~7 calendar days per 5 trading days, plus daily break headroom
+                '1S': 1.5, '10S': 1.5, '15S': 1.5, '30S': 1.5,
+                '1': 1.5, '2': 1.5, '3': 1.5, '4': 1.5, '5': 1.5,
+                '10': 1.5, '15': 1.5, '30': 1.5, '60': 1.5,
+                '240': 1.5, '480': 1.5,
+                // daily: 5 trading days per 7 calendar days
+                '1D': 1.5,
+                // weekly: nearly 1:1
+                '1W': 1.1,
+              };
+              // Hard floor so even tiny countBack still yields a usable initial window.
+              const REQUIRED_DAYS_FLOOR = {
+                '1S': 1, '10S': 1, '15S': 1, '30S': 1,
+                '1': 1, '2': 1, '3': 1, '4': 1, '5': 1,
+                '10': 2, '15': 2, '30': 3, '60': 5,
+                '240': 30, '480': 50,
+                '1D': 200, '1W': 1000,
+              };
+              // Sanity ceiling: don't fetch absurd ranges if TV ever sends a huge countBack.
+              const REQUIRED_DAYS_CEILING = {
+                '1S': 7, '10S': 7, '15S': 7, '30S': 7,
+                '1': 7, '2': 7, '3': 14, '4': 14, '5': 14,
+                '10': 21, '15': 30, '30': 60, '60': 90,
+                '240': 365, '480': 730,
+                '1D': 3650, '1W': 7300,
+              };
+              const computeRequiredDays = () => {
+                const period = PERIOD_MS_BY_RES[resolution];
+                if (!period) return REQUIRED_DAYS_FLOOR[resolution] ?? 30;
+                const cb = Math.max(1, periodParams.countBack || 300);
+                const naturalDays = (cb * period) / 86400000;
+                const padded = naturalDays * (DENSITY_MULT[resolution] ?? 1.5);
+                const floor = REQUIRED_DAYS_FLOOR[resolution] ?? 1;
+                const ceiling = REQUIRED_DAYS_CEILING[resolution] ?? 365;
+                return Math.min(ceiling, Math.max(floor, Math.ceil(padded)));
+              };
+              const requiredDays = computeRequiredDays();
+              const MIN_DAYS = { [resolution]: requiredDays };
+              const MAX_DAYS = { [resolution]: requiredDays };
+              // Short-resolution resolutions that use the weekend/holiday expand fallback.
+              const SHORT_MIN_RESOLUTIONS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+              const isShortRes = SHORT_MIN_RESOLUTIONS.has(resolution);
+
+              if (treatAsFirst) {
+                const minDays = MIN_DAYS[resolution] ?? 7;
+                const minFrom = Date.now() - minDays * 24 * 60 * 60 * 1000;
+                fromTs = Math.min(fromTs, minFrom);
+
+                // MAX_DAYS cap: on first load OR after a timeframe switch (treatAsFirst).
+                // Prevents massive fetches when TV remembers an old scroll position.
+                // NOT applied on plain scrollback — that would block all history beyond MAX_DAYS.
+                const maxDays = MAX_DAYS[resolution] ?? 30;
+                const maxFrom = Date.now() - maxDays * 24 * 60 * 60 * 1000;
+                fromTs = Math.max(fromTs, maxFrom);
+              }
+
+              // On firstDataRequest (including resetData/refresh calls), always fetch up to NOW.
+              // TV sometimes re-calls getBars with an old "to" stamp — using it would truncate
+              // the newest bars. Scrollback calls must respect periodParams.to exactly so they
+              // don't bleed into the already-loaded recent window (e.g. fetching Apr 16–17 again
+              // on every scrollback step because periodParams.to was within the last 24h).
+              let toTs = treatAsFirst ? Date.now() : (periodParams.to * 1000);
+              const isCloseToNow = treatAsFirst; // kept for filtered bar logic below
+
+              if (treatAsFirst && fromTs >= toTs) {
+                onResult([], { noData: true });
+                return;
+              }
+
+              // --- PERSISTENT LOOKBACK CONFIG ---
+              // maxDays caps only the INITIAL load (prevents huge fetches on a remembered scroll position).
+              // Scrollback is uncapped — user can scroll as far back as data exists.
+              const maxDays = MAX_DAYS[resolution] ?? 30;
+              // Step size scales with timeframe so longer resolutions take bigger jumps.
+              // A 1W chart steps 30 days/retry → 30 retries = 900 days coverage (handles 16-month gaps).
+              // A 4H chart steps 5 days/retry → 22 retries = 110 days (handles ~10-week rollover gaps).
+              const DAYS_TO_FETCH_BY_RES = {
+                '1': 1, '2': 1, '3': 1, '4': 1, '5': 1, '10': 2, '15': 2,
+                '30': 5, '60': 5, '240': 5, '480': 7,
+                '1D': 14, '1W': 30,
+              };
+              const DAYS_TO_FETCH = isFirstDataRequest
+                ? Math.min(5, maxDays)
+                : (DAYS_TO_FETCH_BY_RES[resolution] ?? 5);
+              // First-data requests: keep retries low (fast initial load).
+              // Scrollback retries × DAYS_TO_FETCH = total gap coverage per getBars call.
+              const RETRIES_BY_RES = isFirstDataRequest
+                ? { '1': 2, '2': 2, '3': 2, '4': 2, '5': 2, '10': 2, '15': 2, '30': 2, '60': 2, '240': 2, '480': 2, '1D': 2, '1W': 2 }
+                : { '1': 3, '2': 3, '3': 3, '4': 3, '5': 3, '10': 3, '15': 5, '30': 8, '60': 15, '240': 22, '480': 22, '1D': 30, '1W': 30 };
+              const MAX_RETRIES = RETRIES_BY_RES[resolution] ?? (isFirstDataRequest ? 2 : 5);
+
+              let attempt = 0;
+              let failedStatusRetries = 0;
+              const MAX_FAILED_RETRIES = 2;
+              let bars = [];
+
+              // On scrollback: TV caches noData:true and permanently stops paginating that range,
+              // even across page reloads. This causes gaps (e.g. futures rollover months) to
+              // appear permanently broken. Instead we return noData:false until we've searched
+              // ~300 days of empty ranges, then finally return noData:true to stop pagination.
+              const scrollPaneKey = getPaneKey(symbolName, resolution);
+              // 5 × DAYS_TO_FETCH = max calendar days of empty range searched before stopping.
+              // For 1D this is 5 × 14 = 70 days — well under any rollover gap, so scrollback
+              // gives up at the gap edge instead of jumping across months of missing contracts
+              // and stitching unrelated old bars next to recent ones (the "price jump" gap).
+              const MAX_EMPTY_SCROLLBACK = 5;
+
+              while (attempt < MAX_RETRIES) {
+                try {
+                  // Always make a fresh API call — no caching, no deduplication.
+                  // Any caching or in-flight sharing causes stale data when the user
+                  // switches back to a previously-loaded timeframe.
+                  const resultData = await fetchHistoricalMarket(
+                    store.getState().auth.token,
+                    exchange,
+                    contract,
+                    resolution,
+                    fromTs,
+                    toTs,
+                    isFirstDataRequest
+                  );
+
+
+                  if (!mounted) return;
+
+                  // Only trust active_market from the first data request (latest/recent bars).
+                  // Historical scrollback responses return the active_market for that past period
+                  // (e.g. an expired futures contract), which must never overwrite the cache or state.
+                  const historyMarketId = resultData?.chart?.active_market || resultData?.chart?.market_id;
+
+                  if (isFirstDataRequest && historyMarketId && historyMarketId !== activeMarket) {
+                    activeMarketRef.current = { id: historyMarketId, symbol: contract };
+                    setCachedMarketId(contract, historyMarketId);
+                    setActiveMarket(historyMarketId);
+
+                    dispatch(setOrderMetadata({
+                      symbol: contract,
+                      market_id: historyMarketId,
+                      exchange_id: exchange,
+                      contract_id: contract
+                    }));
+
+                    subscribeMarket(historyMarketId, exchange, contract);
+                  }
+
+                  // The API returns HTTP 200 even when the server failed to generate bars
+                  // (e.g. System.ArgumentOutOfRangeException on the backend).
+                  // Detect this and retry after a delay instead of treating it as "no data".
+                  if (resultData?.chart?.status === 'Failed') {
+                    console.warn('[getBars] Server chart status=Failed:', resultData.chart.status_message);
+                    if (attempt < MAX_RETRIES - 1) {
+                      attempt++;
+                      continue;
+                    }
+                    // Exhausted Failed retries — on scrollback use noData:false so TV keeps paginating
+                    if (!isFirstDataRequest) {
+                      const ec = (scrollbackEmptyCountRef.current[scrollPaneKey] || 0) + 1;
+                      scrollbackEmptyCountRef.current[scrollPaneKey] = ec;
+                      onResult([], { noData: ec >= MAX_EMPTY_SCROLLBACK });
+                    } else {
+                      // Clear the block so scrollback still works — a Failed status is a server
+                      // error, not a "no data" signal, and must not permanently lock the chart.
+                      delete blockScrollbackRef.current[resolution];
+                      (pendingScrollbackRef.current[resolution] || []).forEach(cb => cb([], { noData: false }));
+                      delete pendingScrollbackRef.current[resolution];
+                      onResult([], { noData: true });
+                    }
+                    return;
+                  }
+
+                  const rawBars = resultData?.chart?.bars || [];
+                  const converted = convertToTVCandles(rawBars);
+
+                  let filtered = (isFirstDataRequest || isCloseToNow)
+                    ? converted.filter(b => b.time >= fromTs)
+                    : converted.filter(b => b.time >= fromTs && b.time <= toTs);
+
+                  if (filtered.length > 0) {
+                    bars = filtered;
+                    break;
+                  }
+                } catch (err) {
+                  if (err.response?.status === 401) {
+                    onResult([], { noData: true });
+                    return;
+                  }
+                  // For server errors or network failures, retry immediately rather than
+                  // breaking — a single transient error shouldn't cause TradingView to
+                  // spiral backwards through history indefinitely.
+                  if (attempt < MAX_RETRIES - 1) {
+                    attempt++;
+                    continue;
+                  }
+                  // All retries exhausted — clear block so scrollback still works after failure
+                  if (treatAsFirst) {
+                    delete blockScrollbackRef.current[resolution];
+                    (pendingScrollbackRef.current[resolution] || []).forEach(cb => cb([], { noData: false }));
+                    delete pendingScrollbackRef.current[resolution];
+                  }
+                  if (!isFirstDataRequest) {
+                    const ec = (scrollbackEmptyCountRef.current[scrollPaneKey] || 0) + 1;
+                    scrollbackEmptyCountRef.current[scrollPaneKey] = ec;
+                    onResult([], { noData: ec >= MAX_EMPTY_SCROLLBACK });
+                  } else {
+                    onResult([], { noData: true });
+                  }
+                  return;
+                }
+
+                // Step back window.
+                // For 1–10 min on the first retry: expand to 5 days from now (weekend/holiday
+                // fallback) instead of stepping further back behind the original window.
+                if (isShortRes && isFirstDataRequest && attempt === 0) {
+                  fromTs = Date.now() - 5 * 24 * 60 * 60 * 1000;
+                  toTs = Date.now();
+                } else {
+                  toTs = fromTs;
+                  fromTs = fromTs - (DAYS_TO_FETCH * 24 * 60 * 60 * 1000);
+                }
+                attempt++;
+              }
+
+              if (!bars.length) {
+                // Clear block so scrollback still works even when initial load found no bars
+                if (treatAsFirst) {
+                  delete blockScrollbackRef.current[resolution];
+                  (pendingScrollbackRef.current[resolution] || []).forEach(cb => cb([], { noData: false }));
+                  delete pendingScrollbackRef.current[resolution];
+                }
+                if (isFirstDataRequest) {
+                  const emptyPaneKey = getPaneKey(symbolName, resolution);
+                  historyLoadedRef.current[emptyPaneKey] = true;
+                  delete pendingSubBufferRef.current[emptyPaneKey];
+
+                  // Auto-recovery: if this was a first data request and returned blank,
+                  // schedule a reload via the official TV cache-invalidation callback.
+                  // Cap at 3 attempts to avoid infinite loops on genuinely empty symbols.
+                  const retryCount = blankChartRetryCountRef.current[emptyPaneKey] || 0;
+                  if (retryCount < 3) {
+                    blankChartRetryCountRef.current[emptyPaneKey] = retryCount + 1;
+                    setTimeout(() => {
+                      const cb = resetCacheCallbacksRef.current[emptyPaneKey];
+                      if (cb && !historyLoadedRef.current[emptyPaneKey + '_hasData']) {
+                        console.warn(`[getBars] Auto-retry ${retryCount + 1}/3 for blank chart: ${emptyPaneKey}`);
+                        cb();
+                      }
+                    }, 4000);
+                  }
+                  onResult([], { noData: true });
+                } else {
+                  // Scrollback exhausted all retries with no bars — use noData:false so TV
+                  // keeps paginating back (prevents TV from caching the gap as permanent).
+                  const ec = (scrollbackEmptyCountRef.current[scrollPaneKey] || 0) + 1;
+                  scrollbackEmptyCountRef.current[scrollPaneKey] = ec;
+                  onResult([], { noData: ec >= MAX_EMPTY_SCROLLBACK });
+                }
+                return;
+              }
+
+              // Mark that this pane successfully loaded data (used to gate auto-retry)
+              if (isFirstDataRequest) {
+                historyLoadedRef.current[getPaneKey(symbolName, resolution) + '_hasData'] = true;
+                blankChartRetryCountRef.current[getPaneKey(symbolName, resolution)] = 0;
+              }
+
+              //  Always sort before sending to TradingView
+              bars.sort((a, b) => a.time - b.time);
+
+              // NOTE: Blocking gap fill removed — it was making an extra API call before every
+              // onResult(), keeping the chart blank for an extra round-trip on every timeframe switch.
+              // Any gap between the last API bar and now is handled by the 5-second delayed fill
+              // inside subscribeBars, which runs after the chart is already visible.
+
+              //  CACHE BARS: For precise trade arrow placement
+              if (!barsCacheRef.current[symbolName]) {
+                barsCacheRef.current[symbolName] = new Map();
+              }
+              const symCache = barsCacheRef.current[symbolName];
+              bars.forEach(b => { symCache.set(b.time, b); symCache.set(Math.floor(b.time / 1000), b); });
+
+              // Successfully found bars — reset empty-scrollback counter so a future gap
+              // still gets the full 300-day search budget.
+              if (!isFirstDataRequest) scrollbackEmptyCountRef.current[scrollPaneKey] = 0;
+
+              // GAP-JUMP DETECTOR (scrollback only).
+              // The retry loop steps `toTs` backward when a window is empty. If the API
+              // has sparse data across a contract-rollover hole, the loop walks past the
+              // hole and lands on bars from an old expired contract. Rendering those next
+              // to recent bars produces the visual "price jump" gap.
+              // Reject the batch when the newest bar returned is far older than what TV
+              // asked for. TV will then stop paginating (noData:true) and the chart ends
+              // cleanly at the gap edge.
+              if (!isFirstDataRequest && bars.length > 0) {
+                const MAX_JUMP_DAYS_BY_RES = {
+                  '1S': 1, '10S': 1, '15S': 1, '30S': 1,
+                  '1': 3, '2': 3, '3': 3, '4': 3, '5': 3, '10': 3, '15': 3,
+                  '30': 5, '60': 7, '240': 14, '480': 14,
+                  '1D': 14, '1W': 90,
+                };
+                const maxJumpDays = MAX_JUMP_DAYS_BY_RES[resolution] ?? 7;
+                const requestedToMs = periodParams.to * 1000;
+                const newestInBatchMs = bars[bars.length - 1].time;
+                const jumpMs = requestedToMs - newestInBatchMs;
+                if (jumpMs > maxJumpDays * 24 * 60 * 60 * 1000) {
+                  console.warn(
+                    `[GAP-JUMP] res=${resolution} contract=${contract} ` +
+                    `requested_to=${new Date(requestedToMs).toISOString()} ` +
+                    `newest_in_batch=${new Date(newestInBatchMs).toISOString()} ` +
+                    `jump=${Math.round(jumpMs / 86400000)}d > ${maxJumpDays}d — rejecting batch`
+                  );
+                  onResult([], { noData: true });
+                  return;
+                }
+              }
+
+              // After firstDataRequest completes, unblock scrollback after 1s.
+              // The delay lets scrollToRealTime() settle and TV's burst calls to drain.
+              if (treatAsFirst && blockScrollbackRef.current[resolution]) {
+                setTimeout(() => {
+                  delete blockScrollbackRef.current[resolution];
+                  (pendingScrollbackRef.current[resolution] || []).forEach(cb => cb([], { noData: false }));
+                  delete pendingScrollbackRef.current[resolution];
+                }, 1000);
+              }
+
+              onResult(bars, { noData: false });
+
+              //  Mark history ready for this specific symbol/resolution
+              const lastBarTime = bars.length > 0 ? bars[bars.length - 1].time : 0;
+              const paneKey = getPaneKey(symbolName, resolution);
+              historyLoadedRef.current[paneKey] = true;
+              lastBarTimeRef.current[paneKey] = lastBarTime;
+              // Mark this resolution as "visited" so future switches back to it trigger
+              // onResetCacheNeededCallback (cache bust) rather than relying on TV calling
+              // getBars on its own — which TV skips when it has cached bar data.
+              visitedResolutionsRef.current.add(resolution);
+
+              // Flush the per-pane pending buffer: ticks that arrived between
+              // getBars start and onResult are stored here. Emit them now that
+              // TV has the historical bars (onResult just fired above).
+              const pendingTicks = pendingSubBufferRef.current[paneKey];
+              if (pendingTicks && pendingTicks.length > 0) {
+                const freshTicks = pendingTicks.filter(b => b.time >= lastBarTime);
+                if (freshTicks.length > 0) {
+                  onTickHandlers.current.forEach((item) => {
+                    if (isSymbolMatch(item.symbol, symbolName) && item.resolution === resolution) {
+                      freshTicks.forEach(b => item.handler(b));
+                      console.log(`[getBars] Flushed ${freshTicks.length} pending ticks for ${paneKey}`);
+                    }
+                  });
+                }
+              }
+              delete pendingSubBufferRef.current[paneKey];
+              // Store last API bar so live socket ticks can merge correct open/high/low.
+              // Do NOT epoch-align the stored time: Math.round(time / periodMs) * periodMs
+              // was intended to match rounded socket timestamps but actually breaks bars
+              // whose start times are not on epoch-aligned boundaries (4h bars at 09:00 UTC,
+              // 1D bars at 05:00 UTC). The socket fix already keeps raw bar.time, so storing
+              // the raw API bar time here ensures SAME-BAR comparison finds an exact match.
+              if (bars.length > 0) {
+                const apiBar = bars[bars.length - 1];
+                lastHistoricalBarRef.current[paneKey] = apiBar; // raw API time, no alignment
+                liveFormingBarRef.current[paneKey] = null;
+                console.info(`[getBars HISTBAR] ${paneKey} | Stored last API bar: O:${apiBar.open} H:${apiBar.high} L:${apiBar.low} C:${apiBar.close} t:${new Date(apiBar.time).toISOString()}`);
+              }
+
+              //  SYNC: Trigger trade arrow redraw now that history (barsCache) is ready
+              // Clear stale shape refs first — otherwise the sync effect skips re-creating
+              // arrows that were drawn before bar data was available (at raw fill price).
+              setTimeout(() => {
+                console.log(`[Datafeed] History ready for ${symbolName}, triggering arrow redraw.`);
+                clearAllTradeArrows();
+                setArrowRedrawTrigger(prev => prev + 1);
+              }, 500);
+
+            } catch (err) {
+              console.error("[getBars] Error:", err);
+              onError?.(err);
+            }
+          },
+
+
+
+          subscribeBars: (symbolInfo, resolution, onTick, subscriberUID, onResetCacheNeededCallback) => {
+            const uid = subscriberUID.includes('_') ? subscriberUID : `0_${subscriberUID}`;
+            console.log(`[Datafeed] Subscribed: ${symbolInfo.name} (${uid})`);
+
+            // Store the official TV cache-invalidation callback for this subscription.
+            // TV always calls subscribeBars when switching resolutions (even cache hits).
+            // onIntervalChanged fires synchronously BEFORE TV calls subscribeBars, so it
+            // schedules our setTimeout. subscribeBars then runs (synchronous), stores the
+            // callback, and clears the "needs-fresh" flag so getBars (if TV calls it on
+            // the same tick) does NOT also try to override. Our setTimeout fires last,
+            // finds the stored callback, and calls it — forcing a fresh getBars only when
+            // TV served from cache and never called getBars at all.
+            const pKeyForSub = getPaneKey(symbolInfo.name, resolution);
+            if (onResetCacheNeededCallback) {
+              resetCacheCallbacksRef.current[pKeyForSub] = onResetCacheNeededCallback;
+              console.debug(`[subscribeBars] Stored onResetCacheNeededCallback for ${pKeyForSub}`);
+            }
+            //  DEDICATED SYNC: Spawn a private socket for this pane
+            const contractsList = fullContractsRef.current.length > 0
+              ? fullContractsRef.current
+              : (store.getState().symbols.contracts || []);
+            const symbolDetails = contractsList.find(s => s.contract_id === symbolInfo.name) ||
+              allSymbols.find(s => s.name === symbolInfo.name);
+
+            const exchange = symbolDetails?.exchange_id || orderExchange || 'CME_Eq';
+            // Use TradingView's own `resolution` param  avoids stale closure from initChart
+            const socketTimeframe = SOCKET_TIMEFRAME_MAP[resolution] || '1m';
+            console.log("exchange", symbolDetails?.exchange_id, orderExchange);
+            // Clean up existing socket and market data for this UID if any
+            if (paneSocketsRef.current.has(uid)) {
+              const oldHandler = onTickHandlers.current.get(uid);
+              if (oldHandler?.mId) {
+                console.log(`[Datafeed] Safety cleanup unsubscribing: ${oldHandler.mId}`);
+              }
+              disconnectSocket(paneSocketsRef.current.get(uid));
+            }
+
+            //  Resolve latest Redux state to avoid stale closure issues
+            const latestState = store.getState();
+            const orderContract = latestState.orders.orderContract;
+            const globalMarketId = latestState.orders.activeMarketId;
+
+            //  STRICT: Resolve market_id for OHLC subscription.
+            // Only use the ref if it matches the current symbol exactly.
+            // FALLBACK: If ref is empty (stale), use globalMarketId if it also matches the symbol.
+            let mId = (isSymbolMatch(symbolInfo.name, activeMarketRef.current.symbol))
+              ? activeMarketRef.current.id
+              : null;
+
+            if (!mId && isSymbolMatch(symbolInfo.name, orderContract)) {
+              mId = globalMarketId;
+              console.log(`[Datafeed] Using fallback mId for ${symbolInfo.name}: ${mId}`);
+            }
+
+            // Using Redux explicit state to prevent stale closure of `symbol` prop when switching
+            const isMainSymbol = isSymbolMatch(symbolInfo.name, orderContract) || isSymbolMatch(symbolInfo.name, symbol);
+            let ws = null;
+
+            if (isMainSymbol) {
+              console.log(`[Datafeed] Reusing background socket for Main Symbol: ${symbolInfo.name} (${socketTimeframe})`);
+              ws = 'SHARED_BG_SOCKET';
+
+              // ── IMMEDIATE TIMEFRAME SYNC ───────────────────────────────────────
+              // The singleton socket updater useEffect runs asynchronously after the
+              // React render cycle, so when TV calls subscribeBars for a new timeframe
+              // the background socket is still on the OLD timeframe. getBars then waits
+              // up to 10s for ticks on the NEW timeframe, never gets them, times out,
+              // and returns history-only data — leaving a gap.
+              // Fix: push the timeframe change directly here so the socket is already
+              // delivering the correct resolution before getBars starts its wait loop.
+              if (ohlcSocketRef.current?.updateSubscription) {
+                const mIdToUse = activeMarketRef.current.id || mId;
+                const symToUse = activeMarketRef.current.symbol || symbolDetails?.contract_id || symbolInfo.name;
+                if (mIdToUse && symToUse) {
+                  console.log(`[subscribeBars] Immediate socket update → ${socketTimeframe} for ${symToUse}`);
+                  ohlcSocketRef.current.updateSubscription(socketTimeframe, mIdToUse, symToUse);
+                }
+              }
+              // Clear stale ticks from the old timeframe so the bridge check in getBars
+              // only sees ticks from the new timeframe.
+              liveBarBufferRef.current = liveBarBufferRef.current.filter(b =>
+                b.resolution === socketTimeframe
+              );
+              // ── END IMMEDIATE TIMEFRAME SYNC ──────────────────────────────────
+            } else {
+              ws = connectSocketForChart(
+                ohlcWsUrl,
+                mId,
+                accessToken,
+                socketTimeframe,
+                (candle) => {
+                  if (candle && (candle.start_time || candle.time)) {
+                    const bar = toTvBar(candle);
+                    const paneKey = getPaneKey(symbolInfo.name, resolution);
+
+                    // Only snap to period boundary for second-resolution bars where
+                    // the server may have sub-second drift. For minute+ bars (1m, 4h, 1D…)
+                    // the server already aligns start_time to the exact period start, and
+                    // applying Math.round introduces misalignment for non-epoch-aligned bars
+                    // (e.g. 4h bars at 09:00 UTC snap to 08:00 UTC → ticks silently dropped).
+                    const periodMs = getBarPeriodMs(resolution);
+                    const isSecRes = resolution.endsWith('S');
+                    let alignedBar = (isSecRes && periodMs > 0)
+                      ? { ...bar, time: Math.round(bar.time / periodMs) * periodMs }
+                      : bar;
+
+                    // Session-start snap (same as background socket handler — see comment there).
+                    {
+                      const ltSnap = lastBarTimeRef.current[paneKey];
+                      if (!isSecRes && ltSnap && alignedBar.time < ltSnap && (ltSnap - alignedBar.time) < periodMs) {
+                        alignedBar = { ...alignedBar, time: ltSnap };
+                      }
+                    }
+
+                    const lastBarTime = lastBarTimeRef.current[paneKey];
+                    const isNewOrCurrent = !lastBarTime || alignedBar.time >= lastBarTime;
+
+                    if (alignedBar.time % 5000 === 0 || !isNewOrCurrent) {
+                      console.log(`[Datafeed] ${uid} | Tick: ${symbolInfo.name} | BarTime: ${new Date(alignedBar.time).toLocaleTimeString()} | Status: ${isNewOrCurrent ? 'OK' : 'STALE'}`);
+                    }
+
+                    if (isNewOrCurrent) {
+                      const histBar = lastHistoricalBarRef.current[paneKey];
+                      let tickBar = alignedBar;
+                      let deferEmit = false;
+
+                      if (histBar && alignedBar.time === histBar.time) {
+                        // SAME BAR — preserve API open/high/low, use socket close
+                        pendingNewBarFetchRef.current[paneKey] = false;
+                        tickBar = {
+                          ...alignedBar,
+                          open: histBar.open,
+                          high: (alignedBar.high > 0) ? Math.max(histBar.high, alignedBar.high) : histBar.high,
+                          low: (alignedBar.low > 0) ? Math.min(histBar.low, alignedBar.low) : histBar.low,
+                          volume: (histBar.volume || 0) + (alignedBar.volume || 0),
+                        };
+                        lastHistoricalBarRef.current[paneKey] = tickBar;
+                        liveFormingBarRef.current[paneKey] = tickBar;
+                        console.info(`[dedicatedSocket MERGE] ${paneKey} | SAME BAR | O:${tickBar.open} H:${tickBar.high} L:${tickBar.low} C:${tickBar.close}`);
+
+                      } else if (histBar && alignedBar.time > histBar.time) {
+                        // NEW BAR — hold emission, fetch true open from API silently
+                        deferEmit = true;
+                        pendingNewBarFetchRef.current[paneKey] = true;
+                        lastHistoricalBarRef.current[paneKey] = null;
+                        liveFormingBarRef.current[paneKey] = { ...alignedBar };
+                        console.info(`[dedicatedSocket MERGE] ${paneKey} | NEW BAR | fetching API open silently...`);
+
+                        const snapTime = alignedBar.time;
+                        const snapExchange = exchange;
+                        const snapContract = symbolDetails?.contract_id || symbolInfo.name;
+                        const snapResolution = resolution;
+
+                        const emitCorrected = () => {
+                          pendingNewBarFetchRef.current[paneKey] = false;
+                          const forming = liveFormingBarRef.current[paneKey];
+                          if (forming && forming.time === snapTime) {
+                            onTick(forming);
+                          }
+                        };
+
+                        const fallbackTimer = setTimeout(emitCorrected, 1000);
+
+                        fetchHistoricalMarket(
+                          store.getState().auth.token,
+                          snapExchange, snapContract, snapResolution,
+                          snapTime, Date.now(), false
+                        ).then(result => {
+                          clearTimeout(fallbackTimer);
+                          const apiBars = convertToTVCandles(result?.chart?.bars || [])
+                            .filter(b => b.time === snapTime);
+                          if (apiBars.length > 0) {
+                            const apiBar = apiBars[0];
+                            const forming = liveFormingBarRef.current[paneKey];
+                            if (forming && forming.time === snapTime) {
+                              const corrected = {
+                                ...forming,
+                                open: apiBar.open,
+                                high: Math.max(apiBar.high, forming.high),
+                                low: Math.min(apiBar.low, forming.low),
+                              };
+                              lastHistoricalBarRef.current[paneKey] = corrected;
+                              liveFormingBarRef.current[paneKey] = corrected;
+                              pendingNewBarFetchRef.current[paneKey] = false;
+                              onTick(corrected);
+                              console.info(`[dedicatedSocket MERGE] ${paneKey} | NEW BAR CORRECTED | O:${corrected.open} H:${corrected.high} L:${corrected.low} C:${corrected.close}`);
+                            } else {
+                              emitCorrected();
+                            }
+                          } else {
+                            emitCorrected();
+                          }
+                        }).catch(() => { clearTimeout(fallbackTimer); emitCorrected(); });
+
+                      } else {
+                        // NO HISTBAR — accumulate via liveFormingBarRef
+                        const forming = liveFormingBarRef.current[paneKey];
+                        if (forming && alignedBar.time === forming.time) {
+                          tickBar = {
+                            ...alignedBar,
+                            open: forming.open,
+                            high: (alignedBar.high > 0) ? Math.max(forming.high, alignedBar.high) : forming.high,
+                            low: (alignedBar.low > 0) ? Math.min(forming.low, alignedBar.low) : forming.low,
+                          };
+                          liveFormingBarRef.current[paneKey] = tickBar;
+                          if (pendingNewBarFetchRef.current[paneKey]) deferEmit = true;
+                          console.info(`[dedicatedSocket MERGE] ${paneKey} | NO HISTBAR (forming) | O:${tickBar.open} H:${tickBar.high} L:${tickBar.low} C:${tickBar.close}`);
+                        } else {
+                          liveFormingBarRef.current[paneKey] = { ...alignedBar };
+                          if (pendingNewBarFetchRef.current[paneKey]) deferEmit = true;
+                        }
+                      }
+
+                      if (!deferEmit) {
+                        onTick(tickBar);
+                      }
+                      lastBarTimeRef.current[paneKey] = alignedBar.time;
+                    }
+                  }
+                },
+                null, // onError
+                null, // onClose
+                exchange,
+                symbolDetails?.contract_id || symbolInfo.name
+              );
+            }
+            paneSocketsRef.current.set(uid, ws);
+
+            onTickHandlers.current.set(uid, {
+              handler: onTick,
+              symbol: symbolInfo.name,
+              mId: mId,
+              exchange: exchange,
+              contract: symbolDetails?.contract_id || symbolInfo.name,
+              timeframe: socketTimeframe,
+              resolution: resolution //  STORE ORIGINAL RESOLUTION: For gap-filling on tab return
+            });
+
+            // ── FLUSH QUEUED TRADES ──────────────────────────────────────
+            // Apply the queued data, discarding trades that precede the close time.
+            const pKey = getPaneKey(symbolInfo.name, resolution);
+            const lastHistoryTime = lastBarTimeRef.current[pKey] || 0;
+
+            if (liveBarBufferRef.current && liveBarBufferRef.current.length > 0) {
+              console.log(`[Datafeed] Flushing queued trades for ${symbolInfo.name}...`);
+              liveBarBufferRef.current.forEach(queued => {
+                if (isSymbolMatch(queued.tickSymbol, symbolInfo.name) && queued.resolution === socketTimeframe) {
+                  //  DISAPPEARING BAR FIX: Only flush bars that are STRICTLY newer than history.
+                  // Overwriting history[last] with buffer[last] makes the candle "shrink" or disappear
+                  // because history usually has more complete data than early buffer ticks.
+                  if (queued.bar.time > lastHistoryTime) {
+                    onTick(queued.bar);
+                    lastBarTimeRef.current[pKey] = queued.bar.time;
+                  }
+                }
+              });
+              // PREVENT MEMORY LEAK: Clear matching queue items now that they are flushed
+              liveBarBufferRef.current = liveBarBufferRef.current.filter(queued =>
+                !(isSymbolMatch(queued.tickSymbol, symbolInfo.name) && queued.resolution === socketTimeframe)
+              );
+            }
+
+            // ── DELAYED SMALL-GAP FILL ────────────────────────────────────
+            // getBars gap-fill runs immediately, but the API may not have processed the
+            // most recent bars yet (processing lag). Wait 5s, then fetch again for any
+            // small remaining gap. Only runs for ≤ 30 bars to avoid onTick flicker.
+            // Skip for second-level resolutions — each API call returns the full day
+            // (20k-40k bars) and the WebSocket covers the current forming bar anyway.
+            setTimeout(async () => {
+              try {
+                const currentLastBar = lastBarTimeRef.current[pKey] || 0;
+                if (!currentLastBar) return;
+                const nowMs2 = Date.now();
+                const periodMs2 = getBarPeriodMs(resolution);
+                const gapMs = nowMs2 - currentLastBar;
+
+                // Safety: Only proceed if this specific subscription (uid) is still active.
+                if (!onTickHandlers.current.has(uid)) return;
+
+                // Gap-size guard per resolution:
+                //   1S  → up to 300 bars (5 min) — API lag vs. WebSocket start
+                //   10S/15S/30S → up to 100 bars
+                //   minute+ → up to 30 bars
+                const maxGapBars = resolution === '1S' ? 300
+                  : resolution.endsWith('S') ? 100
+                    : 30;
+                if (gapMs < periodMs2 * 0.5 || gapMs > maxGapBars * periodMs2) return;
+
+                console.log(`[DelayedFill] Filling ${Math.round(gapMs / periodMs2)} bar gap for ${symbolInfo.name} (${resolution})`);
+
+                let delayedBars = [];
+
+                if (resolution.endsWith('S')) {
+                  // For second-resolution charts we already have the full session in memory.
+                  // Try to serve the gap from cache first — avoids another heavy API call.
+                  const cacheKey2 = `${symbolDetails?.contract_id || symbolInfo.name}_${resolution}`;
+                  const cached2 = secondsBarCacheRef.current[cacheKey2];
+                  if (cached2) {
+                    delayedBars = cached2.bars
+                      .filter(b => b.time > currentLastBar && b.time <= nowMs2)
+                      .sort((a, b) => a.time - b.time);
+                    console.log(`[DelayedFill-Cache] Found ${delayedBars.length} gap bars in cache for ${symbolInfo.name}`);
+                  }
+
+                  // If cache didn't cover the gap (API lag: bars not yet processed at
+                  // firstDataRequest time), fall back to a fresh API call.
+                  if (delayedBars.length === 0) {
+                    const delayedResult = await fetchHistoricalMarket(
+                      store.getState().auth.token,
+                      exchange,
+                      symbolDetails?.contract_id || symbolInfo.name,
+                      resolution,
+                      currentLastBar,
+                      nowMs2,
+                      false
+                    );
+                    delayedBars = convertToTVCandles(delayedResult?.chart?.bars || [])
+                      .filter(b => b.time > currentLastBar)
+                      .sort((a, b) => a.time - b.time);
+                    // Merge newly-fetched bars into the cache so subsequent scrollback is complete
+                    if (cached2 && delayedBars.length > 0) {
+                      const existingTimes = new Set(cached2.bars.map(b => b.time));
+                      const newBars = delayedBars.filter(b => !existingTimes.has(b.time));
+                      if (newBars.length > 0) {
+                        cached2.bars = [...cached2.bars, ...newBars].sort((a, b) => a.time - b.time);
+                        cached2.fetchedAt = Date.now();
+                      }
+                    }
+                  }
+                } else {
+                  // Minute-and-above resolutions: standard API fill
+                  const delayedResult = await fetchHistoricalMarket(
+                    store.getState().auth.token,
+                    exchange,
+                    symbolDetails?.contract_id || symbolInfo.name,
+                    resolution,
+                    currentLastBar,
+                    nowMs2,
+                    false
+                  );
+                  delayedBars = convertToTVCandles(delayedResult?.chart?.bars || [])
+                    .filter(b => b.time > currentLastBar)
+                    .sort((a, b) => a.time - b.time);
+                }
+
+                delayedBars.forEach(b => {
+                  onTick(b);
+                  lastBarTimeRef.current[pKey] = Math.max(lastBarTimeRef.current[pKey] || 0, b.time);
+                });
+                if (delayedBars.length > 0) {
+                  // Update histBar so subsequent socket ticks merge against the correct API OHLC
+                  const lastFilled = delayedBars[delayedBars.length - 1];
+                  lastHistoricalBarRef.current[pKey] = lastFilled;
+                  liveFormingBarRef.current[pKey] = null;
+                  console.log(`[DelayedFill] Injected ${delayedBars.length} bars for ${symbolInfo.name}`);
+                }
+              } catch (e) {
+                console.warn('[DelayedFill] Failed:', e?.message);
+              }
+            }, 5000);
+
+            //  MARKET DATA SYNC: Also subscribe to Bid/Ask for this symbol
+            // This ensures priceCache is populated for ALL visible charts, not just the active one.
+            try {
+              console.log(`[Datafeed] Auto market subscription: ${mId}`);
+              subscribeMarket(mId, exchange, symbolDetails?.contract_id || symbolInfo.name);
+            } catch (e) {
+              console.warn("[Datafeed] Failed auto market subscription:", e);
+            }
+          },
+          unsubscribeBars: (subscriberUID) => {
+            const uid = subscriberUID.includes('_') ? subscriberUID : `0_${subscriberUID}`;
+            console.log(`[Datafeed] Unsubscribed (closing socket): ${uid}`);
+            onTickHandlers.current.delete(uid);
+
+            if (paneSocketsRef.current.has(uid)) {
+              const ws = paneSocketsRef.current.get(uid);
+              if (ws !== 'SHARED_BG_SOCKET') {
+                disconnectSocket(ws);
+              }
+              paneSocketsRef.current.delete(uid);
+            }
+          },
+
+
+        };
+
+        if (!containerRef.current || !mounted) return;
+
+        const widget = new targetWindow.TradingView.widget({
+          container: containerRef.current,
+          symbol: extractSymbolString(defaultSymbol),
+          interval: selectedInterval
+          , // initial only
+
+          library_path: '/charting_library/',
+          datafeed,
+          locale: 'en',
+          autosize: true,
+          auto_save_delay: 5,
+          timezone: (() => {
+            // Browsers may return deprecated IANA timezone aliases that TradingView
+            // doesn't recognise. Map them to the canonical names TV accepts.
+            const TZ_ALIASES = {
+              // Asia
+              'Asia/Calcutta': 'Asia/Kolkata',
+              'Asia/Katmandu': 'Asia/Kathmandu',
+              'Asia/Rangoon': 'Asia/Yangon',
+              'Asia/Saigon': 'Asia/Ho_Chi_Minh',
+              'Asia/Dacca': 'Asia/Dhaka',
+              'Asia/Macao': 'Asia/Macau',
+              'Asia/Ashkhabad': 'Asia/Ashgabat',
+              'Asia/Chungking': 'Asia/Chongqing',
+              'Asia/Harbin': 'Asia/Shanghai',
+              'Asia/Kashgar': 'Asia/Urumqi',
+              'Asia/Thimbu': 'Asia/Thimphu',
+              'Asia/Ujung_Pandang': 'Asia/Makassar',
+              'Asia/Ulaanbaatar': 'Asia/Ulaanbaatar',
+              'Asia/Tel_Aviv': 'Asia/Jerusalem',
+              // America
+              'America/Atka': 'America/Adak',
+              'America/Ensenada': 'America/Tijuana',
+              'America/Fort_Wayne': 'America/Indiana/Indianapolis',
+              'America/Indianapolis': 'America/Indiana/Indianapolis',
+              'America/Jujuy': 'America/Argentina/Jujuy',
+              'America/Knox_IN': 'America/Indiana/Knox',
+              'America/Louisville': 'America/Kentucky/Louisville',
+              'America/Virgin': 'America/St_Thomas',
+              'America/Shiprock': 'America/Denver',
+              'America/Rosario': 'America/Argentina/Cordoba',
+              'America/Porto_Acre': 'America/Rio_Branco',
+              'America/Cordoba': 'America/Argentina/Cordoba',
+              'America/Buenos_Aires': 'America/Argentina/Buenos_Aires',
+              'America/Catamarca': 'America/Argentina/Catamarca',
+              'America/Mendoza': 'America/Argentina/Mendoza',
+              // Africa
+              'Africa/Asmera': 'Africa/Asmara',
+              'Africa/Timbuktu': 'Africa/Bamako',
+              'Africa/Dar_es_Salaam': 'Africa/Nairobi',
+              'Africa/Djibouti': 'Africa/Nairobi',
+              'Africa/Kampala': 'Africa/Nairobi',
+              // Europe
+              'Europe/Belfast': 'Europe/London',
+              'Europe/Tiraspol': 'Europe/Chisinau',
+              'Europe/Nicosia': 'Asia/Nicosia',
+              // Pacific
+              'Pacific/Johnston': 'Pacific/Honolulu',
+              'Pacific/Ponape': 'Pacific/Pohnpei',
+              'Pacific/Samoa': 'Pacific/Pago_Pago',
+              'Pacific/Truk': 'Pacific/Chuuk',
+              'Pacific/Yap': 'Pacific/Chuuk',
+              'Pacific/Midway': 'Pacific/Pago_Pago',
+              // Atlantic
+              'Atlantic/Faeroe': 'Atlantic/Faroe',
+              // Australia
+              'Australia/ACT': 'Australia/Sydney',
+              'Australia/Canberra': 'Australia/Sydney',
+              'Australia/LHI': 'Australia/Lord_Howe',
+              'Australia/NSW': 'Australia/Sydney',
+              'Australia/North': 'Australia/Darwin',
+              'Australia/Queensland': 'Australia/Brisbane',
+              'Australia/South': 'Australia/Adelaide',
+              'Australia/Tasmania': 'Australia/Hobart',
+              'Australia/Victoria': 'Australia/Melbourne',
+              'Australia/West': 'Australia/Perth',
+            };
+            const raw = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Etc/UTC';
+            const tz = TZ_ALIASES[raw] || raw;
+            console.log('[Chart] Default timezone (raw → applied):', raw, '→', tz);
+            return tz;
+          })(),
+          theme: 'Dark',
+          client_id: 'tradingview.com',
+          user_id: 'guest',
+          disabled_features: ['object_tree', 'show_object_tree', 'header_account_manager', 'open_account_manager', 'trading_account_manager', 'right_toolbar', 'create_volume_indicator_by_default', 'header_resolutions'],
+          enabled_features: ['study_templates', 'side_toolbar_in_fullscreen_mode', 'symbol_info', 'header_saveload', 'saveload_toolbar', 'watermark', 'header_symbol_search', 'show_logo_on_all_charts', 'custom_resolutions', 'compare_symbol', 'pre_post_market_sessions', 'show_sessions_button'],
+          settings_adapter: {
+            initialSettings: { "symbolWatermark": JSON.stringify({ visibility: "true", color: "rgba(137, 119, 119, 0.1)" }) },
+            setValue: function (key, value) {
+              // Fires when any chart setting changes (timezone, countdown to bar close, etc.)
+              // — NOT on scroll/zoom. Trigger a debounced API save to persist the change.
+              tvAutoSaveHookRef.current?.();
+            },
+            removeValue: function (key) { },
+          },
+          save_load_adapter: {
+            getAllCharts: function () {
+              return Promise.resolve(
+                Object.keys(localStorage)
+                  .filter(key => key.startsWith('tv_chart_'))
+                  .map(key => {
+                    const chartId = key.replace('tv_chart_', '');
+                    try {
+                      const data = JSON.parse(localStorage.getItem(key));
+                      return {
+                        id: chartId,
+                        name: data.name || chartId,
+                        symbol: data.symbol || '',
+                        resolution: data.resolution || '',
+                        timestamp: data.timestamp || Date.now(),
+                      };
+                    } catch {
+                      return { id: chartId, name: chartId, symbol: '', resolution: '', timestamp: Date.now() };
+                    }
+                  })
+              );
+            },
+            removeChart: function (chartId) {
+              localStorage.removeItem(`tv_chart_${chartId}`);
+              return Promise.resolve();
+            },
+            saveChart: function (chartData) {
+              const chartId = chartData.id || `layout_${Date.now()}`;
+              localStorage.setItem(`tv_chart_${chartId}`, JSON.stringify(chartData));
+              // TV calls saveChart on every auto-save (respecting auto_save_delay: 5).
+              // This includes settings changes like timezone and countdown to bar close
+              // that don't fire drawing_event / study_event. Hook here so those settings
+              // are captured and persisted to the layout API.
+              tvAutoSaveHookRef.current?.();
+              return Promise.resolve(chartId);
+            },
+            getChartContent: function (chartId) {
+              const data = localStorage.getItem(`tv_chart_${chartId}`);
+              return Promise.resolve(data ? JSON.parse(data).content : null);
+            },
+            getAllStudyTemplates: function () {
+              return Promise.resolve([]);
+            },
+            removeStudyTemplate: function () {
+              return Promise.resolve();
+            },
+            saveStudyTemplate: function () {
+              return Promise.resolve();
+            },
+            getStudyTemplateContent: function () {
+              return Promise.resolve();
+            }
+          },
+
+          overrides: {
+            'mainSeriesProperties.candleStyle.upColor': '#26a69a',
+            'mainSeriesProperties.candleStyle.downColor': '#ef5350',
+            'paneProperties.background': '#0f0f0f',
+            'scalesProperties.backgroundColor': '#0f0f0f',
+            'tradingProperties.showOrders': true,
+            'tradingProperties.showPositions': true,
+            'tradingProperties.showOrderDistance': false,
+            'tradingProperties.showPositionDistance': false,
+            'linetoolpricerange.showPips': false,
+            'linetoolpricerange.pips': false,
+            'mainSeriesProperties.sessionId': 'extended',
+            'backgrounds.preMarket.color': 'rgba(200,0,0,0.08)',
+            'backgrounds.postMarket.color': 'rgba(0,0,200,0.08)',
+          },
+          context_menu: {
+            items_processor: (items, params) => {
+              try {
+                const price = extractPriceFromItems(items);
+                const { selectedAccountId: accId, orderExchange: exch, orderContract: contr } = tradingInfoRef.current;
+
+                if (!accId || !contr) {
+                  console.log("[ContextMenu] Data Missing (Acc/Contr):", { accId, contr });
+                  return items;
+                }
+
+                const qtyList = [1, 2, 5, 10, 15];
+                const tickSize = getTickSize(activeSymbol, contractsList, activeSymbol);
+                const formattedPrice = price ? formatPrice(price, tickSize) : null;
+
+                // Shared order action factory
+                const makeOrderAction = (side, orderType, qty) => {
+                  const priceTypeMap = { MARKET: "market", LIMIT: "limit", STOP: "stop_market" };
+                  return params.createAction({
+                    actionId: `Chart.Custom.${side}.${orderType}.${qty}`,
+                    label: orderType === "MARKET"
+                      ? `${side} ${qty} @ MARKET`
+                      : `${side} ${qty} @ ${orderType} ${formattedPrice}`,
+                    onExecute: () => {
+                      const payload = {
+                        type: "submit_order",
+                        account_id: accId,
+                        buy_sell: side.toLowerCase(),
+                        volume: String(qty),
+                        market_id: tradingInfoRef.current.marketId,
+                        contract_id: contr,
+                        exchange_id: exch,
+                        price_type: priceTypeMap[orderType] || orderType.toLowerCase(),
+                      };
+                      if (orderType === "LIMIT" && price) payload.limit_price = String(price);
+                      else if (orderType === "STOP" && price) payload.stop_price = String(price);
+                      sendMessageWithResponse(payload).then(() => {
+                        message.success("Order placed successfully");
+                      }).catch(err => {
+                        console.error("Context menu order failed:", err);
+                      });
+                    },
+                  });
+                };
+
+                const createSubItems = (side, orderType) =>
+                  qtyList.map(qty => makeOrderAction(side, orderType, qty));
+
+                const customItems = [
+                  params.createAction({ actionId: "Chart.Custom.BuyMarket", label: "BUY @ MARKET", subItems: createSubItems("BUY", "MARKET") }),
+                  params.createAction({ actionId: "Chart.Custom.SellMarket", label: "SELL @ MARKET", subItems: createSubItems("SELL", "MARKET") }),
+                ];
+
+                if (price) {
+                  customItems.push(params.createSeparator());
+                  customItems.push(params.createAction({ actionId: "Chart.Custom.BuyLimit", label: `BUY @ LIMIT ${formattedPrice}`, subItems: createSubItems("BUY", "LIMIT") }));
+                  customItems.push(params.createAction({ actionId: "Chart.Custom.SellLimit", label: `SELL @ LIMIT ${formattedPrice}`, subItems: createSubItems("SELL", "LIMIT") }));
+                  customItems.push(params.createSeparator());
+                  customItems.push(params.createAction({ actionId: "Chart.Custom.BuyStop", label: `BUY @ STOP ${formattedPrice}`, subItems: createSubItems("BUY", "STOP") }));
+                  customItems.push(params.createAction({ actionId: "Chart.Custom.SellStop", label: `SELL @ STOP ${formattedPrice}`, subItems: createSubItems("SELL", "STOP") }));
+                  customItems.push(params.createSeparator());
+                }
+
+                return [...customItems, ...items];
+              } catch (e) {
+                console.error("Context menu items_processor error:", e);
+                return items;
+              }
+            },
+          },
+        });
+
+        widget.onChartReady(() => {
+          if (!mounted) return;
+
+
+
+          // Apply any chart state that was requested before the widget was ready
+          if (pendingChartStateRef.current) {
+            // widget.load() restores drawings/studies only — it already includes the symbol.
+            // Do NOT call setSymbol() after load() as it triggers a second TV re-init (chart "disabled" bug).
+            // Block runSync during the async window of widget.load() so position lines
+            // aren't created and immediately destroyed by TV mid-restore.
+            isLoadingChartStateRef.current = true;
+            positionLinesRef.current = {};
+            childLinesRef.current = {};
+            limitOrderLinesRef.current = {};
+            pendingOcoRef.current = {};
+            pendingClosesRef.current.clear();
+            // 🛡️ SUPPRESS AUTO-SAVE during restore to prevent drawing_event callbacks
+            // fired by widget.load() from overwriting the good saved state.
+            isRestoringChartStateRef.current = true;
+            setTimeout(() => {
+              if (!mounted || !widget) return;
+              try {
+                let stateToLoad = pendingChartStateRef.current;
+                // Normalize string → object
+                if (typeof stateToLoad === 'string') {
+                  try { stateToLoad = JSON.parse(stateToLoad); } catch (e) { }
+                }
+                if (stateToLoad && typeof stateToLoad === 'object') {
+                  // ⚠️ CRITICAL: Deep-clone the state before passing to widget.load().
+                  // Redux freezes state objects (Object.freeze) in dev mode.
+                  // TradingView's widget.load() tries to mutate the object internally,
+                  // throwing "Cannot add property loading, object is not extensible".
+                  const mutableState = JSON.parse(JSON.stringify(stateToLoad));
+                  console.log("[Chart] Applying saved chart_state from server...");
+                  widget.load(mutableState);
+                  console.log("[Chart] Saved state applied successfully.");
+                }
+              } catch (e) {
+                console.error("[Chart] Failed to load saved state:", e);
+              }
+              pendingChartStateRef.current = null;
+              // After widget.load() is async (~1.5s). Clear refs and re-enable runSync
+              // once TV has finished restoring so position lines redraw cleanly.
+              clearTimeout(loadingFlagTimeoutRef.current);
+              loadingFlagTimeoutRef.current = setTimeout(() => {
+                isLoadingChartStateRef.current = false;
+                positionLinesRef.current = {};
+                childLinesRef.current = {};
+                limitOrderLinesRef.current = {};
+                pendingOcoRef.current = {};
+                pendingClosesRef.current.clear();
+                layoutSyncIdSetterRef.current?.(prev => prev + 1);
+                // Re-enable auto-save after 5s — long enough for TV to finish
+                // firing all drawing_event callbacks from the widget.load() restore.
+                setTimeout(() => {
+                  isRestoringChartStateRef.current = false;
+                  console.log('[Chart] Auto-save re-enabled after restore.');
+                }, 2000);
+              }, 1500);
+            }, 300);
+          } else {
+            // No named layout  restore default chart state (drawings/indicators saved without a named layout)
+            try {
+              const defaultState = localStorage.getItem('chart_state_default');
+              if (defaultState) {
+                widget.load(JSON.parse(defaultState));
+                console.log('[Chart] Restored default chart state from localStorage');
+              }
+            } catch { }
+          }
+
+          // 💾 AUTO-SAVE: Persist chart state to the Layout API on any changes
+          try {
+            const debounceSaveToAPI = () => {
+              // 🛡️ Don't save while restoring — widget.load() fires drawing_event for
+              // every drawing it restores, which would immediately overwrite the good state.
+              if (isRestoringChartStateRef.current) return;
+
+              if (chartAutoSaveTimeout.current) clearTimeout(chartAutoSaveTimeout.current);
+              chartAutoSaveTimeout.current = setTimeout(() => {
+                if (!widget) return;
+                try {
+                  widget.save((state) => {
+                    const currentId = activeLayoutIdRef.current;
+                    if (state && currentId) {
+                      dispatch(updateLayout({
+                        id: currentId,
+                        chart_state: state
+                      }));
+                      console.log(`💾 API Auto-saved chart_state for: ${currentId}`);
+                    }
+                  });
+                } catch (e) { console.warn("[Chart] Auto-save failed:", e); }
+              }, 2000); // 2s debounce
+            };
+
+            widget.subscribe('drawing_event', debounceSaveToAPI);
+            widget.subscribe('study_event', debounceSaveToAPI);
+            widget.subscribe('plot_event', debounceSaveToAPI);
+            widget.subscribe('onAutoSaveNeeded', debounceSaveToAPI);
+            // Wire up the save_load_adapter hook so saveChart() also triggers an API save.
+            // This covers chart settings (timezone, countdown to bar close, etc.) that
+            // don't produce drawing/study/plot events but do cause TV to call saveChart.
+            tvAutoSaveHookRef.current = debounceSaveToAPI;
+
+            console.log("[Chart] Subscribed to API Auto-save events (drawings + settings)");
+          } catch (e) {
+            console.warn('[Chart] API Auto-save subscription failed:', e);
+          }
+
+
+          //  SYNC: Listen for interval changes from ALL chart panes (Main + Multi-Chart)
+          try {
+            const syncAllCharts = () => {
+              const count = widget.chartsCount();
+              for (let i = 0; i < count; i++) {
+                const chart = widget.chart(i);
+                chart.onIntervalChanged().subscribe(null, (interval) => {
+                  console.debug(`[TV] Pane ${i} interval change: ${interval}`);
+                  try { chart.scrollToRealTime?.(); } catch (e) { }
+                  // Block all scrollback getBars calls until the initial load settles.
+                  // Cleared 1s after firstDataRequest onResult so user scrollback still works.
+                  resolutionFreshLoadNeededRef.current.add(interval);
+                  blockScrollbackRef.current[interval] = true;
+                  const internalTf = TIMEFRAME_MAP[interval];
+                  if (internalTf) {
+                    setSelectedInterval(interval);
+                    setCurrentTimeframe(internalTf);
+                    socketTimeframeRef.current = internalTf;
+                    setLayoutSyncId(prev2 => prev2 + 1);
+                  }
+                  // Only force a cache-bust for REVISITS — resolutions TV has loaded before
+                  // and may serve from its internal bar cache without calling getBars.
+                  // For FIRST VISITs, TV calls getBars(firstDataRequest=true) naturally;
+                  // calling the callback there too would cause a second getBars that
+                  // resets historyLoadedRef=false mid-session and blocks all live ticks.
+                  if (visitedResolutionsRef.current.has(interval)) {
+                    // The setTimeout defers past the current synchronous TV processing
+                    // (subscribeBars runs synchronously before this timeout fires, so
+                    // resetCacheCallbacksRef already has the freshly-stored callback).
+                    setTimeout(() => {
+                      try {
+                        const sym = (() => { try { return widget.chart(i).symbol(); } catch (e) { return ''; } })();
+                        const pKeyInterval = getPaneKey(sym, interval);
+                        const cb = resetCacheCallbacksRef.current[pKeyInterval];
+                        if (cb) {
+                          console.debug(`[TV] onResetCacheNeededCallback → pane ${i} ${interval}`);
+                          cb();
+                        } else {
+                          // Callback not stored yet — fall back to resetData()
+                          widget.chart(i).resetData();
+                          console.debug(`[TV] resetData fallback → pane ${i} ${interval}`);
+                        }
+                      } catch (e) {
+                        console.error(`[TV] cache-bust failed for pane ${i}:`, e);
+                      }
+                    }, 0);
+                  }
+                });
+              }
+            };
+
+            // Initial sync
+            syncAllCharts();
+
+            // Re-sync if the user switches layouts
+            widget.subscribe("layout_about_to_be_changed", () => {
+              setTimeout(syncAllCharts, 1000);
+            });
+
+            // Also sync when switching which chart is active
+            widget.subscribe("onActiveChartChanged", (chartIndex) => {
+              const activeInterval = widget.activeChart().resolution();
+              const internalTf = TIMEFRAME_MAP[activeInterval];
+              if (internalTf) {
+                setSelectedInterval(activeInterval);
+                setCurrentTimeframe(internalTf);
+                socketTimeframeRef.current = internalTf;
+              }
+            });
+          } catch (e) {
+            console.debug("[TV] Multi-chart sync subscription error:", e);
+          }
+
+          // NOTE: drawing_event / study_event auto-save is handled by the
+          // debounceSaveToAPI block above. A second subscription via onChartChangeRef
+          // was redundant and caused double PATCHes on every drawing/indicator change.
+
+          //  APPLY MULTI-CHART LAYOUT
+          try {
+            if (layoutType > 1) {
+              widget.setLayout(layoutType);
+
+              //  FORCE DEFAULT SYMBOL (ES) on all charts to override saved state
+              setTimeout(() => {
+                if (mounted && widget) {
+                  try {
+                    const count = (widget && typeof widget.chartsCount === 'function') ? widget.chartsCount() : 0;
+                    const forceSym = extractSymbolString(defaultSymbol);
+                    for (let i = 0; i < count; i++) {
+                      try {
+                        const chart = widget.chart(i);
+                        if (chart) chart.setSymbol(forceSym);
+                      } catch (e) {
+                        console.warn(`Chart ${i} not ready for symbol change yet.`);
+                      }
+                    }
+                  } catch (e) {
+                    console.error("Multi-chart symbol force failed:", e);
+                  }
+                }
+              }, 1000); // Give layout time to settle
+            }
+          } catch (e) {
+            console.error("Layout error", e);
+          }
+
+          createCustomTimeframeDropdown(
+            widget,
+            setCurrentTimeframe,
+            setSelectedInterval,
+            TIMEFRAME_MAP,
+            socketTimeframeRef,
+            resolutionFreshLoadNeededRef,
+            resetCacheCallbacksRef,
+            visitedResolutionsRef
+          );
+
+
+
+          // --- INJECT BUTTONS INTO IFRAME (Fixes Z-Index Issue) ---
+          try {
+            const iframe = containerRef.current.querySelector('iframe');
+            if (iframe && iframe.contentDocument) {
+              const doc = iframe.contentDocument;
+
+              // Check if div already exists to prevent duplicates
+              let floatingDiv = doc.getElementById('tv-floating-trade-buttons');
+
+              if (!floatingDiv) {
+                floatingDiv = doc.createElement('div');
+                floatingDiv.id = 'tv-floating-trade-buttons'; // Assign ID for safety
+                floatingDiv.style.position = 'absolute';
+                if (window.innerWidth < 750) {
+                  floatingDiv.style.bottom = '80px';
+                  floatingDiv.style.left = '10px';
+                } else {
+                  floatingDiv.style.top = '85px';
+                  floatingDiv.style.left = '64px';
+                }
+                floatingDiv.style.zIndex = '10';
+                floatingDiv.style.pointerEvents = 'auto';
+                floatingDiv.style.cursor = 'move';
+                floatingDiv.style.userSelect = 'none';
+
+                doc.body.appendChild(floatingDiv);
+
+                // --- INJECT DROPDOWN SCROLL STYLE ---
+                const dropdownStyle = doc.createElement('style');
+                dropdownStyle.textContent = `
+                  /* ── Context menus (right-click) ──────────────────────────────────
+                     overflow: visible keeps submenus from being clipped by the parent
+                     menu bounds. These menus are short (< viewport) so no scrollbar needed. */
+                  div[class*="menu-"],
+                  div[class*="menuWrap-"],
+                  .menu-wrap {
+                    overflow: visible !important;
+                  }
+
+                  /* ── Timeframe / interval picker + any tall dropdown list ─────────
+                     These use different TV class names (dialog-, list-, dropdown-, popup-)
+                     and need scrolling because they list many options. */
+                  div[class*="dialog-"],
+                  div[class*="Dialog-"],
+                  div[class*="list-"],
+                  div[class*="List-"],
+                  div[class*="dropdown-"],
+                  div[class*="Dropdown-"],
+                  div[class*="popup-"],
+                  div[class*="Popup-"],
+                  div[class*="scrollable-"],
+                  div[class*="Scrollable-"] {
+                    max-height: min(420px, calc(100vh - 90px)) !important;
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                  }
+
+                  /* Responsive: tighter on short screens */
+                  @media (max-height: 700px) {
+                    div[class*="dialog-"],
+                    div[class*="Dialog-"],
+                    div[class*="list-"],
+                    div[class*="List-"],
+                    div[class*="dropdown-"],
+                    div[class*="Dropdown-"],
+                    div[class*="popup-"],
+                    div[class*="Popup-"] {
+                      max-height: calc(100vh - 80px) !important;
+                    }
+                  }
+
+                  /* ── Scrollbar styling (applies to both menu types) ───────────── */
+                  div[class*="menu-"]::-webkit-scrollbar,
+                  div[class*="menuWrap-"]::-webkit-scrollbar,
+                  div[class*="dialog-"]::-webkit-scrollbar,
+                  div[class*="Dialog-"]::-webkit-scrollbar,
+                  div[class*="list-"]::-webkit-scrollbar,
+                  div[class*="List-"]::-webkit-scrollbar,
+                  div[class*="dropdown-"]::-webkit-scrollbar,
+                  div[class*="Dropdown-"]::-webkit-scrollbar,
+                  div[class*="popup-"]::-webkit-scrollbar,
+                  div[class*="Popup-"]::-webkit-scrollbar {
+                    width: 4px;
+                  }
+                  div[class*="menu-"]::-webkit-scrollbar-track,
+                  div[class*="dialog-"]::-webkit-scrollbar-track,
+                  div[class*="list-"]::-webkit-scrollbar-track,
+                  div[class*="dropdown-"]::-webkit-scrollbar-track,
+                  div[class*="popup-"]::-webkit-scrollbar-track {
+                    background: transparent;
+                  }
+                  div[class*="menu-"]::-webkit-scrollbar-thumb,
+                  div[class*="dialog-"]::-webkit-scrollbar-thumb,
+                  div[class*="list-"]::-webkit-scrollbar-thumb,
+                  div[class*="dropdown-"]::-webkit-scrollbar-thumb,
+                  div[class*="popup-"]::-webkit-scrollbar-thumb {
+                    background: #50535e;
+                    border-radius: 20px;
+                    border: 1px solid transparent;
+                  }
+
+                  /* ── Menu items always interactive ────────────────────────────── */
+                  div[class*="item-"],
+                  div[class*="item-"] * {
+                    cursor: pointer;
+                    pointer-events: auto !important;
+                  }
+
+                  /* ── Submenus: never clipped ──────────────────────────────────── */
+                  div[class*="submenu-"],
+                  div[class*="subMenu-"],
+                  div[class*="SubMenu-"],
+                  [class*="submenu"] {
+                    overflow: visible !important;
+                  }
+
+                  /* --- DROPDOWN GROUP HEADERS --- */
+                  /* This targets the disabled items we use as headers */
+                  div[class*="item-"].disabled,
+                  .item.disabled {
+                    color: #868993 !important;
+                    font-size: 10px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.05em !important;
+                    padding-top: 8px !important;
+                    padding-bottom: 4px !important;
+                    border-top: 1px solid #363a45 !important;
+                    margin-top: 4px !important;
+                    opacity: 1 !important;
+                    cursor: default !important;
+                    text-transform: uppercase !important;
+                  }
+                  /* Remove border-top from the very first header */
+                  div[class*="item-"]:first-child.disabled,
+                  .item:first-child.disabled {
+                    border-top: none !important;
+                    margin-top: 0 !important;
+                    padding-top: 6px !important;
+                  }
+                  /* Tighten regular items */
+                  div[class*="item-"]:not(.disabled) {
+                    padding-top: 4px !important;
+                    padding-bottom: 4px !important;
+                  }
+                `;
+                doc.head.appendChild(dropdownStyle);
+
+                // --- DRAG LOGIC START ---
+                let isDragging = false;
+                let startX, startY;
+
+                const getCoords = (e) => e.touches
+                  ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+                  : { x: e.clientX, y: e.clientY };
+
+                const onDragStart = (e) => {
+                  if (e.type === 'mousedown' && e.button !== 0) return;
+                  isDragging = true;
+                  if (floatingDiv.style.bottom) {
+                    floatingDiv.style.top = `${floatingDiv.offsetTop}px`;
+                    floatingDiv.style.bottom = '';
+                  }
+                  const { x, y } = getCoords(e);
+                  startX = x - floatingDiv.offsetLeft;
+                  startY = y - floatingDiv.offsetTop;
+                };
+
+                const onDragMove = (e) => {
+                  if (!isDragging) return;
+                  e.preventDefault();
+                  const { x, y } = getCoords(e);
+                  floatingDiv.style.left = `${x - startX}px`;
+                  floatingDiv.style.top = `${y - startY}px`;
+                };
+
+                const onDragEnd = () => { isDragging = false; };
+
+                floatingDiv.addEventListener('mousedown', onDragStart);
+                floatingDiv.addEventListener('touchstart', onDragStart, { passive: false });
+                doc.addEventListener('mousemove', onDragMove);
+                doc.addEventListener('touchmove', onDragMove, { passive: false });
+                doc.addEventListener('mouseup', onDragEnd);
+                doc.addEventListener('touchend', onDragEnd);
+                // --- DRAG LOGIC END ---
+
+                iframeEventCleanupRef.current = () => {
+                  try { floatingDiv.removeEventListener('mousedown', onDragStart); } catch (e) { }
+                  try { floatingDiv.removeEventListener('touchstart', onDragStart); } catch (e) { }
+                  try { doc.removeEventListener('mousemove', onDragMove); } catch (e) { }
+                  try { doc.removeEventListener('touchmove', onDragMove); } catch (e) { }
+                  try { doc.removeEventListener('mouseup', onDragEnd); } catch (e) { }
+                  try { doc.removeEventListener('touchend', onDragEnd); } catch (e) { }
+                };
+              }
+
+              // --- SAFARI SUBMENU HOVER FIX (V3: TARGET-DELEGATION) ---
+              if (isSafari() && !doc._tvSafariFixApplied) {
+                doc._tvSafariFixApplied = true;
+                const TV_ITEM_SELECTOR = [
+                  'div[class*="item-"]',
+                  'div[class*="Item-"]',
+                  'div[class*="menu-item"]',
+                  'div[class*="menuItem"]',
+                  '[role="menuitem"]',
+                  '[data-role="menuitem"]',
+                ].join(', ');
+
+                // Delegate pointer events to synthetic mouse events that bubble.
+                // Always dispatch on the menuItem (found via .closest) — not on e.target
+                // (which may be a child span/text node that isn't wired to React's submenu handler).
+                // When chart is zoomed, e.target may miss — elementFromPoint() is zoom-aware fallback.
+                let _lastHoveredItem = null;
+
+                const findMenuItem = (e) => {
+                  // Primary: use e.target and walk up
+                  const fromTarget = e.target?.closest?.(TV_ITEM_SELECTOR);
+                  if (fromTarget) return fromTarget;
+                  // Fallback: elementFromPoint is zoom-aware (accounts for CSS transforms)
+                  const el = doc.elementFromPoint(e.clientX, e.clientY);
+                  return el?.closest?.(TV_ITEM_SELECTOR) || null;
+                };
+
+                const handlePointer = (e, type) => {
+                  const menuItem = findMenuItem(e);
+
+                  const mouseType = type === 'pointerover' ? 'mouseover' :
+                    type === 'pointerout' ? 'mouseout' : 'mousemove';
+
+                  if (!menuItem) {
+                    // Mouse left all menu items — fire mouseout on last known item
+                    if (type === 'pointerout' && _lastHoveredItem) {
+                      _lastHoveredItem.dispatchEvent(new MouseEvent('mouseout', {
+                        bubbles: true, cancelable: true, view: doc.defaultView,
+                        clientX: e.clientX, clientY: e.clientY,
+                        relatedTarget: e.relatedTarget || null,
+                      }));
+                      _lastHoveredItem = null;
+                    }
+                    return;
+                  }
+
+                  // Avoid re-firing mouseover on the same item (perf + React dedup)
+                  if (type === 'pointermove' && menuItem === _lastHoveredItem) return;
+
+                  if (type !== 'pointerout') _lastHoveredItem = menuItem;
+
+                  menuItem.dispatchEvent(new MouseEvent(mouseType, {
+                    bubbles: true,
+                    cancelable: true,
+                    view: doc.defaultView,
+                    clientX: e.clientX,
+                    clientY: e.clientY,
+                    screenX: e.screenX,
+                    screenY: e.screenY,
+                    relatedTarget: e.relatedTarget || null,
+                    buttons: e.buttons,
+                    button: e.button,
+                  }));
+
+                  // Also fire non-bubbling mouseenter so direct DOM listeners catch it
+                  if (mouseType === 'mouseover') {
+                    menuItem.dispatchEvent(new MouseEvent('mouseenter', {
+                      bubbles: false, cancelable: true, view: doc.defaultView,
+                      clientX: e.clientX, clientY: e.clientY,
+                      relatedTarget: e.relatedTarget || null,
+                    }));
+                  }
+                };
+
+                doc.addEventListener('pointerover', (e) => handlePointer(e, 'pointerover'), { passive: true });
+                doc.addEventListener('pointerout', (e) => handlePointer(e, 'pointerout'), { passive: true });
+                doc.addEventListener('pointermove', (e) => handlePointer(e, 'pointermove'), { passive: true });
+                doc.addEventListener('pointerdown', () => { }, { passive: true });
+              }
+
+              iframeFloatingContainerRef.current = floatingDiv;
+              setIsIframeReady(true);
+            }
+          } catch (e) {
+            console.error("Iframe injection failed", e);
+          }
+
+          // --- HEADER PORTAL (For Multi-Chart) ---
+          if (layoutType !== 1 && layoutType !== '1') {
+            widget.headerReady().then(() => {
+              const button = widget.createButton({ align: 'left' });
+              console.log("[Chart] Created native header portal button for multi-chart:", button);
+              setHeaderContainer(button);
+            });
+          }
+
+
+          const applyLayout1 = async () => {
+            try {
+              widget.setLayout(4);
+              await new Promise(resolve => setTimeout(resolve, 1500));
+
+              const configs = [
+                { timeframe: '15' },  // Chart Index 0
+                { timeframe: '5' },   // Chart Index 1
+                { timeframe: '60' },  // Chart Index 2
+                { timeframe: '240' }  // Chart Index 3
+              ];
+
+              const shortSymbol = 'MNQ';
+              const state = store.getState();
+              const allSyms = [...(state.symbols.contracts || []), ...(state.symbols.data || [])];
+
+              // Find latest active contract
+              const matches = allSyms.filter(s =>
+                s.contract_id === shortSymbol ||
+                s.name === shortSymbol ||
+                (s.contract_id && new RegExp(`\\b${shortSymbol}\\b`, 'i').test(s.contract_id))
+              );
+              matches.sort((a, b) => (b.contract_id || "").localeCompare(a.contract_id || ""));
+              const resolved = matches[0];
+
+              const symbolToApply = resolved ? (resolved.contract_id || resolved.name) : shortSymbol;
+              console.log(`[Layout 1] Resolved symbol: ${symbolToApply}`);
+
+              // Sync UI state with the primary chart (15m)
+              const firstTf = configs[0].timeframe;
+              const internalTf = TIMEFRAME_MAP[firstTf];
+              if (internalTf) {
+                setSelectedInterval(firstTf);
+                setCurrentTimeframe(internalTf);
+                socketTimeframeRef.current = internalTf;
+              }
+              setSymbol(symbolToApply);
+              setActiveSymbol(symbolToApply);
+
+              for (let i = 0; i < configs.length; i++) {
+                try {
+                  const chart = widget.chart(i);
+                  if (chart) {
+                    chart.setSymbol(symbolToApply, () => {
+                      chart.setResolution(configs[i].timeframe);
+                    });
+                  }
+                } catch (err) {
+                  console.error(`Failed to configure chart ${i}:`, err);
+                }
+              }
+              message.success(`Layout 1 applied: ${symbolToApply} (15m, 5m, 1h, 4h)`);
+            } catch (err) {
+              console.error('Failed to apply Layout 1:', err);
+            }
+          };
+
+          const applyLayout2 = async () => {
+            try {
+              widget.setLayout(4);
+              await new Promise(resolve => setTimeout(resolve, 1500));
+
+              const symbols = ['MNQ', 'MES', 'MYM', 'MGC'];
+              const resolution = '15';
+
+              const state = store.getState();
+              const allSyms = [...(state.symbols.contracts || []), ...(state.symbols.data || [])];
+
+              // Update UI state for consistency
+              const internalTf = TIMEFRAME_MAP[resolution] || 'fifteen_minute';
+              setSelectedInterval(resolution);
+              setCurrentTimeframe(internalTf);
+              socketTimeframeRef.current = internalTf;
+
+              for (let i = 0; i < symbols.length; i++) {
+                try {
+                  const short = symbols[i];
+                  const resolved = allSyms.find(s =>
+                    s.contract_id === short ||
+                    s.name === short ||
+                    (s.contract_id && new RegExp(`\\b${short}\\b`, 'i').test(s.contract_id))
+                  );
+                  const symbolToApply = resolved ? (resolved.contract_id || resolved.name) : short;
+
+                  const chart = widget.chart(i);
+                  if (chart) {
+                    chart.setSymbol(symbolToApply, () => {
+                      chart.setResolution(resolution);
+                    });
+                  }
+                } catch (err) {
+                  console.error(`Failed to configure chart ${i}:`, err);
+                }
+              }
+              message.success('Layout 2 applied: Multi-Asset View');
+            } catch (err) {
+              console.error('Failed to apply layout 2:', err);
+              message.error('Failed to apply layout 2');
+            }
+          };
+
+          widget.headerReady().then(() => {
+            const btn1 = widget.createButton({ align: 'left' });
+            btn1.textContent = 'Layout 1';
+            btn1.title = 'Layout 1: MNQ Multi (5m, 15m, 1h, 4h)';
+            btn1.style.cursor = 'pointer';
+            btn1.addEventListener('click', applyLayout1);
+
+            const btn2 = widget.createButton({ align: 'left' });
+            btn2.textContent = 'Layout 2';
+            btn2.title = 'Layout 2: Multi-Asset View (15m)';
+            btn2.style.cursor = 'pointer';
+            btn2.addEventListener('click', applyLayout2);
+
+            const btnArrows = widget.createButton({ align: 'left' });
+            btnArrows.textContent = '↑↓ Trades';
+            btnArrows.title = 'Toggle trade arrows';
+            btnArrows.style.cssText = 'cursor:pointer; padding:0 6px; opacity:1;';
+            const updateArrowBtnStyle = () => {
+              const on = showTradeArrowsRef.current;
+              btnArrows.style.opacity = on ? '1' : '0.4';
+              btnArrows.style.color = on ? '#26a69a' : '#888';
+            };
+            updateArrowBtnStyle();
+            btnArrows.addEventListener('click', () => {
+              showTradeArrowsRef.current = !showTradeArrowsRef.current;
+              updateArrowBtnStyle();
+              if (!showTradeArrowsRef.current) {
+                clearAllTradeArrows();
+              } else {
+                clearAllTradeArrows();
+                setArrowRedrawTrigger(prev => prev + 1);
+              }
+            });
+
+            headerButtonCleanupRef.current = () => {
+              try { btn1.removeEventListener('click', applyLayout1); } catch (e) { }
+              try { btn2.removeEventListener('click', applyLayout2); } catch (e) { }
+            };
+          });
+
+          setIsInitialized(true);
+          widgetRef.current = widget;
+          setIsLoadingData(false);
+
+          const handleSymbolUpdate = (chartIndex = null) => {
+
+            try {
+              // If index is provided (from onActiveChartChanged), use it. 
+              // Otherwise (from onSymbolChanged), use activeChart.
+              const chart = chartIndex !== null ? widget.chart(chartIndex) : widget.activeChart();
+              if (!chart || typeof chart.symbol !== 'function') return;
+              const newSymName = chart.symbol();
+
+              if (!newSymName) return;
+
+              console.log(`[TV] Symbol update (Chart ${chartIndex ?? 'Active'}):`, newSymName);
+
+              setActiveSymbol(newSymName);
+              document.title = newSymName;
+              setLayoutSyncId(prev => prev + 1); //  Trigger re-sync
+              // dispatch removed
+
+              const contractsList =
+                store.getState().symbols.contracts || [];
+
+              const found = contractsList.find(
+                s => s.contract_id === newSymName || s.name === newSymName
+              );
+
+              if (found) {
+                onSymbolChangeRef.current?.(found);
+              } else {
+                onSymbolChangeRef.current?.({ name: newSymName });
+              }
+
+            } catch (err) {
+              console.error("[TV] Symbol update failed:", err);
+            }
+          };
+
+          const syncFocusedChartState = async (index) => {
+            const requestId = ++lastFocusedRequestIdRef.current;
+
+            isSwitchingPaneRef.current = true;
+
+            try {
+              const activeChart = widgetRef.current.chart(index);
+              const targetSymbol = activeChart.symbol();
+              const targetResolution = activeChart.resolution();
+
+
+              const mId = getCachedMarketId(targetSymbol) ||
+                await resolveMarketId(orderExchange, targetSymbol);
+
+              if (requestId !== lastFocusedRequestIdRef.current) {
+                return;
+              }
+
+
+              activeMarketRef.current = { id: mId, symbol: targetSymbol };
+              activeChartIndexRef.current = index;
+
+              setActiveSymbol(targetSymbol);
+              dispatch(setOrderContract(targetSymbol));
+              setActiveMarket(mId);
+
+              const internalTf = TIMEFRAME_MAP[targetResolution];
+              if (internalTf) {
+                setSelectedInterval(targetResolution);
+                setCurrentTimeframe(internalTf);
+                socketTimeframeRef.current = internalTf;
+              }
+
+              if (mId && dispatch) {
+                dispatch(setOrderMetadata({
+                  symbol: targetSymbol,
+                  market_id: mId,
+                  exchange_id: orderExchange,
+                  contract_id: targetSymbol
+                }));
+
+                dispatch(setActiveMarket(mId));
+              }
+
+              activeChart.resetData();
+
+              handleSymbolUpdate(index);
+              setLayoutSyncId(prev => prev + 1);
+
+            } catch (e) {
+              console.error("[Chart] Focus Sync Error:", e);
+            } finally {
+              if (requestId === lastFocusedRequestIdRef.current) {
+                isSwitchingPaneRef.current = false;
+              }
+            }
+          };
+
+          syncFocusedChartState(widget.activeChartIndex());
+
+          widget.subscribe('on_active_chart_changed', (index) => syncFocusedChartState(index));
+          widget.subscribe('activeChartChanged', (index) => syncFocusedChartState(index));
+
+
+          try {
+            const chart = widget.activeChart();
+            console.log("[Datafeed] Initial sync triggered for Pane 0");
+            handleSymbolUpdate(); // Explicit initial sync
+
+            // Standard subscription
+            widget.subscribe('on_active_chart_changed', (index) => {
+              console.log("[TV] Event: Active chart changed to index:", index);
+              activeChartIndexRef.current = index;
+              handleSymbolUpdate(index);
+            });
+
+            widget.subscribe('on_layout_changed', () => {
+              console.log("[TV] Event: Layout changed");
+              setLayoutSyncId(prev => prev + 1);
+            });
+
+            //  Multi-chart symbol sync: attach to ALL panes if in multi-mode
+            if (layoutType !== 1 && layoutType !== '1') {
+              const count = (widget && typeof widget.chartsCount === 'function') ? widget.chartsCount() : 0;
+              for (let i = 0; i < count; i++) {
+                try {
+                  widget.chart(i).onSymbolChanged().subscribe(null, () => handleSymbolUpdate(i));
+                } catch (e) { }
+              }
+            } else {
+              chart.onSymbolChanged().subscribe(null, () => handleSymbolUpdate());
+            }
+
+            // Backup property subscription
+            if (widget && typeof widget.onActiveChartChanged === 'function') {
+              try {
+                widget.onActiveChartChanged().subscribe(null, (index) => {
+                  console.log("[TV] Helper: Active chart changed to index:", index);
+                  activeChartIndexRef.current = index;
+                  handleSymbolUpdate(index);
+                });
+              } catch (e) {
+                console.warn("[TV] Failed to subscribe to onActiveChartChanged:", e);
+              }
+            }
+            //  INITIAL SYNC: Ensure the buttons reflect the active chart on load
+            setTimeout(() => handleSymbolUpdate(), 1000);
+          } catch (err) {
+            console.error("[TV] Failed to attach symbol listeners:", err);
+          }
+
+
+
+
+          const activeChartObj = widget.activeChart();
+
+          //  LISTEN FOR RANGE (1D / 1M / 5Y) CHANGES
+          activeChartObj?.onVisibleRangeChanged()?.subscribe(null, () => {
+            try {
+              if (typeof activeChartObj.getVisibleRange !== 'function') return;
+              const range = activeChartObj.getVisibleRange();
+              if (!range) return;
+
+              const from = range.from * 1000;
+              const to = range.to * 1000;
+              const diffDays = (to - from) / (1000 * 60 * 60 * 24);
+
+              let detectedRange = 'CUSTOM';
+
+              if (diffDays <= 1.2) detectedRange = '1D';
+              else if (diffDays <= 7.5) detectedRange = '1W';
+              else if (diffDays <= 32) detectedRange = '1M';
+              else if (diffDays <= 95) detectedRange = '3M';
+              else if (diffDays <= 190) detectedRange = '6M';
+              else if (diffDays <= 370) detectedRange = '1Y';
+              else if (diffDays <= 1850) detectedRange = '5Y';
+              else detectedRange = 'ALL';
+
+              setCurrentRange(detectedRange);
+            } catch (e) {
+              console.warn('Range detection failed', e);
+            }
+          });
+
+          // Cleanup
+          widget?.onRemove(() => {
+            activeChartObj.onVisibleRangeChanged().unsubscribe(null);
+          });
+        });
+
+
+      } catch (err) {
+        console.error(`[Chart] Init failed (attempt ${retryCount + 1}):`, err);
+        if (retryCount < MAX_INIT_RETRIES && mounted) {
+          console.warn(`[Chart] Retrying init (${retryCount + 1}/${MAX_INIT_RETRIES})...`);
+          await new Promise(resolve => setTimeout(resolve, 800));
+          return initChart(retryCount + 1);
+        }
+        setIsLoadingData(false);
+      }
+    };
+
+    if (containerRef.current) initChart(0);
+
+    return () => {
+      mounted = false;
+      if (widgetRef.current) {
+        try { widgetRef.current.remove(); } catch (e) { }
+      }
+      widgetRef.current = null;
+      tvAutoSaveHookRef.current = null;
+      onTickHandlers.current.clear(); // Clear map
+      setIsInitialized(false);
+      setActiveSymbol(null); // Clear active symbol state on unmount
+
+      // --- CLEANUP API REQUEST CACHES ---
+      inflightRequestsRef.current.clear();
+      responseCacheRef.current.clear();
+
+      // --- CLEANUP PORTAL STATE (Critical for popout re-render) ---
+      iframeFloatingContainerRef.current = null;
+      setIsIframeReady(false);
+
+      // --- CLEANUP LINES ON UNMOUNT ---
+      Object.values(positionLinesRef.current).forEach(p => {
+        if (p.lineInstance) try { p.lineInstance.remove(); } catch (e) { }
+      });
+      Object.values(childLinesRef.current).forEach(children => {
+        if (children.TP) try { children.TP.remove(); } catch (e) { }
+        if (children.SL) try { children.SL.remove(); } catch (e) { }
+      });
+      childLinesRef.current = {};
+      positionLinesRef.current = {};
+    };
+  }, [searchSymbols, layoutType, windowContextKey]);
+
+  //  POPOUT DETECTION: Detect when component moves to a new window (flexlayout portal)
+  useLayoutEffect(() => {
+    const newWindow = containerRef.current?.ownerDocument?.defaultView;
+    if (newWindow && newWindow !== currentWindowRef.current) {
+      console.warn('[Chart] Window context changed (popout/dock detected), forcing re-initialization...');
+      currentWindowRef.current = newWindow;
+
+      // Destroy old widget (it was created in the old window)
+      if (widgetRef.current) {
+        try { widgetRef.current.remove(); } catch (e) { }
+        widgetRef.current = null;
+      }
+      tvAutoSaveHookRef.current = null;
+
+      // Clear stale portal targets from old window
+      iframeFloatingContainerRef.current = null;
+      setIsIframeReady(false);
+      setHeaderContainer(null);
+      setIsInitialized(false);
+
+      // Trigger initChart re-run via dependency change
+      setWindowContextKey(prev => prev + 1);
+    }
+  });
+
+  useEffect(() => {
+    // Do not wipe historyLoadedRef here — getBars manages per-pane flags itself.
+    // Clearing all entries on symbol change causes permanent tick silence when
+    // TradingView reuses cached bars and skips calling getBars again.
+  }, [symbol]);
+
+  // updating default value of contract and exchanges once chart is rendered 
+
+  // ============================================
+  // HANDLERS
+  // ============================================
+  const handleHeaderBuy = async (volume = 1) => {
+    debugStore.markOrderClick();
+    const { selectedAccountId: accId, orderExchange, orderContract, marketId } = tradingInfoRef.current;
+    if (!accId) { message.error('Please select an account first'); return; }
+    const payload = {
+      type: 'submit_order',
+      account_id: accId,
+      buy_sell: 'buy',
+      volume: String(volume),
+      price_type: 'market',
+      market_id: marketId || `${orderExchange} ${orderContract}`,
+      exchange_id: orderExchange,
+      contract_id: orderContract,
+    };
+    try {
+      dispatch(clearOrderState());
+      await sendMessageWithResponse(payload);
+      message.success('Buy order placed');
+      dispatch(fetchOrderHistory({ account_id: accId }));
+    } catch (err) {
+      message.error(`Buy failed: ${err?.detail || err?.message || err || 'Unknown error'}`);
+    }
+  };
+
+  const handleHeaderSell = async (volume = 1) => {
+    debugStore.markOrderClick();
+    const { selectedAccountId: accId, orderExchange, orderContract, marketId } = tradingInfoRef.current;
+    if (!accId) { message.error('Please select an account first'); return; }
+    const payload = {
+      type: 'submit_order',
+      account_id: accId,
+      buy_sell: 'sell',
+      volume: String(volume),
+      price_type: 'market',
+      market_id: marketId || `${orderExchange} ${orderContract}`,
+      exchange_id: orderExchange,
+      contract_id: orderContract,
+    };
+    try {
+      dispatch(clearOrderState());
+      await sendMessageWithResponse(payload);
+      message.success('Sell order placed');
+      dispatch(fetchOrderHistory({ account_id: accId }));
+    } catch (err) {
+      message.error(`Sell failed: ${err?.detail || err?.message || err || 'Unknown error'}`);
+    }
+  };
+
+  const handleJoinBid = async (volume = 1) => {
+    const { selectedAccountId: accId, orderExchange, orderContract, marketId } = tradingInfoRef.current;
+    if (!accId) { message.error('Please select an account first'); return; }
+    const bidPrice = getLiveQuotes(activeSymbol)?.bid;
+    if (!bidPrice) { message.error('No bid price available'); return; }
+    const payload = {
+      type: 'submit_order',
+      account_id: accId,
+      buy_sell: 'buy',
+      volume: String(volume),
+      price_type: 'limit',
+      limit_price: String(bidPrice),
+      market_id: marketId || `${orderExchange} ${orderContract}`,
+      exchange_id: orderExchange,
+      contract_id: orderContract,
+    };
+    try {
+      dispatch(clearOrderState());
+      await sendMessageWithResponse(payload);
+      message.success('Join Bid order placed');
+      dispatch(fetchOrderHistory({ account_id: accId }));
+    } catch (err) {
+      message.error(`Join Bid failed: ${err?.detail || err?.message || err || 'Unknown error'}`);
+    }
+  };
+
+  const handleJoinAsk = async (volume = 1) => {
+    const { selectedAccountId: accId, orderExchange, orderContract, marketId } = tradingInfoRef.current;
+    if (!accId) { message.error('Please select an account first'); return; }
+    const askPrice = getLiveQuotes(activeSymbol)?.ask;
+    if (!askPrice) { message.error('No ask price available'); return; }
+    const payload = {
+      type: 'submit_order',
+      account_id: accId,
+      buy_sell: 'sell',
+      volume: String(volume),
+      price_type: 'limit',
+      limit_price: String(askPrice),
+      market_id: marketId || `${orderExchange} ${orderContract}`,
+      exchange_id: orderExchange,
+      contract_id: orderContract,
+    };
+    try {
+      dispatch(clearOrderState());
+      await sendMessageWithResponse(payload);
+      message.success('Join Ask order placed');
+      dispatch(fetchOrderHistory({ account_id: accId }));
+    } catch (err) {
+      message.error(`Join Ask failed: ${err?.detail || err?.message || err || 'Unknown error'}`);
+    }
+  };
+
+
+  const createInteractivePosition = (order, targetChartIndex = null) => {
+
+    const orderAccId = order.account_id || order.account;
+    const currentAccId = selectedAccountId;
+    const vol = Math.abs(parseFloat(order.net_position || order.quantity || order.volume || 0));
+
+    const sym = order.market_id || order.symbol || order.contract_id;
+    const existingReduxPos = (store.getState().dxtrade.positions || []).find(ap =>
+      normalizeSym(ap.market_id || ap.symbol) === normalizeSym(sym)
+    );
+
+    const price = parseFloat(
+      order.average_open_price ||
+      order.avg_open_price ||
+      order.avg_price ||
+      order.entryPrice ||
+      order.entry_price ||
+      existingReduxPos?.average_open_price ||
+      0
+    );
+
+    //  STRICT POSITION GUARD: Never draw if accounts don't match or position is 0
+    if (!currentAccId || !orderAccId || String(currentAccId).toLowerCase() !== String(orderAccId).toLowerCase()) {
+      return;
+    }
+
+    if (vol < 0.001) {
+      console.debug("[Chart] Blocking position draw: Zero volume", { vol });
+      return;
+    }
+
+    if (!price) {
+      console.debug("[Chart] Blocking draw: Missing price and no Redux fallback", { vol, price });
+      return;
+    }
+    let chart;
+    let chartIndex;
+    try {
+      if (targetChartIndex !== null) {
+        chart = widgetRef.current?.chart(targetChartIndex);
+        chartIndex = targetChartIndex;
+      } else {
+        chart = widgetRef.current?.activeChart();
+        chartIndex = 0;
+      }
+    } catch (e) { return; }
+
+    console.log("order", order.account_id, selectedAccountId);
+    // STABILIZED ID: For positions, we MUST use market_id/symbol for stable tracking across fill events and position updates
+    const orderId = getPositionStableKey(order) || order.position_id || order.id || order.unique_id;
+    const compositeId = `${chartIndex}_${orderId}`;
+    const orderAccountKey = getAccountKey(order) || (selectedAccountId ? String(selectedAccountId).toLowerCase() : '');
+    // Async Protection: If already being created, skip
+    if (positionLinesRef.current[compositeId] === 'PENDING') return;
+
+    let entryPrice = price;
+
+    let side = order.side?.toUpperCase();
+    let qty = order.quantity || order.volume;
+
+    // Handle positions that use "net_position" instead of side/qty
+    if (order.net_position !== undefined) {
+      qty = Math.abs(order.net_position);
+      // 🛡️ STRICT OVERRIDE FOR POSITIONS: net_position is the ultimate source of truth
+      // Discard any inherited .side property from OrderUpdate payloads
+      side = parseFloat(order.net_position) >= 0 ? 'BUY' : 'SELL';
+    }
+
+
+    if (!qty) qty = 1;
+
+    if (!side) side = 'BUY';
+
+    // Calculate entry price
+    if (!entryPrice || entryPrice === 0) {
+      const currentQuotes = getLiveQuotes(activeSymbol);
+      const fallbackPrice = (side === 'BUY' ? (currentQuotes?.ask || 0) : (currentQuotes?.bid || 0));
+      entryPrice = fallbackPrice;
+    }
+
+    if (!entryPrice || isNaN(entryPrice)) {
+      console.error("[Chart] TRACE ERROR: Invalid entryPrice", { entryPrice });
+      return;
+    }
+
+    if (positionLinesRef.current[compositeId] && positionLinesRef.current[compositeId] !== 'PENDING') {
+      const existing = positionLinesRef.current[compositeId];
+      existing.entryPrice = entryPrice;
+      existing.side = side;
+      existing.quantity = qty || 1;
+      existing.symbol = order.market_id || order.symbol || order.contract_id;
+      existing.account_id = orderAccountKey;
+      existing.lastText = null;
+      existing.lastColor = null;
+      try {
+        existing.lineInstance
+          .setPrice(entryPrice)
+          .setQuantity((qty || 1).toString());
+      } catch (e) { }
+      return;
+    }
+
+    // Surgical Cleanup: Only remove other lines for the same symbol IF they aren't this one
+    const pSym = order.market_id || order.symbol || order.contract_id;
+    Object.keys(positionLinesRef.current).forEach(key => {
+      if (key.startsWith(`${chartIndex}_`) && key !== compositeId) {
+        const pos = positionLinesRef.current[key];
+        if (pos && pos !== 'PENDING' && isSymbolMatch(pSym, pos.symbol) && String(pos.account_id || '').toLowerCase() === orderAccountKey) {
+          console.debug(`[Chart] 🧹 Cleaning up duplicate line ${key} for ${pSym}`);
+          try { pos.lineInstance.remove(); } catch (e) { }
+          delete positionLinesRef.current[key];
+        }
+      }
+    });
+    console.debug("[ACC][createInteractivePosition] selectedAccountId=", selectedAccountId,
+      "selectedAccount=", selectedAccount,
+      "order.account_id=", order?.account_id,
+      "order.account=", order?.account,
+      "order.account_number=", order?.account_number,
+      "order.accountId=", order?.accountId
+    );
+
+    // Mark as pending creation
+    positionLinesRef.current[compositeId] = 'PENDING';
+
+    chart.createOrderLine()
+      .catch(err => {
+        console.warn('[Chart] createOrderLine() rejected — clearing PENDING so next heartbeat retries:', err);
+        delete positionLinesRef.current[compositeId];
+      })
+      .then(line => {
+        if (!line) return;
+
+        //  PRE-CHECK: Ensure we don't draw an "optimistic" line if a real position is already closing
+        // If the position was already closed/deleted while we were waiting for the promise,
+        // cleanup the line immediately and don't store it.
+        if (!positionLinesRef.current[compositeId] || positionLinesRef.current[compositeId] === 'NOT_PENDING') {
+          console.log(`[Chart] Race condition avoided: Position ${compositeId} closed while creating line. Removal.`);
+          try { line.remove(); } catch (e) { }
+          delete positionLinesRef.current[compositeId];
+          return;
+        }
+        const isBuy = side === 'BUY';
+        const color = isBuy ? '#1890FF' : '#F5222D';
+
+        const refreshShades = (forceShow = false) => {
+          const p = pendingOcoRef.current[compositeId];
+          if (!p || !p.entryPrice) return;
+
+          const visibleRange = chart.getVisibleRange() || { from: Date.now() / 1000 - 86400, to: Date.now() / 1000 + 86400 };
+          const wideFrom = visibleRange.from - 86400 * 7;
+          const wideTo = visibleRange.to + (visibleRange.to - visibleRange.from) * 1.5;
+
+          ['tp', 'sl'].forEach(t => {
+            const shadeKey = `${t}Shade`;
+            const currentPrice = p[t];
+
+            if (p[shadeKey] && currentPrice !== null) {
+              try {
+                chart.applyOverridesToEntity(p[shadeKey], {
+                  'backgroundTransparency': forceShow ? 80 : 100,
+                  'transparency': forceShow ? 80 : 100,
+                  'backgroundColor': t === 'tp' ? '#1890FF' : '#F5222D', // TP=BLUE, SL=RED
+                  'linecolor': t === 'tp' ? '#1890FF' : '#F5222D',
+                  'showLabel': forceShow ? 1 : 0,
+                  'visible': forceShow ? true : false
+                });
+
+                chart.setShapePoint(p[shadeKey], 0, { time: wideFrom, price: p.entryPrice }, true);
+                chart.setShapePoint(p[shadeKey], 1, { time: wideTo, price: currentPrice }, true);
+              } catch (e) { }
+            }
+          });
+        };
+
+        // Read from livePnlStore — consistent with PositionsTable and Order panel
+        const orderMarket = order.market_id || order.symbol || order.contract_id;
+        const orderAcc = order.account_id || selectedAccountId || "";
+        const pnlEntry = getPositionPnl(orderMarket, orderAcc)
+          || (order.unique_id ? getPositionPnlById(order.unique_id) : null);
+        const livePnl = pnlEntry?.upl ?? pnlEntry?.unrealized_pnl;
+        let pnlText = "";
+        const tickSize = getTickSizeFull(order);
+        if (livePnl !== undefined && livePnl !== null) {
+          const val = parseFloat(livePnl);
+          pnlText = ` (${val >= 0 ? "+" : "-"}$${Math.abs(val).toFixed(getTickPrecision(tickSize))})`;
+        }
+        const sideLabel = isBuy ? 'BUY' : 'SELL';
+        const sideColor = isBuy ? '#00C853' : '#F5222D';
+        line
+          .setPrice(entryPrice)
+          .setQuantity(sideLabel)
+          .setQuantityBackgroundColor(sideColor)
+          .setQuantityTextColor('#FFFFFF')
+          .setQuantityBorderColor(sideColor)
+          .setText(`TP  SL`)    // ← side + TP + SL in body
+          .setBodyTextColor('#FFFFFF')
+          .setBodyFont('bold 9pt Verdana')
+          .setLineLength(5)
+          .setBodyBackgroundColor('#2962FF')   // blue body for TP/SL section
+          .setLineColor(sideColor)
+          .setBodyBorderColor('#2962FF')
+          .setLineStyle(0)
+          .setCancelTooltip("Close Position")
+          .setTooltip("Drag to add TP/SL")
+          .setModifyTooltip("Drag to add TP/SL")
+
+        line.onCancel(function () {
+          try {
+            const targetAccountId = order.account_id || order.account || selectedAccountId;
+            const fallbackPosition = (activePositions || []).find((position) => {
+              const sameAccount = String(position.account_id || position.account || "") === String(targetAccountId || "");
+              if (!sameAccount) return false;
+
+              const positionSymbol = position.market_id || position.contract_id || position.symbol;
+              const orderSymbol = order.market_id || order.contract_id || order.symbol;
+              return isSymbolMatch(positionSymbol, orderSymbol);
+            });
+
+            const targetMarketId = order.market_id || order.contract_id || order.symbol || fallbackPosition?.market_id || fallbackPosition?.contract_id || fallbackPosition?.symbol;
+            if (!targetMarketId) {
+              console.warn("[Chart] Cannot close: Missing market_id in order object", order);
+              return;
+            }
+            console.log("[Chart] Requesting close for position via line:", { targetMarketId, targetAccountId });
+            dispatch(closePositionAndCancelOco({ market_id: targetMarketId, account_id: targetAccountId }));
+
+
+            //  OPTIMISTIC REDUX UPDATE: Bomb the position in Redux immediately
+            // This ensures the SSOT sync doesn't resurrect the line during the WebSocket processing gap.
+            console.log('positions', {
+              market_id: targetMarketId,
+              account_id: targetAccountId,
+              net_position: 0,
+              quantity: 0,
+              volume: 0,
+              position_id: orderId
+            })
+            dispatch(updateRealTimePositions({
+              market_id: targetMarketId,
+              account_id: targetAccountId,
+              net_position: 0,
+              quantity: 0,
+              volume: 0,
+              position_id: orderId
+            }));
+
+            //  REFINED FIREWALL: Protect the STABLE KEY for 3s
+            const stableKey = getPositionStableKey({
+              market_id: targetMarketId,
+              account_id: targetAccountId
+            });
+
+            pendingClosesRef.current.add(stableKey);
+            if (orderId) pendingClosesRef.current.add(orderId);
+
+            setTimeout(() => {
+              pendingClosesRef.current.delete(stableKey);
+              if (orderId) pendingClosesRef.current.delete(orderId);
+            }, 3000);
+
+          } catch (err) {
+            console.error('Close position API failed:', err);
+            // message.error('Close position failed');
+          }
+
+          const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+          for (let i = 0; i < chartsCount; i++) {
+            const compKey = `${i}_${orderId}`;
+            if (positionLinesRef.current[compKey]) {
+              try { positionLinesRef.current[compKey].lineInstance.remove(); } catch (e) { }
+              delete positionLinesRef.current[compKey];
+            }
+            //  Also clear any pending OCO lines for this order
+            if (pendingOcoRef.current[compKey]) {
+              const p = pendingOcoRef.current[compKey];
+              if (p.tpLine) try { p.tpLine.remove(); } catch (e) { }
+              if (p.slLine) try { p.slLine.remove(); } catch (e) { }
+              delete pendingOcoRef.current[compKey];
+            }
+          }
+        });
+
+        line.onMove(function () {
+          // Retrieve latest stats from state to handle mid-session volume changes
+          const currentStats = typeof positionLinesRef.current[compositeId] === 'object'
+            ? positionLinesRef.current[compositeId] : null;
+          const activeQty = currentStats?.quantity || qty;
+          const activeEntry = currentStats?.entryPrice ||
+            parseFloat(order.avg_open_price || order.average_open_price || order.avg_price ||
+              order.avg_fill_price || order.fill_price || order.entry_price || order.price || entryPrice || 0);
+          console.debug("activeEntry", activeEntry, currentStats);
+          isDraggingRef.current = true;
+          isPosLineDraggingRef.current = true;
+          clearAllTradeArrows();
+
+          if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
+          dragTimeoutRef.current = setTimeout(() => {
+            isDraggingRef.current = false;
+            setArrowRedrawTrigger(prev => prev + 1);
+          }, 500);
+
+          const rawPrice = this.getPrice();
+          const tickSize = getTickSizeFull(order.market_id || order.symbol);
+          const dropPrice = snapToTick(rawPrice, tickSize);
+
+          this.setPrice(activeEntry); // Snap parent line back to entry
+
+          // Calculate and log points size
+          const pointsSize = Math.abs(dropPrice - activeEntry);
+          const pnlPerUnit = side === 'BUY' ? (dropPrice - activeEntry) : (activeEntry - dropPrice);
+          const { amount: totalPnL, ticks: totalTicks } = getOcoDollarAmount(order, pnlPerUnit, activeQty);
+          const isProfit = totalPnL >= 0;
+          const type = isProfit ? 'tp' : 'sl';
+          const pnlLabel = formatOcoPnlLabel(order, side, activeEntry, dropPrice, activeQty);
+
+          console.log(`[Position Line Move] Symbol: ${order.market_id || order.symbol}, Side: ${side}, Entry: ${activeEntry.toFixed(4)}, Target: ${dropPrice.toFixed(4)}, Points: ${pointsSize.toFixed(4)}, P&L per qty: ${pnlPerUnit.toFixed(4)}, Total P&L: ${totalPnL.toFixed(2)}`);
+
+          if (Math.abs(dropPrice - activeEntry) < 0.00001) return;
+
+          // Sync Shade for BOTH if they exist (to handle repeating the initial drag)
+          if (pendingOcoRef.current[compositeId]) {
+            pendingOcoRef.current[compositeId].entryPrice = activeEntry; // Always sync entry price
+            pendingOcoRef.current[compositeId].quantity = activeQty; // Always sync quantity
+
+            refreshShades(true);
+            if (shadeTimeoutRefs.current[chartIndex]) clearTimeout(shadeTimeoutRefs.current[chartIndex]);
+            shadeTimeoutRefs.current[chartIndex] = setTimeout(() => {
+              if (pendingOcoRef.current[compositeId]) refreshShades(false);
+            }, 1000);
+          }
+
+          if (!pendingOcoRef.current[compositeId]) {
+            pendingOcoRef.current[compositeId] = {
+              entryPrice: activeEntry,
+              tp: null, sl: null,
+              quantity: activeQty,
+              tpLine: null, slLine: null,
+              tpPointsSize: null, slShade: null,
+              order: order, side: side, chartIndex: chartIndex
+            };
+          } else {
+            // Update stored entry price in case it shifted since creation
+            pendingOcoRef.current[compositeId].entryPrice = activeEntry;
+          }
+          const pending = pendingOcoRef.current[compositeId];
+          pending.entryPrice = activeEntry; // Sync entry price before updating shades
+
+          // Helper to draw or update the shaded region (used during initial creation)
+          const updateShade = (targetPrice, isTp) => {
+            const shadeKey = isTp ? 'tpShade' : 'slShade';
+            const visibleRange = chart.getVisibleRange() || { from: Date.now() / 1000 - 86400, to: Date.now() / 1000 + 86400 };
+            const points = [
+              { time: visibleRange.from - 86400 * 7, price: activeEntry },
+              { time: visibleRange.to + (visibleRange.to - visibleRange.from) * 1.5, price: targetPrice }
+            ];
+
+            if (!pending[shadeKey]) {
+              chart.createMultipointShape(points, {
+                shape: 'price_range',
+                lock: true,
+                disableSelection: true,
+                disableSave: true,
+                disableUndo: true,
+                overrides: {
+                  backgroundColor: isTp ? '#1890FF' : '#F5222D', // TP=BLUE, SL=RED
+                  transparency: 100,
+                  backgroundTransparency: 100,
+                  linecolor: isTp ? '#1890FF' : '#F5222D',
+                  linewidth: 0,
+                  showLabel: true,
+                  showPrice: true,
+                  showPercent: true,
+                  showPips: false,
+                  pips: false,
+                }
+              }).then(shapeId => {
+                pending[shadeKey] = shapeId;
+                refreshShades();
+              }).catch(err => console.error("Error creating shade:", err));
+            } else {
+              refreshShades();
+            }
+          };
+
+          const lineKey = `${type}Line`;
+          const pointsSizeKey = `${type}PointsSize`;
+          const initialPointsSize = Math.abs(dropPrice - activeEntry);
+          pending[pointsSizeKey] = initialPointsSize;
+
+          if (!pending[lineKey]) {
+            chart.createOrderLine().then(pLine => {
+              if (!pLine) return;
+              const label = type.toUpperCase();
+              const color = isProfit ? '#118DFF' : '#F5222D'; // BLUE for TP, RED for SL
+
+              const pnlText = formatOcoPnlLabel(order, side, activeEntry, dropPrice, activeQty);
+              const tickSize = getTickSizeFull(order);
+              const precision = getTickPrecision(tickSize);
+
+              // Custom text indicating confirmation is needed
+              const pendingText = `${label} [Confirm] ${pnlText}`;
+
+              pLine
+                .setPrice(dropPrice)
+                .setQuantity(pending.quantity?.toString() || qty?.toString())
+                .setText(pendingText)
+                .setLineLength(5) // Labels to the right
+                .setLineStyle(2) // Dashed
+                .setLineColor(color)
+                .setBodyBackgroundColor('#2962FF') // Blue to match the "Confirm" button
+                .setBodyBorderColor('#2962FF')
+                .setBodyTextColor('#FFFFFF')
+                .setTooltip(`Drag lines then confirm`)
+                .setCancelTooltip(`Discard ${label}`);
+
+              pLine.onCancel(() => {
+                if (pendingOcoRef.current[compositeId]) {
+                  pendingOcoRef.current[compositeId][type] = null;
+                  pendingOcoRef.current[compositeId][lineKey] = null;
+                  pendingOcoRef.current[compositeId][pointsSizeKey] = null;
+                  const shadeId = pendingOcoRef.current[compositeId][`${type}Shade`];
+                  if (shadeId) {
+                    try { chart.removeEntity(shadeId); } catch (e) { }
+                    pendingOcoRef.current[compositeId][`${type}Shade`] = null;
+                  }
+                  pLine.remove();
+                  triggerOcoUIUpdate(compositeId, order, chartIndex);
+                }
+              });
+
+              pLine.onMove(() => {
+                const rawPrice = pLine.getPrice();
+                const currentPending = pendingOcoRef.current[compositeId];
+                if (!currentPending) return;
+                const tickSize = getTickSizeFull(order);
+                const precision = getTickPrecision(tickSize);
+                const newPrice = snapToTick(rawPrice, tickSize);
+
+                pLine.setPrice(newPrice); // Force the line to stay on the tick
+                currentPending[type] = newPrice;
+                const pointsSize = Math.abs(newPrice - currentPending.entryPrice);
+                currentPending[pointsSizeKey] = pointsSize;
+
+                const pnlLabel = formatOcoPnlLabel(order, side, currentPending.entryPrice, newPrice, currentPending.quantity || qty);
+
+                if (pnlLabel) pLine.setText(`${label} [Confirm] ${pnlLabel}`);
+
+                refreshShades(true);
+                if (shadeTimeoutRefs.current[chartIndex]) clearTimeout(shadeTimeoutRefs.current[chartIndex]);
+                shadeTimeoutRefs.current[chartIndex] = setTimeout(() => {
+                  if (pendingOcoRef.current[compositeId]) refreshShades(false);
+                }, 1000);
+
+                // Real-time sync to CreateOrder panel
+                triggerOcoUIUpdate(compositeId, order, chartIndex);
+              });
+
+              pending[lineKey] = pLine;
+              pending[type] = dropPrice;
+              updateShade(dropPrice, isProfit);
+
+              triggerOcoUIUpdate(compositeId, order, chartIndex);
+            });
+          } else {
+            const currentPointsSize = Math.abs(dropPrice - activeEntry);
+            const isCurrentlyProfit = (side === 'BUY') ? (dropPrice > activeEntry) : (dropPrice < activeEntry);
+            const pnlLabel = formatOcoPnlLabel(order, side, activeEntry, dropPrice, activeQty);
+
+            pending[lineKey].setPrice(dropPrice);
+            pending[lineKey].setBodyBackgroundColor('#2962FF');
+            pending[lineKey].setBodyBorderColor('#2962FF');
+            const tickSize = getTickSizeFull(order);
+            const precision = getTickPrecision(tickSize);
+            if (pnlLabel) pending[lineKey].setText(`${type.toUpperCase()} [Confirm] ${pnlLabel}`);
+            pending[type] = dropPrice;
+            pending[pointsSizeKey] = initialPointsSize;
+
+            refreshShades(true);
+            if (shadeTimeoutRefs.current[chartIndex]) clearTimeout(shadeTimeoutRefs.current[chartIndex]);
+            shadeTimeoutRefs.current[chartIndex] = setTimeout(() => {
+              if (pendingOcoRef.current[compositeId]) refreshShades(false);
+            }, 1000);
+
+            triggerOcoUIUpdate(compositeId, order, chartIndex);
+          }
+        });
+
+        positionLinesRef.current[compositeId] = {
+          lineInstance: line,
+          entryPrice: entryPrice,
+          side: side,
+          quantity: qty || 1,
+          symbol: order.market_id || order.symbol || order.contract_id,
+          account_id: orderAccountKey,
+          order: order,
+          refreshShades: refreshShades
+        };
+
+        // Set up OCO drag tracker immediately so TP/SL preview appears at drag start
+        if (!chart._hasOcoDragTracker) {
+          chart._hasOcoDragTracker = true;
+
+          const restorePosLineText = (pd) => {
+            try {
+              const pnlEntry = getPositionPnl(pd.symbol, pd.account_id)
+                || (pd.order?.unique_id ? getPositionPnlById(pd.order.unique_id) : null);
+              const livePnl = pnlEntry?.upl ?? pnlEntry?.unrealized_pnl;
+              const tSz = getTickSizeFull(pd.order || { market_id: pd.symbol });
+              const pnlTxt = livePnl != null
+                ? ` (${parseFloat(livePnl) >= 0 ? '+' : ''}$${Math.abs(parseFloat(livePnl)).toFixed(2)})`
+                : '';
+              // Body = TP SL + P&L
+              pd.lineInstance.setText(`TP  SL${pnlTxt}`);
+              // Quantity pill = BUY/SELL + qty
+              const sLabel = pd.side === 'BUY' ? 'BUY' : 'SELL';
+              pd.lineInstance.setQuantity(`${sLabel} ${pd.quantity}`);
+            } catch (e) {
+              try {
+                pd.lineInstance.setText(`TP  SL`);
+                pd.lineInstance.setQuantity(`${pd.side} ${pd.quantity}`);
+              } catch (_) { }
+            }
+            pd._dragLabel = false;
+          };
+
+          try {
+            const iframe = containerRef.current?.querySelector('iframe');
+            if (iframe?.contentDocument) {
+              const addPointerListeners = (doc) => {
+                const setPointerDown = () => { ocoPointerDownRef.current = true; };
+                const setPointerUp = () => {
+                  ocoPointerDownRef.current = false;
+                  isPosLineDraggingRef.current = false;
+                  activeDragCompIdRef.current = null;
+                  Object.keys(positionLinesRef.current).forEach(ck => {
+                    const pd = positionLinesRef.current[ck];
+                    if (pd && pd !== 'PENDING' && pd._dragLabel) restorePosLineText(pd);
+                  });
+                };
+                doc.addEventListener('pointerdown', setPointerDown);
+                doc.addEventListener('mousedown', setPointerDown);
+                doc.addEventListener('pointerup', setPointerUp);
+                doc.addEventListener('mouseup', setPointerUp);
+                doc.addEventListener('pointercancel', setPointerUp);
+              };
+              addPointerListeners(iframe.contentDocument);
+            }
+          } catch (e) { }
+
+          let lastCrosshairUpdate = 0;
+          const SAFARI_THROTTLE_MS = isSafari() ? 16 : 0;
+
+          chart.crossHairMoved().subscribe(null, (param) => {
+            if (SAFARI_THROTTLE_MS > 0) {
+              const now = Date.now();
+              if (now - lastCrosshairUpdate < SAFARI_THROTTLE_MS) return;
+              lastCrosshairUpdate = now;
+            }
+
+            const cursorPrice = param?.price;
+            const visibleRange = chart.getVisibleRange() || { from: Date.now() / 1000 - 86400, to: Date.now() / 1000 + 86400 };
+
+            // Update existing pending OCO entries: shades + labels during TP/SL drag
+            Object.keys(pendingOcoRef.current).forEach(compKey => {
+              if (!compKey.startsWith(`${chartIndex}_`)) return;
+              const p = pendingOcoRef.current[compKey];
+              if (!p || !p.entryPrice) return;
+
+              ['tp', 'sl'].forEach(t => {
+                const shadeKey = `${t}Shade`;
+                const currentPrice = p[t];
+                if (p[shadeKey] && currentPrice !== null) {
+                  try {
+                    const wideFrom = visibleRange.from - 86400 * 7;
+                    const wideTo = visibleRange.to + (visibleRange.to - visibleRange.from) * 1.5;
+                    chart.setShapePoint(p[shadeKey], 0, { time: wideFrom, price: p.entryPrice }, true);
+                    chart.setShapePoint(p[shadeKey], 1, { time: wideTo, price: currentPrice }, true);
+                  } catch (e) { }
+                }
+              });
+
+              if (!ocoPointerDownRef.current) return;
+              if (cursorPrice === undefined || cursorPrice === null) return;
+
+              const distToTp = p.tp !== null ? Math.abs(cursorPrice - p.tp) : Infinity;
+              const distToSl = p.sl !== null ? Math.abs(cursorPrice - p.sl) : Infinity;
+
+              if (distToTp === Infinity || distToSl === Infinity) return;
+
+              const draggedType = distToTp < distToSl ? 'tp' : 'sl';
+              const lineRef = p[`${draggedType}Line`];
+
+              if (lineRef && p.order && p.side && p.entryPrice && p.entryPrice !== 0) {
+                try {
+                  const tickSize = getTickSizeFull(p.order);
+                  const precision = getTickPrecision(tickSize);
+                  const snappedPrice = snapToTick(cursorPrice, tickSize);
+                  const pnlLabel = formatOcoPnlLabel(p.order, p.side, p.entryPrice, snappedPrice, p.quantity);
+                  lineRef.setText(`${draggedType.toUpperCase()} [Confirm] ${pnlLabel}`);
+                  dispatch(setActiveOcoConfirm({
+                    compositeId: compKey,
+                    originalOrder: p.order,
+                    chartIndex,
+                    tp: draggedType === 'tp' ? snappedPrice : p.tp,
+                    sl: draggedType === 'sl' ? snappedPrice : p.sl,
+                    quantity: p.quantity,
+                  }));
+                } catch (e) { }
+              }
+            });
+
+            // Show projected TP/SL + PnL on position line itself while dragging.
+            // Proximity check: cursor must be within 8 ticks of the line's current price.
+            // When panning the chart the cursor moves freely and is rarely right on the line.
+            // When the user actually drags the line, the line follows the cursor so it's always close.
+            if (ocoPointerDownRef.current && cursorPrice != null) {
+              Object.keys(positionLinesRef.current).forEach(compKey => {
+                if (!compKey.startsWith(`${chartIndex}_`)) return;
+                const posData = positionLinesRef.current[compKey];
+                if (!posData || posData === 'PENDING') return;
+                // Don't update text if both TP and SL lines are already placed
+                const existingOco = pendingOcoRef.current[compKey];
+                if (existingOco && existingOco.tpLine && existingOco.slLine) return;
+
+                const entry = posData.entryPrice;
+                if (!entry || entry === 0) return;
+
+                const posOrder = posData.order || { market_id: posData.symbol, account_id: posData.account_id };
+                const tickSz = getTickSizeFull(posOrder);
+
+                // Read the line's actual current price — during a drag the line follows the cursor
+                let lineCurrentPrice = entry;
+                try { lineCurrentPrice = posData.lineInstance.getPrice() || entry; } catch (_) { }
+
+                // If cursor is far from where the line currently is, the user is panning not dragging
+                if (Math.abs(cursorPrice - lineCurrentPrice) > tickSz * 2) return;
+
+                if (Math.abs(cursorPrice - entry) < tickSz * 2) {
+                  if (posData._dragLabel) restorePosLineText(posData);
+                  return;
+                }
+
+                const isBuyPos = posData.side === 'BUY';
+                const isAbove = cursorPrice > entry;
+                const posType = (isBuyPos && isAbove) || (!isBuyPos && !isAbove) ? 'TP' : 'SL';
+                const snappedPrice = snapToTick(cursorPrice, tickSz);
+                const precision = getTickPrecision(tickSz);
+                const pnlLabel = formatOcoPnlLabel(posOrder, posData.side, entry, snappedPrice, posData.quantity);
+
+                try {
+                  posData.lineInstance.setQuantity(`${posType} ${pnlLabel}`);
+                  posData._dragLabel = true;
+                } catch (e) { }
+              });
+            }
+
+            // Working Limit/Stop Order Continuous Drag Tracking
+            if (ocoPointerDownRef.current && cursorPrice != null) {
+              if (!activeDragCompIdRef.current) {
+                let closestDist = Infinity;
+                let closestId = null;
+                Object.keys(limitOrderLinesRef.current).forEach(compId => {
+                  if (!compId.startsWith(`${chartIndex}_`)) return;
+                  const item = limitOrderLinesRef.current[compId];
+                  if (item && item !== 'PENDING' && item.lineInstance) {
+                    try {
+                      const dist = Math.abs(item.lineInstance.getPrice() - cursorPrice);
+                      const tickSize = getTickSizeFull(item.mainOrder);
+                      if (dist < closestDist && dist < (tickSize * 10)) {
+                        closestDist = dist;
+                        closestId = compId;
+                      }
+                    } catch (e) { }
+                  }
+                });
+                if (closestId) activeDragCompIdRef.current = closestId;
+              }
+
+              if (activeDragCompIdRef.current && activeDragCompIdRef.current.startsWith(`${chartIndex}_`)) {
+                const item = limitOrderLinesRef.current[activeDragCompIdRef.current];
+                if (item && item !== 'PENDING' && item.lineInstance) {
+                  try {
+                    const tickSize = getTickSizeFull(item.mainOrder);
+                    const snappedCursor = snapToTick(cursorPrice, tickSize);
+
+                    const orderSym = item.mainOrder.market_id || item.mainOrder.symbol || item.mainOrder.contract_id || '';
+                    const hoverLinkVal = String(item.mainOrder.order_link || '').toLowerCase();
+                    const isOcoOrderHover = hoverLinkVal === 'oco' || hoverLinkVal === 'auto_oco';
+                    const hoverOrderAcc = String(item.mainOrder.account_id || item.mainOrder.account || selectedAccountId || '').toLowerCase();
+                    const ohListHover = Array.isArray(orderHistoryRef.current) ? orderHistoryRef.current : (orderHistoryRef.current?.results || orderHistoryRef.current?.data || []);
+                    const hasSiblingOcoHover = !isOcoOrderHover && ohListHover.some(o => {
+                      const s = String(o.status || '').toLowerCase();
+                      if (!(s === 'working' || s === 'pending' || s === 'submitted' || s === 'modified' || s === 'modify_requested')) return false;
+                      const l = String(o.order_link || '').toLowerCase();
+                      if (l !== 'oco' && l !== 'auto_oco') return false;
+                      const oAcc = String(o.account_id || o.account || '').toLowerCase();
+                      if (oAcc && hoverOrderAcc && oAcc !== hoverOrderAcc) return false;
+                      return isSymbolMatch(o.market_id, orderSym)
+                        || isSymbolMatch(o.symbol, orderSym)
+                        || isSymbolMatch(o.contract_id, orderSym);
+                    });
+                    const dragMatchPos = hasSiblingOcoHover ? null : (activePositionsRef.current || []).find(pos =>
+                      isSymbolMatch(pos.market_id, orderSym) ||
+                      isSymbolMatch(pos.symbol, orderSym) ||
+                      isSymbolMatch(pos.contract_id, orderSym)
+                    );
+
+                    if (dragMatchPos) {
+                      const posEntry = parseFloat(dragMatchPos.entryPrice || dragMatchPos.avg_price || dragMatchPos.average_open_price || 0);
+                      const posQty = Math.abs(parseFloat(dragMatchPos.net_position || dragMatchPos.quantity || 0));
+                      if (posEntry > 0 && posQty > 0) {
+                        const posSide = dragMatchPos.side?.toUpperCase() || (parseFloat(dragMatchPos.net_position || 0) >= 0 ? 'BUY' : 'SELL');
+                        const pnlLabel = formatOcoPnlLabel(dragMatchPos, posSide, posEntry, snappedCursor, item.totalVolume);
+
+                        const baseLabel = item.count > 1
+                          ? `${item.side.startsWith('B') ? 'Buy' : 'Sell'} ${item.typeLabel} (${item.count}) [${item.totalVolume.toFixed(2)}]`
+                          : `${item.side.startsWith('B') ? 'Buy' : 'Sell'} ${item.typeLabel}`;
+
+                        const updatedText = `${baseLabel} ${pnlLabel}`;
+                        if (item.lastText !== updatedText) {
+                          item.lineInstance.setText(updatedText);
+                          item.lastText = updatedText;
+
+                          const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+                          for (let i = 0; i < chartsCount; i++) {
+                            if (i === chartIndex) continue;
+                            const otherCompId = `${i}_${item.groupKey}`;
+                            const otherItem = limitOrderLinesRef.current[otherCompId];
+                            if (otherItem && otherItem !== 'PENDING' && otherItem.lineInstance) {
+                              otherItem.lineInstance.setText(updatedText);
+                              otherItem.lineInstance.setPrice(snappedCursor);
+                              otherItem.lastText = updatedText;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } catch (e) { }
+                }
+              }
+            }
+          });
+        }
+      })
+      .catch(err => console.error("Line Creation Error:", err));
+  };
+
+  const triggerOcoUIUpdate = (compositeId, originalOrder, chartIndex) => {
+    const pending = pendingOcoRef.current[compositeId];
+    if (!pending || (pending.tp === null && pending.sl === null)) {
+      dispatch(clearActiveOcoConfirm());
+      return;
+    }
+
+    dispatch(setActiveOcoConfirm({
+      compositeId,
+      originalOrder,
+      chartIndex,
+      tp: pending.tp,
+      sl: pending.sl,
+      quantity: pending.quantity
+    }));
+  };
+
+  const clearOcoElements = (compositeId, chartIndex) => {
+    const pending = pendingOcoRef.current[compositeId];
+    if (!pending) {
+      dispatch(clearActiveOcoConfirm());
+      return;
+    }
+
+    console.log(`[Chart] Cleaning up OCO elements for ${compositeId}`);
+
+    // 1. Remove Lines
+    if (pending.tpLine) try { pending.tpLine.remove(); } catch (e) { }
+    if (pending.slLine) try { pending.slLine.remove(); } catch (e) { }
+
+    // 2. Remove Shapes/Shades
+    const tryRemoveFromChart = (chart) => {
+      if (!chart) return;
+      if (pending.tpShade) try { chart.removeEntity(pending.tpShade); } catch (e) { }
+      if (pending.slShade) try { chart.removeEntity(pending.slShade); } catch (e) { }
+    };
+
+    try {
+      const specificChart = widgetRef.current?.chart(chartIndex);
+      tryRemoveFromChart(specificChart);
+
+      const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+      for (let i = 0; i < chartsCount; i++) {
+        if (i === chartIndex) continue;
+        tryRemoveFromChart(widgetRef.current.chart(i));
+      }
+    } catch (e) {
+      console.warn("[Chart] Error during shape cleanup:", e);
+    }
+
+    // 3. Clear State
+    delete pendingOcoRef.current[compositeId];
+    dispatch(clearActiveOcoConfirm());
+  };
+
+  const handleCancelOcoConfig = () => {
+    if (!activeOcoConfirm) return;
+    clearOcoElements(activeOcoConfirm.compositeId, activeOcoConfirm.chartIndex);
+  };
+
+  const checkAndSubmitOco = async (compositeId, originalOrder, chartIndex) => {
+    const pendingData = pendingOcoRef.current[compositeId];
+    if (!pendingData || pendingData.tp === null || pendingData.sl === null) {
+      return;
+    }
+
+    // Capture values before clearing elements
+    const tpPrice = pendingData.tp;
+    const slPrice = pendingData.sl;
+
+    //  IMMEDIATE CLEANUP: Remove lines/shades and dismiss buttons right away
+    // This provides the "instant" feedback the user expects (same as cancel)
+    clearOcoElements(compositeId, chartIndex);
+
+    const side = originalOrder.side?.toUpperCase() || (originalOrder.net_position >= 0 ? 'BUY' : 'SELL');
+    const isBuy = side === 'BUY';
+    const closingSide = isBuy ? 'sell' : 'buy';
+
+    const posSym = originalOrder.market_id || originalOrder.symbol;
+    const contrId = originalOrder.contract_id || originalOrder.symbol;
+    const exchId = originalOrder.exchange_id || 'CME_Eq';
+
+    try {
+      //  STILL DO ASYNC WORK: Resolve market_id
+      const verifiedId = await resolveMarketId(exchId, contrId);
+      const officialMarketId = verifiedId || getCachedMarketId(contrId) || posSym;
+
+      const payload = {
+        type: "submit_bracket_order",
+        account_id: selectedAccountId,
+        market_id: officialMarketId,
+        order_link: "oco",
+        orders: [
+          {
+            buy_sell: closingSide,
+            volume: String(activeOcoConfirm?.quantity || Math.abs(originalOrder.net_position || originalOrder.quantity || 1)),
+            price_type: "limit",
+            limit_price: String(tpPrice)
+          },
+          {
+            buy_sell: closingSide,
+            volume: String(activeOcoConfirm?.quantity || Math.abs(originalOrder.net_position || originalOrder.quantity || 1)),
+            price_type: "stop_market",
+            stop_price: String(slPrice)
+          }
+        ]
+      };
+
+      await sendMessageWithResponse(payload);
+      message.success("OCO Order Submitted Successfully");
+
+      // Refresh order history 3 seconds after OCO confirmation so the new orders appear
+      setTimeout(() => {
+        dispatch(fetchOrderHistory({ account_id: selectedAccountId }));
+      }, 3000);
+    } catch (err) {
+      console.error(`[Chart] OCO Submission Failed:`, err);
+      // message.error(`OCO Failed: ${err.detail || err.message || 'Unknown error'}`);
+    }
+  };
+
+  // ========================================
+  // PERSISTENCE: Session Storage Helpers
+  // ========================================
+  const getStorageKey = (parentOrderId) => `pending_lines_${parentOrderId}`;
+
+  const savePendingLineToStorage = (parentOrderId, symbol, type, side, price, qty) => {
+    try {
+      const key = getStorageKey(parentOrderId);
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      existing[type] = { symbol, side, price, qty };
+      localStorage.setItem(key, JSON.stringify(existing));
+    } catch (e) {
+      console.error("[Storage] Save failed:", e);
+    }
+  };
+
+  const removePendingLineFromStorage = (parentOrderId, type) => {
+    try {
+      const key = getStorageKey(parentOrderId);
+      const existing = JSON.parse(localStorage.getItem(key) || '{}');
+      if (existing[type]) {
+        delete existing[type];
+        if (Object.keys(existing).length === 0) {
+          localStorage.removeItem(key);
+        } else {
+          localStorage.setItem(key, JSON.stringify(existing));
+        }
+      }
+    } catch (e) {
+      console.error("[Storage] Remove failed:", e);
+    }
+  };
+
+  const clearPendingLinesFromStorage = (parentOrderId) => {
+    localStorage.removeItem(getStorageKey(parentOrderId));
+  };
+
+  //  Convert TradingView resolution to seconds
+  const resolutionToSeconds = (resolution) => {
+    const map = {
+      '1S': 1,
+      '1': 60,
+      '2': 120,
+      '5': 300,
+      '10': 600,
+      '15': 900,
+      '30': 1800,
+      '60': 3600,
+      '240': 14400,
+      '480': 28800,
+      '1D': 86400,
+      '1W': 604800,
+      '1M': 2592000,
+    };
+
+    return map[resolution] || 60;
+  };
+
+
+  // ========================================
+  // UTILITY: Clear All Trade Arrows (For Interaction Stability)
+  // ========================================
+  const clearAllTradeArrows = () => {
+    if (!widgetRef.current) return;
+    Object.keys(tradeArrowsRef.current).forEach(chartIndex => {
+      const paneArrows = tradeArrowsRef.current[chartIndex];
+      if (!paneArrows) return;
+      let chart;
+      try { chart = widgetRef.current.chart(Number(chartIndex)); } catch (e) { }
+      if (!chart) try { chart = widgetRef.current.activeChart(); } catch (e) { }
+      Object.keys(paneArrows).forEach(orderKey => {
+        const shapeId = paneArrows[orderKey];
+        if (shapeId && chart) {
+          Promise.resolve(shapeId)
+            .then(entityId => { if (entityId) try { chart.removeEntity(entityId); } catch (e) { } })
+            .catch(() => { });
+        }
+        delete paneArrows[orderKey];
+      });
+      tradeArrowsRef.current[chartIndex] = {};
+    });
+  };
+
+
+
+  // ========================================
+  // MAIN: Draw Trade Arrows (Top 50 Always Visible)
+  // ========================================
+  const drawTradeArrows = (chart, chartIndex, orders) => {
+    if (!chart || !isInitialized) return;
+    if (!showTradeArrowsRef.current) return;
+    const paneSym = chart.symbol();
+    if (!paneSym) return;
+
+    if (!tradeArrowsRef.current[chartIndex]) {
+      tradeArrowsRef.current[chartIndex] = {};
+    }
+
+    const currentPaneArrows = tradeArrowsRef.current[chartIndex];
+    let targetOrderIds = new Set();
+    const perBarCounts = {}; // key: snappedTime_side -> count
+
+    // Helper: Strictly parse trade times. If it has 'Z', it's UTC.
+    // If it's a raw string without TZ, we assume it's Chicago (-05:00) to match bars.
+    const parseTradeTime = (val) => {
+      if (!val) return 0;
+      if (typeof val === 'number') return val > 1e12 ? val : val * 1000;
+      let ts = String(val).trim();
+      const hasZone = /Z|[+]|([-]\d{2}(:?\d{2})?$)/.test(ts);
+      if (!hasZone) {
+        return new Date(ts + '-05:00').getTime();
+      }
+      return new Date(ts).getTime();
+    };
+
+    // 1. FILTER & SORT (Strictly using created_at)
+    const sAccId = normalizeAccountKey(selectedAccountId);
+    const sAccName = normalizeAccountName(selectedAccountName);
+
+    const allFills = (orders || []).filter(o => {
+      const status = String(o.status || "").toLowerCase();
+      if (status !== "filled") return false;
+
+      //  STRICT: Match by Account ID OR Account Name
+      const oAccId = normalizeAccountKey(getAccountKey(o));
+      const oAccName = normalizeAccountName(o.account_name);
+
+      const isAccMatch = (oAccId && sAccId && oAccId === sAccId) || (oAccName && sAccName && oAccName === sAccName);
+
+      if (!isAccMatch) {
+        if (Math.random() < 0.05) {
+          console.log(`[TradeArrows] Filter: Account mismatch. Order(ID:"${oAccId}", Name:"${oAccName}"), Selected(ID:"${sAccId}", Name:"${sAccName}")`);
+        }
+        return false;
+      }
+
+      const oSym = o.market_id || o.symbol || o.contract_id;
+      if (!isSymbolMatch(oSym, paneSym)) {
+        if (Math.random() < 0.05) {
+          console.debug(`[TradeArrows] Filter: Symbol mismatch. Order: "${oSym}", Pane: "${paneSym}"`);
+        }
+        return false;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      return parseTradeTime(b.created_at || b.filled_at || b.time) - parseTradeTime(a.created_at || a.filled_at || a.time);
+    });
+
+    const limit = 50;
+    const historyToDraw = allFills.slice(0, limit);
+
+    //  VERBOSE LOG: Dump first item to verify keys and structure
+    if (orders && orders.length > 0 && Math.random() < 0.1) {
+      console.log("[TradeArrows] Redux Debug (First Item):", orders[0]);
+    }
+
+    console.log(`[TradeArrows] Pane ${chartIndex} Symbol: ${paneSym}, Acc: ${selectedAccountId}, Fills: ${allFills.length}, Drawing: ${historyToDraw.length}`);
+
+    for (const o of historyToDraw) {
+      const orderKey = `${selectedAccountId}_${String(o.unique_id || o.id || o.order_id)}`;
+      targetOrderIds.add(orderKey);
+
+      if (!currentPaneArrows[orderKey]) {
+        let basePrice = parseFloat(o.avg_fill_price || o.fill_price || o.price || 0);
+        //  STRICT: Use created_at as requested
+        const rawTime = o.created_at || o.filled_at || o.time;
+        if (!rawTime) continue;
+
+        const execTimeMs = parseTradeTime(rawTime);
+        if (isNaN(execTimeMs) || !execTimeMs) continue;
+
+        const execTimeSec = Math.floor(execTimeMs / 1000);
+        const resolutionSec = resolutionToSeconds(chart.resolution());
+        const snappedTimeSec = Math.floor(execTimeSec / resolutionSec) * resolutionSec;
+
+        const isBuy = String(o.side || "").toUpperCase().startsWith("B");
+        const color = isBuy ? "#1890FF" : "#F5222D";
+
+        //  PRECISION POSITIONING: Lookup OHLC bar
+        let finalPrice = basePrice;
+        const symCache = barsCacheRef.current[paneSym] || barsCacheRef.current[activeSymbol];
+
+        let bar = symCache ? (symCache.get(snappedTimeSec * 1000)) : null;
+        let matchStatus = " MATCH";
+
+        // Snapping: If NO bar found, try to find the very last bar (for trades near market close)
+        if (!bar && symCache && symCache.size > 0) {
+          const cacheKeys = Array.from(symCache.keys()).filter(k => k > 1000000).sort((a, b) => a - b);
+          if (cacheKeys.length > 0) {
+            const lastBarTime = cacheKeys[cacheKeys.length - 1];
+            // If within 15 mins of last bar, snap it
+            if (Math.abs(execTimeMs - lastBarTime) < 15 * 60 * 1000) {
+              bar = symCache.get(lastBarTime);
+              matchStatus = " SNAPPED (EOD)";
+            } else {
+              matchStatus = " NO BAR";
+            }
+          }
+        }
+
+        //  Detailed Debug Log (Human Readable)
+        // console.debug(`[TradeArrows] ${matchStatus} | ${paneSym} | Actual: ${new Date(execTimeMs).toLocaleString()} | Snapped: ${new Date(snappedTimeSec * 1000).toLocaleString()}`);
+
+        // Scale padding + stack step with timeframe (resolutionSec already computed above)
+        const paddingPct = resolutionSec >= 86400 ? 0.12   // 1D+
+          : resolutionSec >= 14400 ? 0.09   // 4H+
+            : resolutionSec >= 3600 ? 0.07   // 1H+
+              : resolutionSec >= 900 ? 0.05   // 15M+
+                : resolutionSec >= 300 ? 0.03   // 5M+
+                  : 0.01;                           // <5M
+        const stackPct = resolutionSec >= 14400 ? 0.06   // 4H+ — wide spread so stacked arrows are readable
+          : resolutionSec >= 3600 ? 0.04   // 1H+
+            : resolutionSec >= 300 ? 0.02   // 5M+
+              : 0.01;                           // <5M
+
+        if (bar) {
+          const padding = (bar.high - bar.low) * paddingPct;
+          finalPrice = isBuy ? bar.low - padding : bar.high + padding;
+        } else {
+          finalPrice = basePrice;
+        }
+
+        // De-overlap: stack vertically for multiple fills on the same candle
+        const stackKey = `${snappedTimeSec}_${isBuy ? 'B' : 'S'}`;
+        const stackIndex = perBarCounts[stackKey] || 0;
+        perBarCounts[stackKey] = stackIndex + 1;
+        if (stackIndex > 0) {
+          const range = bar ? Math.max(Math.abs(bar.high - bar.low), basePrice * 0.001) : Math.max(basePrice * 0.001, 0.01);
+          finalPrice += (isBuy ? -1 : 1) * (range * stackPct) * stackIndex;
+        }
+
+        try {
+          const shapeTime = (bar && bar.time) ? (bar.time > 1e12 ? Math.floor(bar.time / 1000) : Math.floor(bar.time)) : snappedTimeSec;
+
+          const shape = chart.createShape(
+            { time: shapeTime, price: isBuy ? Math.min(finalPrice, basePrice) : Math.max(finalPrice, basePrice) },
+            {
+              shape: isBuy ? 'arrow_up' : 'arrow_down',
+              lock: true,
+              disableSelection: true,
+              disableSave: true,
+              disableUndo: true,
+              overrides: {
+                color: isBuy ? '#00C853' : '#FF1744',
+                arrowColor: isBuy ? '#00C853' : '#FF1744',
+                fontsize: window.innerWidth < 768 ? 10 : 12,
+                bold: false,
+                text: isBuy ? 'BUY' : 'SELL',
+                textColor: isBuy ? '#00C853' : '#FF1744',
+                markerSize: 1,
+                linewidth: 1,
+              },
+            }
+          );
+          if (shape) {
+            // Store the Promise immediately so clearAllTradeArrows can find and remove
+            // this arrow even if called before createShape resolves.
+            // clearAllTradeArrows wraps every stored value in Promise.resolve(), so it
+            // handles both a raw EntityId and a Promise<EntityId> transparently.
+            currentPaneArrows[orderKey] = shape;
+          }
+        } catch (e) {
+          console.error("[Chart] Error creating trade arrow:", e);
+        }
+      }
+    }
+
+    // Cleanup arrows that are no longer targeted
+    let currentRemoved = 0;
+    Object.keys(currentPaneArrows).forEach(orderKey => {
+      if (!targetOrderIds.has(orderKey)) {
+        const shapeId = currentPaneArrows[orderKey];
+        if (shapeId) {
+          Promise.resolve(shapeId)
+            .then(entityId => { if (entityId) try { chart.removeEntity(entityId); } catch (e) { } })
+            .catch(() => { });
+          currentRemoved++;
+        }
+        delete currentPaneArrows[orderKey];
+      }
+    });
+    if (currentRemoved > 0) {
+      console.log(`[TradeArrows] Cleaned up ${currentRemoved} stale arrows from Pane ${chartIndex}`);
+    }
+  };
+
+  //  FORCE WIPE: Immediate cleanup on account switch
+  useEffect(() => {
+    if (!widgetRef.current || !isInitialized) return;
+
+    // Count existing arrows before wiping
+    const totalArrowsBefore = Object.values(tradeArrowsRef.current).reduce((acc, pane) => acc + Object.keys(pane || {}).length, 0);
+    console.log(`[TradeArrows] Account Switch Event! Selected: "${selectedAccountId}". Arrows in cache: ${totalArrowsBefore}`);
+
+    if (totalArrowsBefore === 0) return;
+
+    // Scour all panes and all cached arrow IDs
+    const chartsCount = widgetRef.current.chartsCount();
+    const charts = [];
+    for (let i = 0; i < chartsCount; i++) {
+      try {
+        const c = widgetRef.current.chart(i);
+        if (c) charts.push(c);
+      } catch (e) { }
+    }
+    if (charts.length === 0) charts.push(widgetRef.current.activeChart());
+
+    let removedCount = 0;
+    // We iterate over everything stored in tradeArrowsRef
+    Object.keys(tradeArrowsRef.current).forEach(chartIndex => {
+      const paneArrows = tradeArrowsRef.current[chartIndex];
+      if (!paneArrows) return;
+
+      const chart = charts[chartIndex] || widgetRef.current.activeChart();
+      console.log(`[TradeArrows] Scouring Pane ${chartIndex} for entities to remove...`);
+      Object.keys(paneArrows).forEach(orderKey => {
+        try {
+          const shapeId = paneArrows[orderKey];
+          if (shapeId) {
+            chart.removeEntity(shapeId);
+            removedCount++;
+          }
+        } catch (e) {
+          console.debug(`[TradeArrows] Force-wipe removal error (Pane ${chartIndex}, Order ${orderKey}):`, e);
+        }
+        delete paneArrows[orderKey];
+      });
+      tradeArrowsRef.current[chartIndex] = {};
+    });
+
+    console.log(`[TradeArrows] Force-wipe complete. Removed ${removedCount} stale entities.`);
+  }, [selectedAccountId, isInitialized]);
+
+  // SYNC TRADE ARROWS
+  useEffect(() => {
+    //  GATE LOG: Catch every trigger of this effect
+    const rawOrders = orderHistory?.results || orderHistory?.data || (Array.isArray(orderHistory) ? orderHistory : []);
+    console.log(`[TradeArrows] Sync Effect Check:`, {
+      isInitialized,
+      hasWidget: !!widgetRef.current,
+      selectedAccountId,
+      ordersFound: rawOrders.length,
+      trigger: arrowRedrawTrigger
+    });
+
+    if (!isInitialized || !widgetRef.current) return;
+
+    if (isDraggingRef.current) {
+      console.log("Skipped arrow redraw during drag");
+      return;
+    }
+    const ordersAccHint = getOrderHistoryAccountHint(orderHistory);
+    const selectedAccKey = normalizeAccountKey(selectedAccountId);
+
+    // Account validation: If hints exist, they must match.
+    // If orderHistory is a raw array without hint, we allow it.
+    const isAccMatch = (!selectedAccKey || !ordersAccHint || ordersAccHint === selectedAccKey);
+    const globalOrders = isAccMatch ? rawOrders : [];
+
+    //  Cleanup: If account mismatch, wipe THIS pane's arrows immediately
+    if (!isAccMatch) {
+      onTickHandlers.current.forEach((item, uid) => {
+        const chartIndexMatch = uid.match(/(?:^|ser_)(\d+)/);
+        const idx = chartIndexMatch ? parseInt(chartIndexMatch[1]) : 0;
+        const chart = widgetRef.current.chart(idx) || widgetRef.current.activeChart();
+        drawTradeArrows(chart, idx, []);
+      });
+      return;
+    }
+
+    console.log(`[ArrowSync] Running. orders=${globalOrders.length}, isAccMatch=${isAccMatch}`);
+
+    const chartsCount = widgetRef.current.chartsCount();
+    for (let i = 0; i < chartsCount; i++) {
+      try {
+        const chart = widgetRef.current.chart(i);
+        drawTradeArrows(chart, i, globalOrders);
+      } catch (err) {
+        console.error(`[ArrowSync] Error on pane ${i}:`, err);
+      }
+    }
+
+  }, [orderHistory, isInitialized, layoutSyncId, selectedAccountId, selectedAccountName, arrowRedrawTrigger]);
+
+  //  DEDICATED INITIAL ARROW DRAW: Ensures arrows appear on first page load
+  // The problem: early `drawTradeArrows` calls create shape refs via `createShape`,
+  // but the shapes are invisible because TradingView hasn't fully rendered bars yet.
+  // Later calls see the refs exist and SKIP re-creation. Dragging works because
+  // `clearAllTradeArrows()` wipes those stale refs first.
+  // Fix: Clear all refs, then trigger a fresh redraw after a generous delay.
+  useEffect(() => {
+    const ordersAccHint = getOrderHistoryAccountHint(orderHistory);
+    const selectedAccKey = normalizeAccountKey(selectedAccountId);
+    const rawOrders = orderHistory?.results || orderHistory?.data || (Array.isArray(orderHistory) ? orderHistory : []);
+    const isAccMatch = (!selectedAccKey || !ordersAccHint || ordersAccHint === selectedAccKey);
+    const globalOrders = isAccMatch ? rawOrders : [];
+
+    if (!isInitialized || !widgetRef.current || !globalOrders.length) {
+      if (globalOrders.length > 0) {
+        console.debug("[InitialArrows] Waiting for initialization...", { isInitialized, hasWidget: !!widgetRef.current });
+      }
+      return;
+    }
+
+    const filledOrders = globalOrders.filter(o => String(o.status || "").toLowerCase() === "filled");
+    if (filledOrders.length === 0) return;
+
+    console.log(`[InitialArrows] Scheduling initial arrow draw. ${filledOrders.length} filled orders found.`);
+
+    const timer = setTimeout(() => {
+      if (isDraggingRef.current) return;
+      console.log(`[InitialArrows] Clearing stale refs and triggering fresh draw.`);
+      //  KEY FIX: Clear all stale arrow refs first (mimics what drag handler does)
+      clearAllTradeArrows();
+      setArrowRedrawTrigger(prev => prev + 1);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [isInitialized, orderHistory]);
 
 
 
 
 
-jiuiyhbb hhu uhuuoij iohuhuu uhuhl uihhuhuihuhihhuiiuhhih ihuihuhiu huiuui uhuhi h  h h uh uh  hhoi  ohh oo hhh    u  huib n hyuu iighbvvgg giggyg yhybkjk uuhug kkbbbkhbuu pjjohuihuuh yyb yygyyii j
+  // ========================================
+  // MAIN: Create Draggable Limit Order Line (Aggregated)
+  // ========================================
+  const createLimitOrderLine = (orders, targetChartIndex = null) => {
+    let chart;
+    let chartIndex;
+    try {
+      if (targetChartIndex !== null) {
+        chart = widgetRef.current?.chart(targetChartIndex);
+        chartIndex = targetChartIndex;
+      } else {
+        chart = widgetRef.current?.activeChart();
+        chartIndex = 0;
+      }
+    } catch (e) { return; }
+
+    if (!chart || !orders?.length) return;
+
+    const mainOrder = orders[0];
+    const groupPrice = parseFloat(mainOrder.limit_price ?? mainOrder.stop_price ?? mainOrder.trail_price ?? 0);
+    const side = String(mainOrder.side || "").toUpperCase();
+    const totalVolume = orders.reduce((sum, o) => sum + parseFloat(o.volume || 1), 0);
+    const count = orders.length;
+
+    const groupKey = getOrderGroupKey(mainOrder);
+    const compositeId = `${chartIndex}_${groupKey}`;
+
+    if (!groupPrice || isNaN(groupPrice)) return;
+
+    //  AVOID DUPLICATES: If a line already exists for this group (price/side), skip.
+    if (limitOrderLinesRef.current[compositeId]) {
+      console.log(`[Chart] Skipping duplicate limit line creation for: ${compositeId}`);
+      return;
+    }
+
+    // 🛡️ STABILIZATION: Check if these identical order IDs are already registered 
+    // under a different price (likely due to a manual drag & modify sync).
+    let matchedExisting = false;
+    const incomingIds = orders.map(o => String(o.unique_id || o.id));
+
+    Object.keys(limitOrderLinesRef.current).forEach(cid => {
+      if (!cid.startsWith(`${chartIndex}_`)) return;
+      const item = limitOrderLinesRef.current[cid];
+      if (item && item !== 'PENDING' && item.orderIds) {
+        // Check if there is any overlap in Order IDs
+        const hasOverlap = item.orderIds.some(id => incomingIds.includes(id));
+        if (hasOverlap) {
+          console.log(`[Chart] Stabilization (Instant): Re-mapping existing line ${cid} -> ${compositeId}`);
+          limitOrderLinesRef.current[compositeId] = item;
+          // Sync internal metadata
+          item.price = groupPrice;
+          item.groupKey = groupKey;
+          item.orderIds = incomingIds;
+          // Synchronize visual position
+          try { item.lineInstance.setPrice(groupPrice); } catch (e) { }
+          if (cid !== compositeId) delete limitOrderLinesRef.current[cid];
+          matchedExisting = true;
+        }
+      }
+    });
+    if (matchedExisting) return;
+
+    // Async Protection: Mark as creating
+    limitOrderLinesRef.current[compositeId] = 'PENDING';
+
+    chart.createOrderLine()
+      .then(line => {
+        if (!line) {
+          delete limitOrderLinesRef.current[compositeId];
+          return;
+        }
+
+        let typeLabel = "Order";
+        if (mainOrder.limit_price != null) typeLabel = "Limit";
+        else if (mainOrder.stop_price != null) typeLabel = "Stop";
+        else if (mainOrder.trail_price != null) typeLabel = "Trail";
+
+        const tickSize = getTickSizeFull(mainOrder);
+        const precision = getTickPrecision(tickSize);
+
+        const stackCount = getStackCount(mainOrder);
+        const stackSuffix = stackCount > 1 ? ` ×${stackCount}` : '';
+        const labelText = count > 1
+          ? `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel} (${count}) [${totalVolume.toFixed(2)}]${stackSuffix}`
+          : `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel}${stackSuffix}`;
+
+        const color = side.startsWith('B') ? '#26a69a' : '#ef5350';
+
+        const isOcoOrder = String(mainOrder.order_link || '').toLowerCase() === 'oco';
+        // For OCO orders, show the current net position quantity (not the order's own volume).
+        // For regular orders, show total volume. For other linked order types, show nothing.
+        let displayQty = '';
+        if (isOcoOrder) {
+          const ocoMatchPos = activePositions?.find(pos =>
+            isSymbolMatch(pos.market_id || pos.symbol || pos.contract_id, chart?.symbol?.()) &&
+            String(pos.account_id || pos.account || '').toLowerCase() === String(selectedAccountId || '').toLowerCase()
+          );
+          displayQty = ocoMatchPos
+            ? String(Math.abs(parseFloat(ocoMatchPos.net_position || ocoMatchPos.quantity || totalVolume)))
+            : String(totalVolume);
+        } else if (!mainOrder.order_link || mainOrder.order_link === 'none') {
+          displayQty = String(totalVolume);
+        }
+        line
+          .setPrice(groupPrice)
+          .setQuantity(displayQty)
+          .setText(labelText)
+          .setLineLength(5) // Labels to the right
+          .setLineColor(color)
+          .setBodyTextColor('#FFFFFF')
+          .setBodyBackgroundColor(color)
+          .setBodyBorderColor(color)
+          .setLineStyle(0)
+          .setCancelTooltip(count > 1 ? `Cancel All ${count} Orders` : "Cancel Order")
+
+          .onMove(function () {
+            isDraggingRef.current = true;
+            clearAllTradeArrows();
+            if (dragTimeoutRef.current) clearTimeout(dragTimeoutRef.current);
+            dragTimeoutRef.current = setTimeout(() => {
+              isDraggingRef.current = false;
+              setArrowRedrawTrigger(prev => prev + 1);
+            }, 500); // short debounce
+
+            const rawPrice = this.getPrice();
+            const tickSize = getTickSizeFull(mainOrder);
+            const precision = getTickPrecision(tickSize);
+            const newPrice = snapToTick(rawPrice, tickSize);
+
+            // Force visual snap
+            this.setPrice(newPrice);
+
+            const dragStackCount = getStackCount(mainOrder);
+            const dragStackSuffix = dragStackCount > 1 ? ` ×${dragStackCount}` : '';
+            const baseLabel = count > 1
+              ? `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel} (${count}) [${totalVolume.toFixed(2)}]${dragStackSuffix}`
+              : `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel}${dragStackSuffix}`;
+
+            let updatedText = baseLabel;
+            // Live P&L during drag — mirrors the static P&L live updater logic.
+            // Naked orders for a symbol+account that already has an OCO bracket
+            // suppress P&L (the bracket is the real exit; this order is unrelated).
+            const orderSym = mainOrder.market_id || mainOrder.symbol || mainOrder.contract_id || '';
+            const dragLinkVal = String(mainOrder.order_link || '').toLowerCase();
+            const isOcoOrderDrag = dragLinkVal === 'oco' || dragLinkVal === 'auto_oco';
+            const dragOrderAcc = String(mainOrder.account_id || mainOrder.account || selectedAccountId || '').toLowerCase();
+            const ohList = Array.isArray(orderHistoryRef.current) ? orderHistoryRef.current : (orderHistoryRef.current?.results || orderHistoryRef.current?.data || []);
+            const hasSiblingOcoDrag = !isOcoOrderDrag && ohList.some(o => {
+              const s = String(o.status || '').toLowerCase();
+              if (!(s === 'working' || s === 'pending' || s === 'submitted' || s === 'modified' || s === 'modify_requested')) return false;
+              const l = String(o.order_link || '').toLowerCase();
+              if (l !== 'oco' && l !== 'auto_oco') return false;
+              const oAcc = String(o.account_id || o.account || '').toLowerCase();
+              if (oAcc && dragOrderAcc && oAcc !== dragOrderAcc) return false;
+              return isSymbolMatch(o.market_id, orderSym)
+                || isSymbolMatch(o.symbol, orderSym)
+                || isSymbolMatch(o.contract_id, orderSym);
+            });
+            const dragMatchPos = hasSiblingOcoDrag ? null : (activePositionsRef.current || []).find(pos =>
+              isSymbolMatch(pos.market_id, orderSym) ||
+              isSymbolMatch(pos.symbol, orderSym) ||
+              isSymbolMatch(pos.contract_id, orderSym)
+            );
+            if (dragMatchPos) {
+              const posEntry = parseFloat(dragMatchPos.entryPrice || dragMatchPos.avg_price || dragMatchPos.average_open_price || 0);
+              const posQty = Math.abs(parseFloat(dragMatchPos.net_position || dragMatchPos.quantity || 0));
+              if (posEntry > 0 && posQty > 0) {
+                const posSide = dragMatchPos.side?.toUpperCase() || (parseFloat(dragMatchPos.net_position || 0) >= 0 ? 'BUY' : 'SELL');
+                const pnlLabel = formatOcoPnlLabel(dragMatchPos, posSide, posEntry, newPrice, totalVolume);
+                updatedText = `${baseLabel} ${pnlLabel}`;
+              }
+            }
+            this.setText(updatedText);
+            // Keep lastText in sync so crossHairMoved tracker and runSync see the current text
+            const selfItem = limitOrderLinesRef.current[compositeId];
+            if (selfItem && selfItem !== 'PENDING') selfItem.lastText = updatedText;
+
+            //  SYNC: Move on ALL charts
+            const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+            for (let i = 0; i < chartsCount; i++) {
+              const otherCompId = `${i}_${groupKey}`;
+              if (limitOrderLinesRef.current[otherCompId] && limitOrderLinesRef.current[otherCompId] !== 'PENDING') {
+                const item = limitOrderLinesRef.current[otherCompId];
+                item.lineInstance.setPrice(newPrice);
+
+                //  STABILIZE REGISTRY: Update the key to the new price so sync doesn't duplicate it
+                const groupUpdatePayload = { ...mainOrder };
+                if (mainOrder.limit_price != null) groupUpdatePayload.limit_price = newPrice;
+                else if (mainOrder.stop_price != null) groupUpdatePayload.stop_price = newPrice;
+                else if (mainOrder.trail_price != null) groupUpdatePayload.trail_price = newPrice;
+
+                const newGroupKey = getOrderGroupKey(groupUpdatePayload);
+                const newCompositeId = `${i}_${newGroupKey}`;
+
+                if (newCompositeId !== otherCompId) {
+                  console.log(`[Chart] Drag Sync: Moving registry key from ${otherCompId} to ${newCompositeId}`);
+                  limitOrderLinesRef.current[newCompositeId] = item;
+                  delete limitOrderLinesRef.current[otherCompId];
+                }
+              }
+            }
+
+            //  API: Modify ALL orders in the group via REST API
+            orders.forEach(async (o) => {
+              try {
+                let workingVol;
+                if (String(o.order_link || '').toLowerCase() === 'oco') {
+                  const oSym = o.market_id || o.symbol || o.contract_id || '';
+                  const matchPos = (activePositionsRef.current || []).find(p =>
+                    isSymbolMatch(p.market_id, oSym) ||
+                    isSymbolMatch(p.symbol, oSym) ||
+                    isSymbolMatch(p.contract_id, oSym)
+                  );
+
+                  // CRITICAL FIX: If position is closed (no matchPos), SKIP modify entirely.
+                  // OCO orders should be cancelled when the parent position closes, not modified.
+                  // Attempting to modify with a fallback volume creates ghost orders.
+                  if (!matchPos) {
+                    console.log(`[Chart] Skipping modify for OCO order ${o.unique_id || o.id}: Parent position closed`);
+                    return; // Skip this order
+                  }
+
+                  workingVol = Math.abs(parseFloat(matchPos.net_position || matchPos.quantity || 0));
+
+                  // Additional safety: If position volume is 0, skip
+                  if (workingVol < 0.001) {
+                    console.log(`[Chart] Skipping modify for OCO order ${o.unique_id || o.id}: Position volume is 0`);
+                    return;
+                  }
+                } else {
+                  workingVol = o.volume || o.quantity || 1;
+                }
+
+                const payload = {
+                  unique_id: String(o.unique_id || o.id),
+                  account_id: o.account_id || selectedAccountId,
+                  market_id: o.market_id,
+                  volume: workingVol,
+                };
+                if (o.limit_price != null) payload.limit_price = parseFloat(newPrice);
+                else if (o.stop_price != null) payload.stop_price = parseFloat(newPrice);
+                else if (o.trail_price != null) payload.trail_price = parseFloat(newPrice);
+
+                dispatch(modifyOrder(payload));
+                // Record the dropped price so runSync's heartbeat doesn't snap the
+                // line back to the stale orderHistory price during the API round-trip.
+                pendingDragModifyRef.current[String(o.unique_id || o.id)] = {
+                  price: parseFloat(newPrice),
+                  expiresAt: Date.now() + 5000,
+                };
+                console.log("[Chart] Modify request sent via REST:", payload.unique_id, "volume:", workingVol);
+              } catch (err) {
+                console.error('Modify failed:', err);
+              }
+            });
+          })
+          .onCancel(function () {
+            orders.forEach(o => {
+              try {
+                sendMessageWithResponse({
+                  type: 'cancel_order',
+                  unique_id: o.unique_id || o.id,
+                  account_id: selectedAccountId,
+                  market_id: o.market_id
+                });
+              } catch (err) { console.error('Cancel failed:', err); }
+            });
+
+            //  SYNC: Cancel on ALL charts
+            const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+            for (let i = 0; i < chartsCount; i++) {
+              const otherCompId = `${i}_${groupKey}`;
+              if (limitOrderLinesRef.current[otherCompId] && limitOrderLinesRef.current[otherCompId] !== 'PENDING') {
+                try { limitOrderLinesRef.current[otherCompId].lineInstance.remove(); } catch (e) { }
+                delete limitOrderLinesRef.current[otherCompId];
+              }
+            }
+
+            // SYNC removed
+          });
+
+        limitOrderLinesRef.current[compositeId] = {
+          lineInstance: line,
+          price: groupPrice,
+          side: side,
+          quantity: totalVolume,
+          symbol: mainOrder.market_id || mainOrder.symbol || mainOrder.contract_id,
+          typeLabel: typeLabel,
+          count: count,
+          mainOrder: mainOrder,
+          totalVolume: totalVolume,
+          groupKey: groupKey,
+          orderIds: orders.map(o => String(o.unique_id || o.id))
+        };
+      })
+      .catch(err => {
+        console.error("Limit Group Creation Error:", err);
+        delete limitOrderLinesRef.current[compositeId];
+      });
+  };
+
+  // ========================================
+  // SYNC: Limit Orders from Redux (Aggregated)
+  // ========================================
+  // Limit Order Sync removed (merged into runSync heartbeat above)
+
+
+  const handleOrderPlaced = (orderInfo, isPositionExplicit = false) => {
+    const isPosition = isPositionExplicit || orderInfo.orderType === 'Position' || orderInfo.status === 'closed' || orderInfo.is_close === true;
+    const isFlatten = orderInfo.order_type === 'flatten' || orderInfo.status_detail?.includes("Flatten") || orderInfo.status_detail?.includes("Close Position");
+    const symbolId = orderInfo.market_id || orderInfo.symbol || orderInfo.contract_id;
+
+    // STABILIZED ID: 
+    // Position lines and Closing Orders (Flatten) are indexed by Stable Key (symbol__account).
+    // Regular Order lines are indexed by their unique IDs.
+    // Use Stable Key (symbol__account) for Position Lines.
+    // Use Unique ID for Order Lines.
+    const orderId = isPosition
+      ? (getPositionStableKey(orderInfo) || symbolId)
+      : (orderInfo.order_id || orderInfo.id || orderInfo.unique_id || symbolId);
+
+    const status = String(orderInfo.status || "").toLowerCase();
+
+    //  REFINED REMOVAL: Positions should NOT be removed if status is "filled" (they just arrived!)
+    const change = String(orderInfo.change || "").toUpperCase();
+    console.log(orderInfo)
+    const vol = isPosition
+      ? Math.abs(parseFloat(orderInfo.net_position || orderInfo.quantity || orderInfo.volume || 0))
+      : Math.abs(parseFloat(orderInfo.quantity || 0));
+
+    const isRemoveEvent = isPosition
+      ? (status === "rejected" || orderInfo.error || (orderInfo.is_close === true))
+      : (status === "cancelled" || status === "rejected" || status === "expired" ||
+        change === "PULL_SUCCESS" || change === "TRADE_COMPLETED" || orderInfo.error ||
+        (orderInfo.quantity !== undefined && parseFloat(orderInfo.quantity || 0) === 0));
+
+    // 🛡️ ULTIMATE POSITION FIREWALL:
+    // If it's a position update with 0 volume, and it's NOT an explicit remove event (is_close),
+    // then it's a BOGUS update or already closed. STOP HERE.
+    if (isPosition && vol < 0.001 && !isRemoveEvent) {
+      return;
+    }
+
+    const chartsCount = (widgetRef.current && typeof widgetRef.current.chartsCount === 'function') ? widgetRef.current.chartsCount() : 1;
+
+    if (isRemoveEvent) {
+      if (orderId) {
+        pendingClosesRef.current.add(orderId);
+        setTimeout(() => pendingClosesRef.current.delete(orderId), 10000); // 10s Window to ignore late/ghost updates
+
+        for (let i = 0; i < chartsCount; i++) {
+          if (!widgetRef.current) break; // Widget destroyed
+          const compositeId = `${i}_${orderId}`;
+          let removed = false;
+
+          //  ROBUST POSITION CLEANUP:
+          // If this is an explicit close event, schedule delayed removal of matching position lines.
+          // Using a 350ms grace period instead of immediate removal so that a partial-close
+          // PositionUpdate (arriving ~50ms later) can cancel the removal and update in place.
+          // The _pendingRemoval token is checked before removal — if null, it was cancelled.
+          if (isPosition && orderInfo.is_close === true) {
+            const sym = orderInfo.market_id || orderInfo.symbol || orderInfo.contract_id;
+            const targetAccId = normalizeAccountKey(orderInfo.account_id || selectedAccountId);
+
+            Object.keys(positionLinesRef.current).forEach(cid => {
+              if (cid.startsWith(`${i}_`)) {
+                const line = positionLinesRef.current[cid];
+                if (line) {
+                  const symMatch = isSymbolMatch(sym, line.symbol);
+                  const lineAccId = normalizeAccountKey(line.account_id || line.account);
+                  const accMatch = !targetAccId || !lineAccId || targetAccId === lineAccId;
+
+                  if (symMatch && accMatch) {
+                    const removalToken = Date.now() + Math.random();
+                    line._pendingRemoval = removalToken;
+                    setTimeout(() => {
+                      const current = positionLinesRef.current[cid];
+                      if (current && current._pendingRemoval === removalToken) {
+                        console.log(`[Chart] Deferred Position Cleanup: Matched ${sym} on pane ${i}`);
+                        try { current.lineInstance.remove(); } catch (e) { }
+                        delete positionLinesRef.current[cid];
+                      }
+                    }, 100);
+                  }
+                }
+              }
+            });
+          }
+
+          //  PARTITION: Only clean Order Lines if this is an Order Update
+          if (!isPosition) {
+            // 1. Try removing Order Lines by ID
+            if (limitOrderLinesRef.current[compositeId]) {
+              try { limitOrderLinesRef.current[compositeId].lineInstance.remove(); } catch (e) { }
+              delete limitOrderLinesRef.current[compositeId];
+            }
+
+            // 2. 🔥 BROAD CLEANUP: If it's a Flatten, remove ALL matching symbol orders on this pane
+            if (isFlatten) {
+              const sym = orderInfo.market_id || orderInfo.symbol || orderInfo.contract_id;
+              const targetAcc = normalizeAccountKey(orderInfo.account_id || selectedAccountId);
+
+              Object.keys(limitOrderLinesRef.current).forEach(cid => {
+                if (cid.startsWith(`${i}_`)) {
+                  const line = limitOrderLinesRef.current[cid];
+                  if (line && isSymbolMatch(sym, line.symbol)) {
+                    const lineAccId = normalizeAccountKey(line.account_id || line.account);
+                    if (!targetAcc || !lineAccId || targetAcc === lineAccId) {
+                      try { line.lineInstance.remove(); } catch (e) { }
+                      delete limitOrderLinesRef.current[cid];
+                    }
+                  }
+                }
+              });
+            }
+            // Since groups aggregate multiple orders, we check if this ID was part of ANY group.
+            Object.keys(limitOrderLinesRef.current).forEach(limitCompId => {
+              if (limitCompId.startsWith(`${i}_`)) {
+                const item = limitOrderLinesRef.current[limitCompId];
+                if (item && item !== 'PENDING' && Array.isArray(item.orderIds)) {
+                  if (item.orderIds.includes(String(orderId))) {
+                    console.log(`[Chart] robust Limit Cleanup: Removing line for order ${orderId} in group ${limitCompId}`);
+                    try { item.lineInstance.remove(); } catch (e) { }
+                    delete limitOrderLinesRef.current[limitCompId];
+                  }
+                }
+              }
+            });
+
+            // 4. Secondary fallback: Scan by key (legacy but safe)
+            const gKey = getOrderGroupKey(orderInfo);
+            const limitCompIdMatch = `${i}_${gKey}`;
+            if (limitOrderLinesRef.current[limitCompIdMatch]) {
+              const item = limitOrderLinesRef.current[limitCompIdMatch];
+              if (item && item !== 'PENDING') {
+                try { item.lineInstance.remove(); } catch (e) { }
+              }
+              delete limitOrderLinesRef.current[limitCompIdMatch];
+            }
+          }
+
+          if (childLinesRef.current[compositeId]) {
+            const { TP, SL } = childLinesRef.current[compositeId];
+            if (TP) try { TP.remove(); } catch (e) { }
+            if (SL) try { SL.remove(); } catch (e) { }
+            delete childLinesRef.current[compositeId];
+          }
+
+          if (pendingOcoRef.current[compositeId]) {
+            const p = pendingOcoRef.current[compositeId];
+            if (p.tpLine) try { p.tpLine.remove(); } catch (e) { }
+            if (p.slLine) try { p.slLine.remove(); } catch (e) { }
+            delete pendingOcoRef.current[compositeId];
+            console.log(`[Chart] Cleared pending OCO lines for rejected/closed order: ${compositeId}`);
+          }
+        }
+        clearPendingLinesFromStorage(orderId);
+      }
+
+      // 🔥 FIREWALL FIX:
+      // Allow 'working' and 'pending' orders to bypass the firewall so they are drawn instantly.
+      const isWorkingOrder = !isPosition && (status === 'working' || status === 'pending' || status === 'submitted' || status === 'modified' || status === 'modify_requested');
+      const isPositionUpdate = isPosition && parseFloat(orderInfo.net_position || 0) !== 0;
+      const isNormalFill = (status === 'filled') && (orderInfo.change !== 'TRADE_COMPLETED');
+
+      if (!isNormalFill && !isPositionUpdate && !isRemoveEvent && !isWorkingOrder) {
+        return;
+      }
+    } else {
+      // It's a brand new order or position OPENING. Ensure it's NOT in the pending closes.
+      if (orderId) {
+        pendingClosesRef.current.delete(orderId);
+      }
+    }
+
+    //  SYNC: On Placement, draw on ALL matching panes immediately
+    // Only handle working limit orders here. Positions are handled by the SSOT sync effect.
+    for (let i = 0; i < chartsCount; i++) {
+      if (!widgetRef.current) break; // Widget destroyed (e.g. popout closed)
+      try {
+        const ch = widgetRef.current.chart(i);
+        if (!ch) continue;
+        const chartSym = ch.symbol();
+        const orderSym = orderInfo.market_id || orderInfo.symbol;
+        const symMatch = isSymbolMatch(orderSym, chartSym);
+
+        if (symMatch) {
+          if (isPosition) {
+            //  SAFE INSTANT POSITION DRAWING:
+            // Intercept position updates and draw immediately ONLY IF a line doesn't already exist for this symbol on this pane.
+            // This prevents excessive re-drawing/flickering on every single tick update.
+            const orderAccId = orderInfo.account_id || orderInfo.account;
+            const currentAccId = selectedAccountId;
+
+            //  STRICT ACCOUNT GUARD: Never process updates from other accounts
+            if (!currentAccId || !orderAccId || String(orderAccId).toLowerCase() !== String(currentAccId).toLowerCase()) {
+              return;
+            }
+
+            if (!pendingClosesRef.current.has(orderId)) {
+              createInteractivePosition(orderInfo, i);
+            }
+          } else {
+            const status = String(orderInfo.status || "").toLowerCase();
+            const isWorking = status === 'working' || status === 'pending' || status === 'submitted' || status === 'modified' || status === 'modify_requested';
+            const hasPrice = orderInfo.limit_price != null || orderInfo.stop_price != null || orderInfo.trail_price != null;
+            if (isWorking && hasPrice) {
+              // console.info(`[Chart] Order Placed: ${orderId} (${status})`, orderInfo);
+              createLimitOrderLine([orderInfo], i);
+            } else if (status === 'filled') {
+              // Bridge the visual gap: Add to pending fills so the limit line stays for a bit
+              const groupKey = getOrderGroupKey(orderInfo);
+              const lookupKey = `${ch.symbol()}_${groupKey}`;
+              pendingFillsRef.current.add(lookupKey);
+              setTimeout(() => pendingFillsRef.current.delete(lookupKey), 3000);
+
+              // console.info(`[Chart] Trade filled: ${orderId}. Stabilizing line and triggering optimistic position.`);
+
+              //  OPTIMISTIC POSITION: Draw the position line immediately
+              // Construct a pseudo-position object that createInteractivePosition can handle
+              const optimisticPosition = {
+                ...orderInfo,
+                net_position: (orderInfo.side?.toUpperCase() === 'BUY' ? 1 : -1) * parseFloat(orderInfo.volume || orderInfo.quantity || 1),
+                avg_open_price: parseFloat(orderInfo.avg_fill_price || orderInfo.fill_price || orderInfo.price || 0),
+                account_id: orderInfo.account_id || selectedAccountId,
+              };
+
+              const stablePosId = getPositionStableKey(optimisticPosition) || (orderInfo.market_id || orderInfo.symbol || orderInfo.contract_id);
+              const compositePosId = `${i}_${stablePosId}`;
+              const isClosing = orderInfo.is_close === true;
+
+              if (!positionLinesRef.current[compositePosId] && !isClosing && stablePosId) {
+                // Ensure the new optimistic ID is absolutely cleared from pending closes 
+                pendingClosesRef.current.delete(stablePosId);
+                pendingOptimisticIdsRef.current.add(stablePosId);
+                // Clear protection after 10s (allow API to catch up)
+                setTimeout(() => pendingOptimisticIdsRef.current.delete(stablePosId), 10000);
+                createInteractivePosition(optimisticPosition, i);
+              }
+            }
+          }
+        }
+      } catch (e) { }
+    }
+
+
+    //  ONLY close the panel if a NEW order was successfully placed from it
+    const statusStr = String(status).toLowerCase();
+
+    //  FIREWALL CHECK: If this symbol/account is marked as pending close, block EVERYTHING.
+    const stableId = getPositionStableKey(orderInfo);
+    if (pendingClosesRef.current.has(stableId) || (orderId && pendingClosesRef.current.has(orderId))) {
+      console.log(`[Chart] Firewall blocked event for ${stableId || orderId}`);
+      return;
+    }
+
+    const isWorking = statusStr === 'working' || statusStr === 'submitted' || statusStr === 'modified' || statusStr === 'modify_requested';
+    if (isWorking && !isPosition) {
+      setTimeout(() => setShowTradingPanel(false), 300);
+    }
+  };
+
+  // ========================================
+  // SYNC: Position Lines (Survives Refresh)
+  // ========================================
+  useEffect(() => {
+    if (!isInitialized || !widgetRef.current) return;
+    if (isDraggingRef.current) return;
+    if (isLoadingChartStateRef.current) return; // Don't touch lines during widget.load() restore window
+
+    const allGlobalActiveIds = new Set(activePositions?.map((p) => getPositionStableKey(p)).filter(Boolean) || []);
+    Object.keys(positionLinesRef.current).forEach(compositeId => {
+      // Safe ID extraction: everything after the first '_'
+      const orderId = compositeId.substring(compositeId.indexOf('_') + 1);
+      const pos = positionLinesRef.current[compositeId];
+      const isStillActive = allGlobalActiveIds.has(orderId) ||
+        (pos && activePositions?.some(ap => isSymbolMatch(ap.market_id || ap.symbol, pos.symbol)));
+
+      if (!isStillActive) {
+        try { positionLinesRef.current[compositeId].lineInstance.remove(); } catch (e) { }
+        delete positionLinesRef.current[compositeId];
+      }
+    });
+  }, [activePositions, isInitialized, layoutSyncId, symbol, paneSymbols]);
+
+  // Special account-switch cleanup to ensure lines don't bleed between accounts
+  useEffect(() => {
+    if (!isInitialized) return;
+    console.log("[Chart] Account switched. Purging all chart lines.");
+    Object.keys(positionLinesRef.current).forEach(compositeId => {
+      try { positionLinesRef.current[compositeId]?.lineInstance?.remove(); } catch (e) { }
+      delete positionLinesRef.current[compositeId];
+    });
+    Object.keys(childLinesRef.current).forEach(compositeId => {
+      const { TP, SL } = childLinesRef.current[compositeId] || {};
+      if (TP) try { TP.remove(); } catch (e) { }
+      if (SL) try { SL.remove(); } catch (e) { }
+      delete childLinesRef.current[compositeId];
+    });
+    Object.keys(limitOrderLinesRef.current).forEach(lineId => {
+      try { limitOrderLinesRef.current[lineId]?.lineInstance?.remove(); } catch (e) { }
+      delete limitOrderLinesRef.current[lineId];
+    });
+
+    //  NUCLEAR CLEANUP on account switch: Restore chart to clean state
+    clearAllTradeArrows();
+    Object.keys(positionLinesRef.current).forEach(cid => {
+      try { positionLinesRef.current[cid]?.lineInstance?.remove(); } catch (e) { }
+      delete positionLinesRef.current[cid];
+    });
+    Object.keys(limitOrderLinesRef.current).forEach(cid => {
+      try { limitOrderLinesRef.current[cid]?.lineInstance?.remove(); } catch (e) { }
+      delete limitOrderLinesRef.current[cid];
+    });
+  }, [selectedAccountId]);
+
+  // 2. PER-PANE SYNC: Ensure every pane matching a symbol has the correct lines
+  useEffect(() => {
+    const runSync = () => {
+      if (!isInitialized || !widgetRef.current) return;
+      if (isDraggingRef.current) return;
+      if (isLoadingChartStateRef.current) return; // Block during widget.load() async restore window
+
+      const chartsCount = typeof widgetRef.current.chartsCount === 'function' ? widgetRef.current.chartsCount() : 1;
+
+      // 1. Prepare global data for this heartbeat (Filtered for current account)
+      // Use ref to avoid stale closure — orderHistory is NOT in this effect's dep array
+      const currentOrderHistory = orderHistoryRef.current;
+      const globalOrdersList = (!Array.isArray(currentOrderHistory) && currentOrderHistory)
+        ? (currentOrderHistory.results || currentOrderHistory.data || [])
+        : [];
+      const workingOrdersGlobal = globalOrdersList.filter(o => {
+        if (selectedAccountId && o.account_id && String(o.account_id).toLowerCase() !== String(selectedAccountId).toLowerCase()) return false;
+        const status = String(o.status || "").toLowerCase();
+        const isWorking = status === 'working' || status === 'pending' || status === 'submitted' || status === 'modified' || status === 'modify_requested';
+        return isWorking && (o.limit_price != null || o.stop_price != null || o.trail_price != null);
+      });
+
+      for (let i = 0; i < chartsCount; i++) {
+        try {
+          const chart = widgetRef.current.chart(i);
+          if (!chart) continue;
+
+          const paneSym = chart.symbol();
+          if (!paneSym) continue;
+
+          const myPositions = activePositionsRef.current.filter((p) => {
+            const accMatch = !selectedAccountId || String(p.account_id || p.account).toLowerCase() === String(selectedAccountId).toLowerCase();
+            const symMatch = isSymbolMatch(p.contract_id, paneSym)
+              || isSymbolMatch(p.market_id, paneSym)
+              || isSymbolMatch(p.symbol, paneSym);
+
+            if (!accMatch || !symMatch) return false;
+
+            const vol = Math.abs(parseFloat(p.net_position || p.quantity || p.volume || 0));
+            const price = parseFloat(p.average_open_price || p.avg_open_price || p.avg_price || p.entryPrice || p.entry_price || 0);
+
+            // SYNC LENIENCE: Prevent removing lines during high-frequency updates if volume persists
+            return vol > 0.001;
+          }) || [];
+
+          const activeIdsOnThisPane = new Set(myPositions.map((p) => getPositionStableKey(p)).filter(Boolean));
+
+          Object.keys(positionLinesRef.current).forEach((compositeId) => {
+            if (!compositeId.startsWith(`${i}_`)) return;
+
+            const orderId = compositeId.substring(compositeId.indexOf('_') + 1).toLowerCase();
+            const currentLine = positionLinesRef.current[compositeId];
+
+            // 🛡️ HEARTBEAT CLEANUP:
+            // If it's not in the active set for this pane/symbol, it's an orphan. Kill it.
+            // Exception: if the line has a _pendingRemoval timer, let that timer handle cleanup —
+            // it may be cancelled by an incoming PositionUpdate (partial close / reversal).
+            if (!activeIdsOnThisPane.has(orderId)) {
+              if (currentLine?._pendingRemoval) return; // deferred removal is in-flight, skip
+              console.log(`[Sync] Removing orphaned line ${compositeId} on pane ${i}`);
+              try { currentLine?.lineInstance?.remove(); } catch (e) { }
+              delete positionLinesRef.current[compositeId];
+
+              // Also cleanup child OCO lines
+              if (childLinesRef.current[compositeId]) {
+                const { TP, SL } = childLinesRef.current[compositeId];
+                if (TP) try { TP.remove(); } catch (e) { }
+                if (SL) try { SL.remove(); } catch (e) { }
+                delete childLinesRef.current[compositeId];
+              }
+              clearPendingLinesFromStorage(orderId);
+            }
+          });
+
+          myPositions.forEach((p) => {
+            const id = getPositionStableKey(p);
+            const compositeId = `${i}_${id}`;
+            const positionQty = Math.abs(parseFloat(p.net_position || p.quantity || p.volume || 0));
+            // 🛡️ STRICT NET POSITION LOGIC: Positions must always derive side from net_position sign,
+            // never from a leftover .side property inherited from OrderUpdate payloads.
+            // Use ?? (nullish coalescing) so net_position=0 is treated as 0, not fallen through.
+            const rawNetPos = parseFloat(p.net_position ?? p.quantity ?? p.volume ?? 0);
+            const posSide = rawNetPos >= 0 ? 'BUY' : 'SELL';
+
+            if (!positionLinesRef.current[compositeId]) {
+              let matchedExisting = false;
+              Object.keys(positionLinesRef.current).forEach((cid) => {
+                if (!cid.startsWith(`${i}_`)) return;
+                const line = positionLinesRef.current[cid];
+                if (line && String(line.account_id || '').toLowerCase() === String(selectedAccountId || '').toLowerCase() && (isSymbolMatch(p.contract_id, line.symbol) || isSymbolMatch(p.market_id, line.symbol) || isSymbolMatch(p.symbol, line.symbol))) {
+                  console.log(`[Sync] Stabilizing: Re-mapping line from ${cid} to ${compositeId}`);
+                  positionLinesRef.current[compositeId] = line;
+                  if (cid !== compositeId) delete positionLinesRef.current[cid];
+                  matchedExisting = true;
+                }
+              });
+
+              if (!matchedExisting && !pendingClosesRef.current.has(id)) {
+                // AGGRESSIVE SANITIZATION: Before drawing a new position line, 
+                // purge any other lines for this symbol/account to prevent ghosts.
+                Object.keys(positionLinesRef.current).forEach((cid) => {
+                  if (!cid.startsWith(`${i}_`)) return;
+                  const line = positionLinesRef.current[cid];
+                  if (line && line !== 'PENDING' && (isSymbolMatch(p.contract_id, line.symbol) || isSymbolMatch(p.market_id, line.symbol) || isSymbolMatch(p.symbol, line.symbol))) {
+                    const lAcc = String(line.account_id || line.account || '').toLowerCase();
+                    const pAcc = String(p.account_id || p.account || '').toLowerCase();
+                    if (lAcc === pAcc) {
+                      console.log(`[Sync] 🧹 Aggressive Purge of ghost line: ${cid}`);
+                      try { line.lineInstance.remove(); } catch (e) { }
+                      delete positionLinesRef.current[cid];
+                    }
+                  }
+                });
+
+                console.log(`[Sync] Drawing new line for position ${id} on pane ${i}`);
+                createInteractivePosition(p, i);
+              }
+              return;
+            }
+
+            const lineObj = positionLinesRef.current[compositeId];
+            if (!lineObj || lineObj === 'PENDING') return;
+
+            const price = parseFloat(p.average_open_price || p.avg_open_price || p.avg_price || p.entryPrice || p.entry_price || 0);
+            const priceChanged = Math.abs((lineObj.entryPrice || 0) - price) > 0.00001;
+
+            if (lineObj.quantity !== positionQty || lineObj.side !== posSide || priceChanged) {
+              if (lineObj.side !== posSide) {
+                console.log(`[Sync] Reversal detected: ${lineObj.side} -> ${posSide} for ${compositeId}`);
+                lineObj.side = posSide; //  CRITICAL: Update side property immediately
+                lineObj.lastText = null;
+                lineObj.lastColor = null;
+
+                // Also clear stale pending OCO
+                if (pendingOcoRef.current[compositeId]) {
+                  const pending = pendingOcoRef.current[compositeId];
+                  if (pending.tpLine) try { pending.tpLine.remove(); } catch (e) { }
+                  if (pending.slLine) try { pending.slLine.remove(); } catch (e) { }
+                  if (pending.tpShade) try { chart.removeEntity(pending.tpShade); } catch (e) { }
+                  if (pending.slShade) try { chart.removeEntity(pending.slShade); } catch (e) { }
+                  delete pendingOcoRef.current[compositeId];
+                  dispatch(clearActiveOcoConfirm());
+                }
+                // Clear old child lines if any exist
+                if (childLinesRef.current[compositeId]) {
+                  const { TP, SL } = childLinesRef.current[compositeId];
+                  if (TP) try { TP.remove(); } catch (e) { }
+                  if (SL) try { SL.remove(); } catch (e) { }
+                  delete childLinesRef.current[compositeId];
+                }
+
+                // Keep the old line visible while createOrderLine() Promise resolves.
+                // Removing it first creates a visual gap (disappear → reappear).
+                // Instead, defer removal until after the new line is in positionLinesRef.
+                const staleLineInstance = lineObj.lineInstance;
+                delete positionLinesRef.current[compositeId];
+                createInteractivePosition(p, i);
+                // Poll until the new line has been stored, then remove the stale one.
+                // Typically resolves within one rAF (~16ms); cap at 500ms to avoid leaks.
+                const removeStale = (deadline = 500, interval = 16) => {
+                  if (positionLinesRef.current[compositeId] && positionLinesRef.current[compositeId] !== 'PENDING') {
+                    try { staleLineInstance.remove(); } catch (e) { }
+                    return;
+                  }
+                  if (deadline <= 0) {
+                    try { staleLineInstance.remove(); } catch (e) { }
+                    return;
+                  }
+                  setTimeout(() => removeStale(deadline - interval, interval), interval);
+                };
+                removeStale();
+                return;
+              }
+
+              // Position is confirmed alive — cancel any deferred removal timer
+              if (lineObj._pendingRemoval) lineObj._pendingRemoval = null;
+
+              if (lineObj.quantity !== positionQty) {
+                console.debug(`[Sync] Updating quantity for line ${compositeId} to ${positionQty}`);
+
+                // ── AUTO-SYNC OCO ORDER VOLUME ──────────────────────────────────────
+                // When net position size changes (user added to / reduced position),
+                // find all OCO bracket orders for the same symbol/account and send
+                // modifyOrder with ONLY the updated volume.
+                // 🛡️ FLATTENING FIREWALL: If a Flatten/Close order is active for this symbol,
+                // do NOT send any modifyOrder calls. Also skip if quantity is 0.
+                const isFlattening = (workingOrdersGlobal || []).some(o => {
+                  const oSym = o.market_id || o.symbol || o.contract_id;
+                  const detail = String(o.status_detail || "").toLowerCase();
+                  return isSymbolMatch(oSym, paneSym) && (
+                    o.order_type === 'flatten' ||
+                    detail.includes("flatten") ||
+                    detail.includes("close position")
+                  );
+                });
+
+                const posAccNorm = String(p.account_id || p.account || '').toLowerCase();
+                const ocoToModify = (positionQty > 0.001 && !isFlattening) ? workingOrdersGlobal.filter(o => {
+                  const oSym = o.market_id || o.symbol || o.contract_id;
+                  const oAcc = String(o.account_id || '').toLowerCase();
+                  return String(o.order_link || '').toLowerCase() === 'oco'
+                    && isSymbolMatch(oSym, paneSym)
+                    && (!posAccNorm || !oAcc || oAcc === posAccNorm);
+                }) : [];
+
+                if (ocoToModify.length > 0) {
+                  ocoToModify.forEach(o => {
+                    try {
+                      const uid = String(o.unique_id || o.id);
+                      const accountId = o.account_id || selectedAccountId;
+                      const marketId = o.market_id;
+                      const capturedVolume = positionQty; // Capture current volume in closure
+
+                      // Cancel any pending modify for this order (intermediate fill arrived).
+                      // We reschedule with the latest volume so only the final stable
+                      // net position (after all fills settle) is actually sent.
+                      if (ocoModifyTimerRef.current.has(uid)) {
+                        clearTimeout(ocoModifyTimerRef.current.get(uid));
+                      }
+
+                      const timer = setTimeout(() => {
+                        ocoModifyTimerRef.current.delete(uid);
+
+                        // Verify position still exists before sending modify
+                        // Prevents ghost orders when position closes during the 1s debounce window
+                        const stillOpen = (activePositionsRef.current || []).find(pos =>
+                          isSymbolMatch(pos.market_id || pos.symbol, paneSym) &&
+                          String(pos.account_id || pos.account || '').toLowerCase() === posAccNorm
+                        );
+
+                        if (!stillOpen || Math.abs(parseFloat(stillOpen.net_position || stillOpen.quantity || 0)) < 0.001) {
+                          console.log(`[Sync] Skipping OCO modify for ${uid}: Position closed during debounce`);
+                          return;
+                        }
+
+                        // Use the CURRENT position volume, not the captured one
+                        const currentVol = Math.abs(parseFloat(stillOpen.net_position || stillOpen.quantity || 0));
+
+                        console.log(`[Sync] OCO volume modify (debounced) → ${uid} vol=${currentVol}`);
+
+                        const payload = {
+                          unique_id: uid,
+                          account_id: accountId,
+                          market_id: marketId,
+                          volume: currentVol,
+                        };
+
+                        // Include the price field for THIS specific order
+                        // Each OCO order (TP limit, SL stop) has its own price type
+                        if (o.limit_price != null) {
+                          payload.limit_price = parseFloat(o.limit_price);
+                        } else if (o.stop_price != null) {
+                          payload.stop_price = parseFloat(o.stop_price);
+                        } else if (o.trail_price != null) {
+                          payload.trail_price = parseFloat(o.trail_price);
+                        }
+
+                        dispatch(modifyOrder(payload));
+                      }, 1000); // 1s debounce — waits for all sequential fills to land
+
+                      ocoModifyTimerRef.current.set(uid, timer);
+                    } catch (err) {
+                      console.error('[Sync] OCO modify schedule failed:', o.unique_id, err);
+                    }
+                  });
+                }
+                // ────────────────────────────────────────────────────────────────────
+
+                lineObj.quantity = positionQty;
+                try { lineObj.lineInstance.setQuantity(positionQty.toString()); } catch (e) { }
+              }
+
+              if (priceChanged) {
+                console.debug(`[Sync] Updating price for line ${compositeId} to ${price}`);
+                lineObj.entryPrice = price;
+                try { lineObj.lineInstance.setPrice(price); } catch (e) { }
+              }
+
+              lineObj.lastText = null;
+              lineObj.lastColor = null;
+
+              if (childLinesRef.current[compositeId]) {
+                const children = childLinesRef.current[compositeId];
+                const closingSide = posSide === 'BUY' ? 'SELL' : 'BUY';
+                ['TP', 'SL'].forEach((type) => {
+                  const childLine = children[type];
+                  if (!childLine) return;
+                  const cp = childLine.getPrice();
+                  try {
+                    childLine.setQuantity(positionQty.toString());
+                    const tickSize = getTickSizeFull(p);
+                    childLine.setText(`${closingSide} ${type} ${positionQty}`);
+                  } catch (e) { }
+                });
+              }
+            }
+          });
+          // ========================================
+          // 2. LIMIT ORDER SYNC (Heartbeat)
+          // ========================================
+          const myOrdersRaw = workingOrdersGlobal.filter(o =>
+            isSymbolMatch(o.market_id, paneSym) || isSymbolMatch(o.symbol, paneSym)
+          );
+
+          // Apply any pending drag-modify prices (server hasn't echoed the new
+          // price yet) so the heartbeat doesn't snap the line back mid-roundtrip.
+          const now = Date.now();
+          const pending = pendingDragModifyRef.current;
+          Object.keys(pending).forEach(uid => {
+            if (pending[uid].expiresAt < now) delete pending[uid];
+          });
+          const myOrders = myOrdersRaw.map(o => {
+            const uid = String(o.unique_id || o.id);
+            const p = pending[uid];
+            if (!p) return o;
+            // If the server has already caught up to our pending price, drop the override.
+            const serverPrice = parseFloat(o.limit_price ?? o.stop_price ?? o.trail_price ?? 0);
+            if (Math.abs(serverPrice - p.price) < 1e-8) {
+              delete pending[uid];
+              return o;
+            }
+            const patched = { ...o };
+            if (o.limit_price != null) patched.limit_price = p.price;
+            else if (o.stop_price != null) patched.stop_price = p.price;
+            else if (o.trail_price != null) patched.trail_price = p.price;
+            return patched;
+          });
+
+          // Group by Price + Side + Type
+          const groups = {};
+          myOrders.forEach(o => {
+            const key = getOrderGroupKey(o);
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(o);
+          });
+
+          const activeGroupKeysOnThisPane = new Set(Object.keys(groups));
+          const allIncomingOrderIds = new Set(myOrders.map(o => String(o.unique_id || o.id)));
+
+          // Wipe old groups that are no longer active
+          Object.keys(limitOrderLinesRef.current).forEach(compositeId => {
+            if (compositeId.startsWith(`${i}_`)) {
+              const item = limitOrderLinesRef.current[compositeId];
+              if (item === 'PENDING') return;
+
+              const groupKey = compositeId.split('_').slice(1).join('_');
+              const lookupKey = `${paneSym}_${groupKey}`;
+              const isRecentFill = pendingFillsRef.current.has(lookupKey);
+
+              // 🛡️ ENHANCED PERSISTENCE: If ANY order ID from this line is still present 
+              // in the current Redux list (even at a different price), do NOT delete it.
+              const stillHasOrders = item?.orderIds?.some(id => allIncomingOrderIds.has(id));
+
+              if (!activeGroupKeysOnThisPane.has(groupKey) && !stillHasOrders && !isRecentFill) {
+                if (item && item.lineInstance) {
+                  try { item.lineInstance.remove(); } catch (e) { }
+                }
+                delete limitOrderLinesRef.current[compositeId];
+              }
+            }
+          });
+
+          // Create or Update Groups
+          Object.entries(groups).forEach(([groupKey, orders]) => {
+            const compositeId = `${i}_${groupKey}`;
+            const existingLine = limitOrderLinesRef.current[compositeId];
+            const mainOrder = orders[0];
+            const groupPrice = parseFloat(mainOrder.limit_price ?? mainOrder.stop_price ?? mainOrder.trail_price ?? 0);
+            const totalVolume = orders.reduce((sum, o) => sum + parseFloat(o.volume || 1), 0);
+            const side = String(mainOrder.side || "").toUpperCase();
+            const count = orders.length;
+
+            let typeLabel = "Order";
+            if (mainOrder.limit_price != null) typeLabel = "Limit";
+            else if (mainOrder.stop_price != null) typeLabel = "Stop";
+            else if (mainOrder.trail_price != null) typeLabel = "Trail";
+
+            if (existingLine) {
+              if (existingLine !== 'PENDING') {
+                const lineInstance = existingLine.lineInstance;
+                const currentPrice = lineInstance.getPrice();
+                if (Math.abs(currentPrice - groupPrice) > 0.00001) {
+                  lineInstance.setPrice(groupPrice);
+                }
+                // For OCO orders show the live net position qty; for normal orders show
+                // order volume; for other linked types show nothing.
+                const isOcoUpdate = String(mainOrder.order_link || '').toLowerCase() === 'oco';
+                let updateDisplayQty = '';
+                if (isOcoUpdate) {
+                  const ocoUpdatePos = activePositions?.find(pos =>
+                    isSymbolMatch(pos.market_id || pos.symbol || pos.contract_id, paneSym) &&
+                    String(pos.account_id || pos.account || '').toLowerCase() === String(selectedAccountId || '').toLowerCase()
+                  );
+                  updateDisplayQty = ocoUpdatePos
+                    ? String(Math.abs(parseFloat(ocoUpdatePos.net_position || ocoUpdatePos.quantity || totalVolume)))
+                    : String(totalVolume);
+                } else if (!mainOrder.order_link || mainOrder.order_link === 'none') {
+                  updateDisplayQty = totalVolume.toString();
+                }
+                lineInstance.setQuantity(updateDisplayQty);
+                existingLine.price = groupPrice;
+                existingLine.quantity = totalVolume;
+                existingLine.count = count;
+                existingLine.orderIds = orders.map(o => String(o.unique_id || o.id));
+                // Refresh mainOrder so downstream readers (getStackCount, OCO sibling
+                // checks, etc.) see the current price/state instead of the stale snapshot
+                // captured at line creation.
+                existingLine.mainOrder = mainOrder;
+
+                const tickSize = getTickSizeFull(mainOrder);
+                const precision = getTickPrecision(tickSize);
+
+                const updStackCount = getStackCount(mainOrder);
+                const updStackSuffix = updStackCount > 1 ? ` ×${updStackCount}` : '';
+                const labelText = count > 1
+                  ? `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel} (${count}) [${totalVolume.toFixed(2)}]${updStackSuffix}`
+                  : `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel}${updStackSuffix}`;
+                // Only reset text when the base label itself changed (e.g. count/volume updated).
+                // If existing text already starts with labelText, it has P&L appended — preserve it.
+                const currentText = existingLine.lastText || '';
+                if (!currentText.startsWith(labelText)) {
+                  lineInstance.setText(labelText);
+                  existingLine.lastText = labelText;
+                }
+              }
+            } else {
+              // 🛡️ STABILIZATION: Check if these identical order IDs are already registered 
+              // under a different price (likely due to a manual drag & modify sync).
+              let matchedExisting = false;
+              const incomingIds = orders.map(o => String(o.unique_id || o.id));
+
+              Object.keys(limitOrderLinesRef.current).forEach(cid => {
+                if (!cid.startsWith(`${i}_`)) return;
+                const item = limitOrderLinesRef.current[cid];
+                if (item && item !== 'PENDING' && item.orderIds) {
+                  // Check if there is any overlap in Order IDs
+                  const hasOverlap = item.orderIds.some(id => incomingIds.includes(id));
+                  if (hasOverlap) {
+                    console.log(`[Sync] Stabilizing: Re-mapping limit line from ${cid} to ${compositeId}`);
+                    limitOrderLinesRef.current[compositeId] = item;
+                    // Update metadata to reflect the new state from Redux
+                    item.price = groupPrice;
+                    item.quantity = totalVolume;
+                    item.orderIds = incomingIds;
+                    item.groupKey = groupKey;
+
+                    if (cid !== compositeId) delete limitOrderLinesRef.current[cid];
+                    matchedExisting = true;
+                  }
+                }
+              });
+
+              if (!matchedExisting) {
+                createLimitOrderLine(orders, i);
+              }
+            }
+          });
+
+        } catch (err) {
+          console.warn(`[Sync] Failed to sync lines for pane ${i}:`, err);
+        }
+      }
+    };
+
+    runSync();
+    const interval = setInterval(runSync, 500); //  Guaranteed Heartbeat sync (Independent of high-freq updates)
+    return () => clearInterval(interval);
+  }, [isInitialized, layoutSyncId, symbol, paneSymbols, selectedAccountId, activePositions]);
+
+  // ========================================
+  // P&L LIVE UPDATER (Per-Symbol Multi-Chart Support)
+  // ========================================
+  useEffect(() => {
+    // We don't depend on displayPrice here anymore.
+    // We update whenever positions, initialization state, or activeSymbol changes.
+    // Also including displayPrice in deps just to trigger on ticks, but logic is per-symbol.
+
+    // ========================================
+    //  P&L ON LIMIT/STOP LINES (runs during drag — uses lineInstance.getPrice() for live price)
+    // ========================================
+    // Collect all working OCO/bracket orders so naked orders on the same symbol+account
+    // can be matched against them (using isSymbolMatch — symbol fields vary by source).
+    const ocoSiblingOrders = (() => {
+      const oh = orderHistoryRef.current;
+      const list = Array.isArray(oh) ? oh : (oh?.results || oh?.data || []);
+      return list.filter(o => {
+        const status = String(o.status || '').toLowerCase();
+        const isWorking = status === 'working' || status === 'pending' || status === 'submitted' || status === 'modified' || status === 'modify_requested';
+        if (!isWorking) return false;
+        const link = String(o.order_link || '').toLowerCase();
+        return link === 'oco' || link === 'auto_oco';
+      });
+    })();
+
+    Object.entries(limitOrderLinesRef.current).forEach(([compositeId, item]) => {
+      if (!item || item === 'PENDING') return;
+      const { lineInstance, side, quantity, symbol: orderSym, typeLabel, count, mainOrder } = item;
+
+      // Use the live line position (updates in real-time during drag)
+      const effectivePrice = lineInstance.getPrice();
+
+      const matchingPos = activePositions?.find(p =>
+        (isSymbolMatch(p.market_id, orderSym) || isSymbolMatch(p.symbol, orderSym)) &&
+        String(p.account_id || p.account).toLowerCase() === String(selectedAccountId).toLowerCase()
+      );
+
+      const liveStackCount = getStackCount(mainOrder);
+      const liveStackSuffix = liveStackCount > 1 ? ` ×${liveStackCount}` : '';
+      const baseLabel = count > 1
+        ? `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel} (${count}) [${quantity.toFixed(2)}]${liveStackSuffix}`
+        : `${side.startsWith('B') ? 'Buy' : 'Sell'} ${typeLabel}${liveStackSuffix}`;
+
+      // If this order is naked but a sibling OCO/bracket exists for the same
+      // symbol+account, the bracket is the real exit — render plain label.
+      const linkVal = String(mainOrder?.order_link || '').toLowerCase();
+      const isOcoOrder = linkVal === 'oco' || linkVal === 'auto_oco';
+      const orderAcc = String(mainOrder?.account_id || mainOrder?.account || selectedAccountId || '').toLowerCase();
+      const hasSiblingOco = !isOcoOrder && ocoSiblingOrders.some(o => {
+        const oAcc = String(o.account_id || o.account || '').toLowerCase();
+        if (oAcc && orderAcc && oAcc !== orderAcc) return false;
+        return isSymbolMatch(o.market_id, orderSym)
+          || isSymbolMatch(o.symbol, orderSym)
+          || isSymbolMatch(o.contract_id, orderSym);
+      });
+      if (!isOcoOrder && hasSiblingOco) {
+        if (item.lastText !== baseLabel) {
+          try { lineInstance.setText(baseLabel); } catch (_) { }
+          item.lastText = baseLabel;
+        }
+        const nakedColor = side.startsWith('B') ? '#26a69a' : '#ef5350';
+        if (item.lastColor !== nakedColor) {
+          try {
+            lineInstance
+              .setBodyBackgroundColor(nakedColor)
+              .setLineColor(nakedColor)
+              .setBodyBorderColor(nakedColor);
+          } catch (_) { }
+          item.lastColor = nakedColor;
+        }
+        return;
+      }
+
+      if (!matchingPos) {
+        // No matching position — order has no P&L context, so render the plain
+        // label and revert to the side's neutral color. This handles the case
+        // where an OCO leg was cancelled or the underlying position was closed
+        // and the surviving order is now naked.
+        if (item.lastText !== baseLabel) {
+          try { lineInstance.setText(baseLabel); } catch (_) { }
+          item.lastText = baseLabel;
+        }
+        const nakedColor = side.startsWith('B') ? '#26a69a' : '#ef5350';
+        if (item.lastColor !== nakedColor) {
+          try {
+            lineInstance
+              .setBodyBackgroundColor(nakedColor)
+              .setLineColor(nakedColor)
+              .setBodyBorderColor(nakedColor);
+          } catch (_) { }
+          item.lastColor = nakedColor;
+        }
+        return;
+      }
+
+      const posEntry = parseFloat(matchingPos.entryPrice || matchingPos.avg_price || matchingPos.average_open_price || 0);
+      if (!posEntry) {
+        // Entry price not resolved yet — preserve existing text rather than blanking P&L.
+        return;
+      }
+
+      const posSide = matchingPos.side?.toUpperCase() || (matchingPos.net_position >= 0 ? 'BUY' : 'SELL');
+      const pnlLabel = formatOcoPnlLabel(matchingPos, posSide, posEntry, effectivePrice, quantity);
+
+      const isActuallyBuySide = posSide === 'BUY';
+      const isProfit = isActuallyBuySide ? (effectivePrice > posEntry) : (effectivePrice < posEntry);
+      const linkedColor = isProfit ? '#118DFF' : '#F5222D';
+
+      lineInstance
+        .setBodyBackgroundColor(linkedColor)
+        .setLineColor(linkedColor)
+        .setBodyBorderColor(linkedColor);
+
+      const fullText = `${baseLabel} ${pnlLabel}`;
+      lineInstance.setText(fullText);
+      // Keep lastText in sync so runSync's startsWith guard never resets the P&L text.
+      item.lastText = fullText;
+    });
+
+    // Position lines: skip during drag
+    if (isDraggingRef.current) return;
+
+    Object.entries(positionLinesRef.current).forEach(([compositeId, pos]) => {
+      const { lineInstance, entryPrice, side, quantity, symbol: lineSymbol } = pos;
+      if (!lineSymbol) return; //  Safe guard
+
+      const parts = compositeId.split('_');
+      const rawOrderId = parts.slice(1).join('_');
+
+      // Find correct price in cache for THIS specific line's symbol
+      let linePrice = null;
+      if (priceCache?.current) {
+        const matchingKey = Object.keys(priceCache.current).find(k =>
+          isSymbolMatch(k, lineSymbol) || (k.toLowerCase && k.toLowerCase().includes(lineSymbol.toLowerCase()))
+        );
+        if (matchingKey) linePrice = priceCache.current[matchingKey];
+      }
+
+      const hasLivePrice = !!(linePrice && linePrice.bid && linePrice.ask);
+      const currentMarketPrice = hasLivePrice
+        ? (side === 'BUY' ? linePrice.bid : linePrice.ask)
+        : null;
+
+      const reduxPos = activePositionsRef.current?.find(p =>
+        (isSymbolMatch(p.contract_id, lineSymbol) || isSymbolMatch(p.market_id, lineSymbol) || isSymbolMatch(p.symbol, lineSymbol)) &&
+        String(p.account_id || p.account || '').toLowerCase() === String(pos.account_id || pos.account || '').toLowerCase()
+      );
+
+      // Read P&L from livePnlStore — same source as PositionsTable and Order panel,
+      // ensuring the position line always shows the same value as the rest of the UI.
+      const accId = String(pos.account_id || pos.account || '').toLowerCase();
+      const storeEntryBySym = getPositionPnl(lineSymbol, accId);
+      const storeEntryById = pos.unique_id ? getPositionPnlById(pos.unique_id) : null;
+      const storeEntry = storeEntryBySym || storeEntryById;
+      const pnlValue = storeEntry?.upl ?? storeEntry?.unrealized_pnl
+        ?? reduxPos?.unrealized_pnl ?? reduxPos?.upl ?? null;
+
+      let pnlText = "";
+      let isProfit = false;
+      if (pnlValue !== null && pnlValue !== undefined) {
+        const floatPnl = parseFloat(pnlValue);
+        if (!Number.isNaN(floatPnl)) {
+          isProfit = floatPnl >= 0;
+          pnlText = ` (${isProfit ? '+' : '-'}$${Math.abs(floatPnl).toFixed(2)})`;
+        }
+      }
+
+      const tickSize = getTickSizeFull(pos);
+      const precision = getTickPrecision(tickSize);
+      const qtyLabel = pos.side === 'BUY' ? 'BUY' : 'SELL';  // quantity pill stays as side label
+      const qtyDisplay = `${qtyLabel} ${quantity}${pnlText}`;
+      const pnlColor = isProfit ? '#00C853' : '#D50000';
+
+      // P&L goes into body alongside TP SL
+      const bodyText = pnlText
+        ? `TP  SL  ${pnlText.trim()}`   // e.g. "TP  SL  (+$6.25)"
+        : `TP  SL`;
+
+      try {
+        if (pos._dragLabel) return;
+        lineInstance.setQuantity(qtyDisplay);
+        lineInstance.setQuantityBackgroundColor(pnlColor);
+        lineInstance.setQuantityBorderColor(pnlColor);
+        lineInstance.setText(`TP  SL`);
+        lineInstance.setBodyBackgroundColor('#1565C0');
+        lineInstance.setBodyBorderColor('#1565C0');
+        lineInstance.setLineColor(pnlColor);
+        pos.lastText = qtyDisplay;
+        pos.lastColor = pnlColor;
+        // if (pos.lastText !== bodyText) {
+        //   lineInstance.setText(bodyText);
+        //   pos.lastText = bodyText;
+        // }
+        // // Quantity pill stays as BUY/SELL with profit/loss color
+        // lineInstance.setQuantity(qtyLabel + ` ${pos.quantity}`);
+        // lineInstance.setQuantityBackgroundColor(isProfit ? '#00C853' : '#D50000');
+        // lineInstance.setQuantityBorderColor(isProfit ? '#00C853' : '#D50000');
+
+        // const newColor = isProfit ? '#00C853' : '#D50000';
+        // if (pos.lastColor !== newColor) {
+        //   lineInstance
+        //     .setBodyBackgroundColor('#1565C0')
+        //     .setLineColor(newColor)
+        //     .setBodyBorderColor('#1565C0');
+        //   pos.lastColor = newColor;
+        // }
+      } catch (e) {
+        console.warn("[Chart][LiveUpdater] Failed to update position line", { compositeId, lineSymbol, error: e?.message });
+        return;
+      }
+
+      //  SYNC TP/SL LINES LINKED TO THIS POSITION (childLinesRef)
+      const child = childLinesRef.current[compositeId];
+      if (child) {
+        ['TP', 'SL'].forEach(type => {
+          const childLine = child[type];
+          if (!childLine) return;
+          const targetPrice = childLine.getPrice();
+          const pnlLabel = formatOcoPnlLabel(pos, side, entryPrice, targetPrice, quantity);
+          const closingSide = side === 'BUY' ? 'SELL' : 'BUY';
+          const tickSize = getTickSizeFull(pos);
+          const precision = getTickPrecision(tickSize);
+          childLine.setText(`${closingSide} ${type} ${quantity} ${pnlLabel}`);
+        });
+      }
+      const hasInventory = reduxPos && Math.abs(parseFloat(reduxPos.net_position || reduxPos.quantity || 0)) > 0.001;
+
+      if (hasLivePrice && hasInventory && child && (child.TP || child.SL) && !pendingClosesRef.current.has(rawOrderId)) {
+        const tpPrice = child.TP?.getPrice?.();
+        const slPrice = child.SL?.getPrice?.();
+        let shouldClose = false;
+
+        if (side === 'BUY') {
+          if (tpPrice && currentMarketPrice >= tpPrice) shouldClose = true;
+          if (slPrice && currentMarketPrice <= slPrice) shouldClose = true;
+        } else { // SELL side
+          if (tpPrice && currentMarketPrice <= tpPrice) shouldClose = true;
+          if (slPrice && currentMarketPrice >= slPrice) shouldClose = true;
+        }
+
+        if (shouldClose && !pendingClosesRef.current.has(rawOrderId)) {
+          console.log(`[Auto-Close] Triggering for ${rawOrderId} at ${currentMarketPrice}`);
+          pendingClosesRef.current.add(rawOrderId);
+          try {
+            if (!reduxPos.market_id) {
+              console.warn("[Auto-Close] Cannot close: Missing market_id in position", reduxPos);
+              return;
+            }
+            dispatch(closePositionAndCancelOco({ market_id: reduxPos.market_id, account_id: selectedAccount }));
+            dispatch(fetchUserAccounts());
+
+          } catch (err) {
+            console.error('Auto close position failed:', err);
+            // message.error('Auto close failed');
+            setTimeout(() => pendingClosesRef.current.delete(rawOrderId), 2000);
+          }
+        }
+      }
+    });
+
+  }, [displayPrice, activePositions, isInitialized, selectedAccount, layoutSyncId, symbol, paneSymbols]);
+
+  // Subscribe to livePnlStore so position line labels update on every PnL tick,
+  // not only when displayPrice changes (which requires mouse movement on chart).
+  useEffect(() => {
+    if (!isInitialized) return;
+    return onPositionPnl((pnls) => {
+      if (isDraggingRef.current) return;
+      Object.entries(positionLinesRef.current).forEach(([compositeId, pos]) => {
+        const { lineInstance, entryPrice, side, quantity, symbol: lineSymbol } = pos;
+        if (!lineSymbol || !lineInstance) return;
+        const accId = String(pos.account_id || pos.account || '').toLowerCase();
+        const storeEntryBySym = getPositionPnl(lineSymbol, accId);
+        const storeEntryById = pos.unique_id ? getPositionPnlById(pos.unique_id) : null;
+        const storeEntry = storeEntryBySym || storeEntryById;
+        const pnlValue = storeEntry?.upl ?? storeEntry?.unrealized_pnl ?? null;
+        if (pnlValue === null) return;
+        const floatPnl = parseFloat(pnlValue);
+        if (Number.isNaN(floatPnl)) return;
+        const isProfit = floatPnl >= 0;
+        const pnlText = ` (${isProfit ? '+' : '-'}$${Math.abs(floatPnl).toFixed(2)})`;
+        // In P&L live updater useEffect, REPLACE the labelText block:
+        const sLabel = pos.side === 'BUY' ? 'BUY' : 'SELL';
+        const qtyDisplay = `${sLabel} ${quantity}${pnlText}`;
+        const pnlColor = isProfit ? '#00C853' : '#D50000';
+        try {
+          if (pos._dragLabel) return;
+          lineInstance.setQuantity(qtyDisplay);
+          lineInstance.setQuantityBackgroundColor(pnlColor);
+          lineInstance.setQuantityBorderColor(pnlColor);
+
+          // ALWAYS set body text on every tick — keeps TP  SL permanently visible
+          // Do not gate this behind lastText check — that was the bug
+          lineInstance.setText(`TP  SL`);
+          lineInstance.setBodyBackgroundColor('#1565C0');
+          lineInstance.setBodyBorderColor('#1565C0');
+          lineInstance.setLineColor(pnlColor);
+
+          // Update tracking refs
+          pos.lastText = qtyDisplay;
+          pos.lastColor = pnlColor;
+        } catch (e) {
+          // line may have been removed
+        }
+        // if (pos.lastText !== qtyDisplay) {
+        //   lineInstance.setQuantity(qtyDisplay);
+        //   lineInstance.setQuantityBackgroundColor(isProfit ? '#00C853' : '#D50000');
+        //   lineInstance.setQuantityBorderColor(isProfit ? '#00C853' : '#D50000');
+        //   pos.lastText = qtyDisplay;
+        // }
+        // const newColor = isProfit ? '#00C853' : '#D50000';
+        // if (pos.lastColor !== newColor) {
+        //   const sLabel = pos.side === 'BUY' ? 'BUY' : 'SELL';
+        //   lineInstance.setText(`${sLabel}  TP  SL`);
+        //   lineInstance
+        //     .setBodyBackgroundColor('#1565C0')
+        //     .setLineColor(newColor)
+        //     .setBodyBorderColor('#1565C0');
+        //   pos.lastColor = newColor;
+        // }
+        // const labelText = `${side} ${quantity}${pnlText}`;
+        // try {
+        //   if (pos._dragLabel) return;
+        //   if (pos.lastText !== labelText) {
+        //     lineInstance.setText(labelText);
+        //     pos.lastText = labelText;
+        //   }
+        //   const newColor = isProfit ? '#00C853' : '#D50000';
+        //   if (pos.lastColor !== newColor) {
+        //     lineInstance.setBodyBackgroundColor(newColor)
+        //       .setBodyTextColor('#FFFFFF')
+        //       .setLineColor(newColor)
+        //       .setBodyBorderColor(newColor);
+        //     pos.lastColor = newColor;
+        //   }
+      });
+    });
+  }, [isInitialized]);
+
+  const chartOrderEvent = useSelector(state => state.orders.chartOrderEvent);
+
+  useEffect(() => {
+    if (!chartOrderEvent) return;
+    // console.log("[Chart] Received chartOrderEvent via Redux:", chartOrderEvent);
+    handleOrderPlaced(chartOrderEvent);
+    dispatch(clearChartOrderEvent());
+  }, [chartOrderEvent, dispatch]);
+
+  // Listener for OCO Actions from other components (CreateOrder panel)
+  useEffect(() => {
+    if (!ocoAction || !activeOcoConfirm) return;
+
+    if (ocoAction === 'confirm') {
+      checkAndSubmitOco(activeOcoConfirm.compositeId, activeOcoConfirm.originalOrder, activeOcoConfirm.chartIndex);
+    } else if (ocoAction === 'cancel') {
+      handleCancelOcoConfig();
+    }
+    // Action will be cleared by clearActiveOcoConfirm inside the respective handlers
+  }, [ocoAction, activeOcoConfirm]);
+
+  // Sync Redux OCO prices back to Chart lines/shades (for editing in CreateOrder panel)
+  useEffect(() => {
+    if (!activeOcoConfirm) return;
+    const { compositeId, tp, sl, chartIndex } = activeOcoConfirm;
+    const pending = pendingOcoRef.current[compositeId];
+    if (!pending) return;
+
+    let changed = false;
+    if (tp !== undefined && tp !== pending.tp) {
+      pending.tp = tp;
+      if (pending.tpLine) pending.tpLine.setPrice(tp);
+      changed = true;
+    }
+    if (sl !== undefined && sl !== pending.sl) {
+      pending.sl = sl;
+      if (pending.slLine) pending.slLine.setPrice(sl);
+      changed = true;
+    }
+
+    if (changed) {
+      // Re-calculate pnl labels and refresh shades
+      const entryPrice = activeOcoConfirm.originalOrder?.entry_price || activeOcoConfirm.originalOrder?.avg_price || 0;
+      const qty = Math.abs(activeOcoConfirm.originalOrder?.net_position || activeOcoConfirm.originalOrder?.quantity || 1);
+      const side = (activeOcoConfirm.originalOrder?.side?.toUpperCase() || (activeOcoConfirm.originalOrder?.net_position >= 0 ? 'BUY' : 'SELL'));
+
+      const updateLineText = (line, price, type) => {
+        if (!line) return;
+        const pnlLabel = formatOcoPnlLabel(activeOcoConfirm.originalOrder, side, entryPrice, price, qty);
+        const tickSize = getTickSizeFull(activeOcoConfirm.originalOrder);
+        const precision = getTickPrecision(tickSize);
+        line.setText(`${type.toUpperCase()} [Confirm] ${pnlLabel}`);
+      };
+
+      updateLineText(pending.tpLine, pending.tp, 'tp');
+      updateLineText(pending.slLine, pending.sl, 'sl');
+    }
+  }, [activeOcoConfirm?.tp, activeOcoConfirm?.sl]);
+
+  // ========================================
+  // DRAG HANDLERS: OCO Modal
+  // ========================================
+  const handleOcoModalDragStart = (e) => {
+    if (e.button !== 0) return;
+    const modal = e.currentTarget.closest('.chart-oco-modal-overlay');
+    if (!modal) return;
+
+    ocoModalDragRef.current = {
+      dragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: ocoModalPosition.x,
+      initialY: ocoModalPosition.y
+    };
+
+    const handleMouseMove = (moveEvent) => {
+      if (!ocoModalDragRef.current.dragging) return;
+      const deltaX = moveEvent.clientX - ocoModalDragRef.current.startX;
+      const deltaY = moveEvent.clientY - ocoModalDragRef.current.startY;
+
+      setOcoModalPosition({
+        x: ocoModalDragRef.current.initialX + deltaX,
+        y: ocoModalDragRef.current.initialY + deltaY
+      });
+    };
+
+    const handleMouseUp = () => {
+      ocoModalDragRef.current.dragging = false;
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleOcoModalTouchStart = (e) => {
+    const touch = e.touches[0];
+    const modal = e.currentTarget.closest('.chart-oco-modal-overlay');
+    if (!modal) return;
+
+    ocoModalDragRef.current = {
+      dragging: true,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      initialX: ocoModalPosition.x,
+      initialY: ocoModalPosition.y
+    };
+
+    const handleTouchMove = (moveEvent) => {
+      if (!ocoModalDragRef.current.dragging) return;
+      const touchMove = moveEvent.touches[0];
+      const deltaX = touchMove.clientX - ocoModalDragRef.current.startX;
+      const deltaY = touchMove.clientY - ocoModalDragRef.current.startY;
+
+      setOcoModalPosition({
+        x: ocoModalDragRef.current.initialX + deltaX,
+        y: ocoModalDragRef.current.initialY + deltaY
+      });
+    };
+
+    const handleTouchEnd = () => {
+      ocoModalDragRef.current.dragging = false;
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+  };
+
+  // ========================================
+  // RENDER
+  // ========================================
+  return (
+    <div className={`chart-wrapper ${isQuickTradeCollapsed && isMobile ? 'collapsed-chart-wrapper' : ''}`}>
+
+      <div className="chart-container-wrapper" style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <div ref={containerRef} className="chart-container-tv" />
+
+        {(isLoadingData || isSymbolsLoading) && (
+          <div className="loading-overlay">
+            <div className="loading-spinner" />
+          </div>
+        )}
+      </div>
+
+      {!isMultiChart && (
+        <QuickTradeFloatingWindow
+          activeSymbol={orderContract || activeSymbol}
+          exchangeLabel={orderExchange}
+          onBuy={handleHeaderBuy}
+          onSell={handleHeaderSell}
+          onJoinBid={handleJoinBid}
+          onJoinAsk={handleJoinAsk}
+          mobile={isMobile}
+          collapsed={isQuickTradeCollapsed}
+          onToggleCollapse={() => setIsQuickTradeCollapsed(!isQuickTradeCollapsed)}
+        />
+      )}
+
+
+      <TradingPanel
+        symbol={displaySymbol}
+        currentPrice={displayPrice}
+        accountId={accountId}
+        isOpen={showTradingPanel}
+        onClose={() => setShowTradingPanel(false)}
+        onOrderPlaced={handleOrderPlaced}
+        initialSide={tradingPanelSide}
+      />
+      {shouldShowOcoModal && (
+        <div
+          className="chart-oco-modal-overlay"
+          style={{
+            left: `${ocoModalPosition.x}px`,
+            top: `${ocoModalPosition.y}px`,
+            position: 'absolute'
+          }}
+        >
+          <div className="chart-oco-modal">
+            <div
+              className="chart-oco-modal__header"
+              onMouseDown={handleOcoModalDragStart}
+              onTouchStart={handleOcoModalTouchStart}
+              style={{ touchAction: 'none' }}
+            >
+              <h3>Confirm Bracket</h3>
+              <button
+                type="button"
+                className="chart-oco-modal__close"
+                onClick={() => dispatch(setOcoAction('cancel'))}
+              >
+
+              </button>
+            </div>
+            {!isMobile ? (
+              <>
+                <div className="chart-oco-modal__body">
+                  <div className="chart-oco-modal__field">
+                    <span>TP</span>
+                    <InputNumber
+                      value={activeOcoConfirm?.tp}
+                      onChange={(value) => dispatch(updateActiveOcoPrices({ tp: value }))}
+                      step={ocoTickSize}
+                      precision={ocoPrecision}
+                      controls={false}
+                      disabled={activeOcoConfirm?.tp == null}
+                    />
+                  </div>
+                  <div className="chart-oco-modal__field">
+                    <span>SL</span>
+                    <InputNumber
+                      value={activeOcoConfirm?.sl}
+                      onChange={(value) => dispatch(updateActiveOcoPrices({ sl: value }))}
+                      step={ocoTickSize}
+                      precision={ocoPrecision}
+                      controls={false}
+                      disabled={activeOcoConfirm?.sl == null}
+                    />
+                  </div>
+                  <div className="chart-oco-modal__field">
+                    <span>Quantity</span>
+                    <InputNumber
+                      value={activeOcoConfirm?.quantity}
+                      onChange={(value) => {
+                        dispatch(updateActiveOcoPrices({ quantity: value }));
+                        // Also sync back to ref for any subsequent line.onMove calls
+                        if (pendingOcoRef.current[activeOcoConfirm.compositeId]) {
+                          pendingOcoRef.current[activeOcoConfirm.compositeId].quantity = value;
+                          // Update the visual quantity on the lines
+                          const p = pendingOcoRef.current[activeOcoConfirm.compositeId];
+                          if (p.tpLine) p.tpLine.setQuantity(value.toString());
+                          if (p.slLine) p.slLine.setQuantity(value.toString());
+                        }
+                      }}
+                      min={1}
+                      step={1}
+                      controls={true}
+                    />
+                  </div>
+                  <div className="chart-oco-modal__stats">
+                    <div>
+                      <span>Reward</span>
+                      <strong>{formatCurrency(ocoRewardUsd)}</strong>
+                    </div>
+                    <div>
+                      <span>Risk</span>
+                      <strong>{formatCurrency(ocoRiskUsd)}</strong>
+                    </div>
+                    <div>
+                      <span>R/R</span>
+                      <strong>{ocoRatio}</strong>
+                    </div>
+                  </div>
+                </div>
+                <div className="chart-oco-modal__actions">
+                  <Button onClick={() => dispatch(setOcoAction('cancel'))}>
+                    Discard
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => dispatch(setOcoAction('confirm'))}
+                    disabled={activeOcoConfirm?.tp == null || activeOcoConfirm?.sl == null}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="chart-oco-modal__body mobile-compact">
+                  <div className="compact-row">
+                    {(() => {
+                      const tickSize = getTickSizeFull(activeSymbol);
+                      const precision = getTickPrecision(tickSize);
+                      return (
+                        <>
+                          <div className="compact-field">
+                            <span className="label">TP</span>
+                            <span className="value">{activeOcoConfirm?.tp?.toFixed(precision) || '---'}</span>
+                          </div>
+                          <div className="compact-field">
+                            <span className="label">SL</span>
+                            <span className="value">{activeOcoConfirm?.sl?.toFixed(precision) || '---'}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="chart-oco-modal__actions mobile">
+                  <Button onClick={() => dispatch(setOcoAction('cancel'))} danger>
+                    Discard
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => dispatch(setOcoAction('confirm'))}
+                    disabled={activeOcoConfirm?.tp == null || activeOcoConfirm?.sl == null}
+                  >
+                    Confirm
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <GlobalMarketDataSync
+        layoutSyncId={layoutSyncId}
+        widgetRef={widgetRef}
+        lastSyncedSymbolsRef={lastSyncedSymbolsRef}
+        isInitialized={isInitialized}
+      />
+
+      {/* OrderNotification is now handled centrally in PageLayout */}
+
+    </div >
+  );
+}
+
+export default memo(ChartWrapper);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

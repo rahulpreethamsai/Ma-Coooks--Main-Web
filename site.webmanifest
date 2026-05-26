@@ -1,0 +1,40 @@
+{
+  "name": "Ruchi Rush — Home Cooked Food Delivery",
+  "short_name": "Ruchi Rush",
+  "description": "Order authentic homemade food from verified local home chefs in Hyderabad.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#fff8f6",
+  "theme_color": "#9e4300",
+  "orientation": "portrait-primary",
+  "categories": [
+    "food",
+    "shopping"
+  ],
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

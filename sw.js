@@ -10,6 +10,8 @@ const CACHE_VERSION = "1.0.0";
 const STATIC_ASSETS = [
     "/",
     "/index.html",
+    "/styles.css",
+    "/app.js",
     "/site.webmanifest",
     "/favicon.ico",
 ];

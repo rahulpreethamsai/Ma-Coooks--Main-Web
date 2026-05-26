@@ -1,0 +1,194 @@
+/* ============================================================
+   Ruchi Rush — Premium Stylesheet (styles.css)
+   ============================================================ */
+
+/* --- Custom Scrollbar Hide & Style --- */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Custom design scrollbar for views */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #fff8f6;
+}
+::-webkit-scrollbar-thumb {
+    background: #dfc0b2;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #9e4300;
+}
+
+/* --- Noise Grain Texture --- */
+.grain-texture {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+}
+
+/* --- Gradients --- */
+.hero-gradient {
+    background: radial-gradient(circle at top right, #ffdbcb 0%, #fff8f6 60%);
+}
+.premium-gradient {
+    background: linear-gradient(135deg, #ffeae0 0%, #fff1eb 100%);
+}
+.accent-gradient {
+    background: linear-gradient(135deg, #ff7f32 0%, #9e4300 100%);
+}
+
+/* --- Glassmorphism UI Elements --- */
+.glass-card {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(158, 67, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card:hover {
+    background: rgba(255, 255, 255, 0.65);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 12px 40px 0 rgba(158, 67, 0, 0.08);
+}
+
+.glass-modal {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 24px 64px rgba(36, 25, 19, 0.15);
+}
+
+.glass-dark-card {
+    background: rgba(36, 25, 19, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* --- Floating Button & Inputs --- */
+.glass-btn {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+}
+.glass-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 6px 20px rgba(158, 67, 0, 0.1);
+}
+
+.input-glow:focus {
+    outline: none;
+    border-color: #9e4300;
+    box-shadow: 0 0 0 3px rgba(158, 67, 0, 0.2);
+}
+
+/* --- Live Stove Cooking Sim Animation --- */
+@keyframes simmer {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+    50% { transform: translateY(-8px) scale(1.15); opacity: 0.9; }
+}
+.simmer-flame-1 {
+    animation: simmer 1.2s infinite ease-in-out;
+}
+.simmer-flame-2 {
+    animation: simmer 1.5s infinite ease-in-out 0.3s;
+}
+.simmer-flame-3 {
+    animation: simmer 1.8s infinite ease-in-out 0.6s;
+}
+
+/* --- Custom Toast Notification --- */
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100000;
+    display: flex;
+    flex-col: column;
+    gap: 8px;
+    pointer-events: none;
+}
+.toast-msg {
+    min-width: 300px;
+    max-width: 90vw;
+    background: rgba(36, 25, 19, 0.95);
+    color: #fff8f6;
+    backdrop-filter: blur(10px);
+    border-left: 4px solid #ff7f32;
+    padding: 14px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: toast-slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    pointer-events: auto;
+}
+.toast-msg.success {
+    border-left-color: #10B981;
+}
+.toast-msg.error {
+    border-left-color: #EF4444;
+}
+.toast-msg.info {
+    border-left-color: #3B82F6;
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+.toast-slide-out {
+    animation: toast-slide-out-anim 0.3s ease forwards !important;
+}
+@keyframes toast-slide-out-anim {
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+    }
+}
+
+/* --- Active Tracker Indicators --- */
+.tracker-pulse {
+    position: relative;
+}
+.tracker-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #ff7f32;
+    animation: tracker-pulse-anim 1.8s infinite ease-out;
+}
+@keyframes tracker-pulse-anim {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* --- Custom Switches --- */
+.switch-checkbox:checked + .switch-label {
+    background-color: #9e4300;
+}
+.switch-checkbox:checked + .switch-label .switch-toggle {
+    transform: translateX(20px);
+}

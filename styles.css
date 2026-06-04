@@ -2,6 +2,42 @@
    Ruchi Rush — Premium Stylesheet (styles.css)
    ============================================================ */
 
+.what-we-offer {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1780568885/cld-sample-2.png");
+}
+.get-in-touch {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
+    background-position: left;
+    background-size: cover;
+}   
+
+.footer {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-5.png");
+    background-size: cover;
+    background-position: down;
+}
+
+.hero {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
+    background-size: cover;
+    background-position: center;
+}
+
+.how-it-works {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
+    background-size: cover;
+    background-position: center;
+}
+.cta-section {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-5.png");
+    background-position: center;
+}
+.why-choose-us {
+    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1780571501/cld-sample-3.png");
+    background-size: cover ;
+    background-position: center;
+}
+
 /* --- Custom Scrollbar Hide & Style --- */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;

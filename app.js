@@ -1980,3 +1980,22 @@ document.addEventListener("DOMContentLoaded", () => {
         // Safe to leave dummy waitlist modal as fallback
     });
 });
+
+
+// how to exactly build an playstore application using this codebase?
+
+// To build and publish a Play Store application using this codebase, you will need to follow these steps:
+
+// 1. **Set Up Your Development Environment**:
+//    - Install Android Studio, which is the official IDE for Android development.
+//    - Set up the Android SDK and ensure you have the necessary tools installed.
+
+// 2. **Create a New Android Project**:
+//    - Open Android Studio and create a new project.
+//    - Choose an appropriate project template (e.g., Empty Activity) and configure your project settings.
+
+// 3. **Integrate Your Codebase**:
+//    - Copy your existing codebase (HTML, CSS, JavaScript) into the `assets` folder of your Android project. This allows you to load your web application within a WebView.
+
+// 4. **Set Up WebView**:
+//    - In your main activity (e.g., `MainActivity.java`), set up a WebView to load your HTML file from the assets folder. Here’s an example of how to do this:

@@ -384,10 +384,10 @@
                     /* Left Column: Chef Hat */
                     .chef-hat-wrapper {
                         position: relative;
-                        width: 280px;
-                        height: 380px;
+                        width: 330px;
+                        height: 330px;
                         margin: 0 auto;
-                        transform: rotate(-5deg);
+                        transform: rotate(-3deg);
                         transition: transform 0.3s ease;
                         filter: drop-shadow(0 15px 30px rgba(158, 67, 0, 0.12));
                     }
@@ -522,9 +522,9 @@
                             order: 3;
                         }
                         .chef-hat-wrapper {
-                            width: 220px;
-                            height: 300px;
-                            transform: rotate(-3deg);
+                            width: 260px;
+                            height: 260px;
+                            transform: rotate(-2deg);
                         }
                         .plate-wrapper {
                             width: 220px;
@@ -542,7 +542,7 @@
                 <svg width="0" height="0" style="position: absolute; width: 0; height: 0;">
                     <defs>
                         <clipPath id="chef-hat-clip" clipPathUnits="objectBoundingBox">
-                            <path d="M 0.25,0.95 L 0.75,0.95 L 0.75,0.75 C 0.9,0.75 0.95,0.50 0.8,0.40 C 0.8,0.25 0.65,0.10 0.5,0.10 C 0.35,0.10 0.2,0.25 0.2,0.40 C 0.05,0.50 0.1,0.75 0.25,0.75 Z" />
+                            <path d="M 0.28,0.85 C 0.45,0.92 0.60,0.92 0.78,0.83 L 0.78,0.55 C 0.92,0.55 0.98,0.42 0.88,0.30 C 0.80,0.20 0.70,0.08 0.60,0.08 C 0.45,0.08 0.35,0.18 0.28,0.22 C 0.18,0.25 0.05,0.38 0.08,0.50 C 0.10,0.58 0.20,0.58 0.28,0.58 Z" />
                         </clipPath>
                     </defs>
                 </svg>
@@ -593,8 +593,16 @@
                     <div class="hero-media-col chef-side parallax-mid opacity-0">
                         <div class="chef-hat-wrapper">
                             <svg class="chef-hat-svg-outline" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                <path d="M 25,95 L 75,95 L 75,75 C 90,75 95,50 80,40 C 80,25 65,10 50,10 C 35,10 20,25 20,40 C 5,50 10,75 25,75 Z" 
+                                <!-- Outer boundary matching clip-path shape -->
+                                <path d="M 28,85 C 45,92 60,92 78,83 L 78,55 C 92,55 98,42 88,30 C 80,20 70,8 60,8 C 45,8 35,18 28,22 C 18,25 5,38 8,50 C 10,58 20,58 28,58 Z" 
                                       fill="none" stroke="rgba(255, 127, 50, 0.4)" stroke-width="1.5" stroke-dasharray="2,2" class="chef-hat-dashed-outline" />
+                                <!-- Base band top border curve -->
+                                <path d="M 28,58 C 45,65 60,65 78,55" fill="none" stroke="rgba(255, 127, 50, 0.3)" stroke-width="1.5" stroke-dasharray="2,2" />
+                                <!-- Puff creases / folds radiating upwards from the band top -->
+                                <path d="M 38,59 C 34,45 38,30 42,22" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 48,61 C 46,42 50,30 52,15" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 58,60 C 58,45 62,32 68,20" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 68,57 C 70,45 74,38 80,32" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
                             </svg>
                             <div class="chef-hat-video-container">
                                 <video class="chef-hat-video" autoplay muted loop playsinline preload="auto">
@@ -2413,83 +2421,29 @@
             const plateEl = document.querySelector(".plate-wrapper");
             
             class Particle {
-                constructor(sx, sy, tx, ty) {
+                constructor(sx, sy) {
                     this.x = sx;
                     this.y = sy;
-                    this.startX = sx;
-                    this.startY = sy;
-                    this.targetX = tx;
-                    this.targetY = ty;
-                    
-                    this.state = 'steam'; // 'steam' -> rising, 'spice' -> traveling
                     this.age = 0;
-                    this.maxAge = 120 + Math.random() * 60; // lifetime
+                    this.maxAge = 60 + Math.random() * 30; // 1 to 1.5 seconds
                     
-                    // Steam properties
-                    this.vx = (Math.random() - 0.5) * 0.4;
-                    this.vy = -0.5 - Math.random() * 0.5; // rise up
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = -0.6 - Math.random() * 0.6; // rise up
                     this.steamAlpha = 0.2 + Math.random() * 0.25;
-                    
-                    // Spice properties
-                    this.spiceColor = Math.random() > 0.5 ? '#ff7f32' : '#9e4300';
-                    this.size = 1.5 + Math.random() * 2;
-                    this.progress = 0;
-                    this.speed = 0.005 + Math.random() * 0.005;
-                    this.curveFactor = (Math.random() - 0.5) * 120; // curve offset
                 }
                 
-                update(sx, sy, tx, ty) {
+                update() {
                     this.age++;
-                    
-                    // Update target coordinates dynamically for responsiveness
-                    this.targetX = tx;
-                    this.targetY = ty;
-                    
-                    if (this.state === 'steam') {
-                        this.x += this.vx;
-                        this.y += this.vy;
-                        this.vy *= 0.98; // slow down rising
-                        
-                        // Transition to spice after rising a bit
-                        if (this.age > 40 + Math.random() * 20) {
-                            this.state = 'spice';
-                            this.startX = this.x;
-                            this.startY = this.y;
-                        }
-                    } else if (this.state === 'spice') {
-                        this.progress += this.speed;
-                        if (this.progress > 1) this.progress = 1;
-                        
-                        const t = this.progress;
-                        const p0x = this.startX;
-                        const p0y = this.startY;
-                        const p2x = this.targetX;
-                        const p2y = this.targetY;
-                        
-                        // Bezier curve over the center
-                        const p1x = (p0x + p2x) / 2;
-                        const p1y = Math.min(p0y, p2y) - 120 + this.curveFactor;
-                        
-                        this.x = (1 - t) * (1 - t) * p0x + 2 * (1 - t) * t * p1x + t * t * p2x;
-                        this.y = (1 - t) * (1 - t) * p0y + 2 * (1 - t) * t * p1y + t * t * p2y;
-                    }
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy *= 0.97; // slow down rising
                 }
                 
                 draw() {
                     ctx.beginPath();
-                    if (this.state === 'steam') {
-                        ctx.arc(this.x, this.y, 6 + Math.random() * 4, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(236, 214, 204, ${this.steamAlpha * (1 - this.age / 60)})`;
-                        ctx.fill();
-                    } else {
-                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                        const glowAlpha = 1 - this.progress;
-                        ctx.fillStyle = this.spiceColor;
-                        ctx.shadowBlur = 8;
-                        ctx.shadowColor = '#ff7f32';
-                        ctx.fill();
-                        ctx.shadowBlur = 0; // reset
-                    }
+                    ctx.arc(this.x, this.y, 6 + Math.random() * 4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(236, 214, 204, ${this.steamAlpha * (1 - this.age / this.maxAge)})`;
+                    ctx.fill();
                 }
             }
             
@@ -2507,21 +2461,20 @@
                 ctx.clearRect(0, 0, canvasWidth, canvasHeight);
                 
                 const chefCenter = getElementCenter(chefHatEl);
-                const customerCenter = getElementCenter(plateEl);
                 
                 // Spawn particles from chef hat area
-                if (Math.random() < 0.12 && chefCenter.x > 0) {
-                    const spawnX = chefCenter.x + (Math.random() - 0.5) * 40;
-                    const spawnY = chefCenter.y - 40 + (Math.random() - 0.5) * 40;
-                    particles.push(new Particle(spawnX, spawnY, customerCenter.x, customerCenter.y));
+                if (Math.random() < 0.15 && chefCenter.x > 0) {
+                    const spawnX = chefCenter.x + (Math.random() - 0.5) * 45;
+                    const spawnY = chefCenter.y - 45 + (Math.random() - 0.5) * 30;
+                    particles.push(new Particle(spawnX, spawnY));
                 }
                 
                 for (let i = particles.length - 1; i >= 0; i--) {
                     const p = particles[i];
-                    p.update(chefCenter.x, chefCenter.y, customerCenter.x, customerCenter.y);
+                    p.update();
                     p.draw();
                     
-                    if (p.age >= p.maxAge || (p.state === 'spice' && p.progress >= 1)) {
+                    if (p.age >= p.maxAge) {
                         particles.splice(i, 1);
                     }
                 }

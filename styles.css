@@ -13,9 +13,7 @@
 }
 
 .footer {
-    background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-5.png");
-    background-size: cover;
-    background-position: down;
+    background-color: #c1a479;
 }
 
 .hero {

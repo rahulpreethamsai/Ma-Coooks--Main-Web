@@ -9,7 +9,6 @@ const CACHE_VERSION = "1.0.0";
 // Files to cache immediately on install
 const STATIC_ASSETS = [
     "/",
-    "/index.html",
     "/site.webmanifest",
     "/favicon.ico",
 ];

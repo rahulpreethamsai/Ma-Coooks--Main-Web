@@ -53,10 +53,10 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
     }
   ];
   const stepVideos = [
-    "https://cdnl.iconscout.com/lottie/premium/preview-watermark/man-ordering-online-food-animation-gif-download-13854668.mp4",
-    "https://res.cloudinary.com/dt79nhjkc/video/upload/v1780658276/samples/dance-2.mp4",
-    "https://res.cloudinary.com/dt79nhjkc/video/upload/v1780658549/samples/cld-sample-video.mp4",
-    "https://res.cloudinary.com/dt79nhjkc/video/upload/v1780658327/samples/sea-turtle.mp4"
+    "https://videos.pexels.com/video-files/13441336/13441336-sd_360_640_24fps.mp4",
+    "https://videos.pexels.com/video-files/8279561/8279561-hd_1080_1920_24fps.mp4",
+    "https://videos.pexels.com/video-files/4253725/4253725-uhd_2732_1440_25fps.mp4",
+    "https://videos.pexels.com/video-files/4440916/4440916-hd_1920_1080_25fps.mp4"
   ];
   const videoRefs = useRef([]);
 
@@ -397,8 +397,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <path d="M 68,57 C 70,45 74,38 80,32" fill="none" stroke="rgba(255, 127, 50, 0.25)" strokeWidth="1.2" strokeDasharray="2,2" />
               </svg>
               <div className="chef-hat-video-container">
-                <video className="chef-hat-video" autoPlay muted loop playsInline preload="auto">
-                  <source src="https://media.istockphoto.com/id/1491291286/video/indian-couple-exploring-traditional-cooking-preserving-culinary-heritage-preparing-authentic.mp4?p=1&s=mp4-640x640-is&k=20&c=E0Y190v8O0G_a2ohCcUqDkK80v1PyJfQ3J7cxuxpOpI=" type="video/mp4" />
+                <video className="chef-hat-video" autoPlay muted loop playsInline preload="metadata">
+                  <source src="https://res.cloudinary.com/dt79nhjkc/video/upload/v1781166372/samples/elephants.mp4" type="video/mp4" />
                 </video>
               </div>
               <div className="chef-hat-label">Verified Home Chef</div>
@@ -462,8 +462,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
               <div className="plate-rim-circle-1"></div>
               <div className="plate-rim-circle-2"></div>
               <div className="plate-inner">
-                <video className="plate-video" autoPlay muted loop playsInline preload="auto">
-                  <source src="https://media.istockphoto.com/id/1908833330/video/asian-family-care-about-each-other.mp4?p=1&s=mp4-640x640-is&k=20&c=IBCua2sqmofBKfn1EV-pvSL_diiG90hLZk5dnoRuk70=" type="video/mp4" />
+                <video className="plate-video" autoPlay muted loop playsInline preload="metadata">
+                  <source src="https://videos.pexels.com/video-files/8811044/8811044-sd_640_360_25fps.mp4" type="video/mp4" />
                 </video>
               </div>
               <div className="plate-label">Happy Family Dining</div>
@@ -599,7 +599,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                     className="how-works-video" 
                     muted 
                     playsInline 
-                    preload="auto"
+                    preload="none"
                   >
                     <source src={url} type="video/mp4" />
                   </video>
@@ -652,14 +652,14 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 key={idx}
                 className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col justify-between hover:shadow-md transition-shadow relative"
               >
-                <span className="text-6xl text-primary/10 absolute top-4 right-6 font-serif">“</span>
+                <span className="text-6xl text-yellow-500 absolute top-4 right-6 font-serif">“</span>
                 <div className="space-y-4">
                   <div className="flex gap-1 text-yellow-500">
                     {[...Array(t.rating)].map((_, i) => (
                       <span key={i} className="material-symbols-outlined fill-current text-sm">star</span>
                     ))}
                   </div>
-                  <p className="text-stone-700 dark:text-stone-300 text-sm leading-relaxed font-medium italic">
+                  <p className="text-black text-sm leading-relaxed font-medium italic">
                     "{t.quote}"
                   </p>
                 </div>
@@ -920,26 +920,26 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="firstName">First Name</label>
                 <input id="firstName" name="firstName" type="text" required placeholder="Jane"
                        value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-stone-800 dark:border-stone-700" />
+                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="lastName">Last Name</label>
                 <input id="lastName" name="lastName" type="text" required placeholder="Doe"
                        value={lastName} onChange={(e) => setLastName(e.target.value)}
-                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-stone-800 dark:border-stone-700" />
+                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="email">Email Address</label>
               <input id="email" name="email" type="email" required placeholder="jane@example.com"
                      value={email} onChange={(e) => setEmail(e.target.value)}
-                     className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-stone-800 dark:border-stone-700" />
+                     className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="message">Message</label>
               <textarea id="message" name="message" required rows="4" placeholder="Tell us what's on your mind..."
                         value={message} onChange={(e) => setMessage(e.target.value)}
-                        className="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-stone-800 dark:border-stone-700" />
+                        className="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
 
             <button id="submitBtn" type="submit" disabled={sending}

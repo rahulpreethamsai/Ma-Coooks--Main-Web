@@ -275,7 +275,7 @@ export default function ServiceAreaPage({
         </section>
 
         {/* OUR PROMISE TO HOME CHEFS */}
-        <section className="border-t border-primary/10 pt-16" id="chef-promise">
+        <section className="border-theme border-primary/10 pt-16" id="chef-promise">
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="text-primary font-bold uppercase tracking-widest text-xs">Our Commitment</span>
             <h2 className="font-h2 text-3xl font-bold mt-2 text-black font-['Newsreader']">Our Promise to Home Chefs</h2>

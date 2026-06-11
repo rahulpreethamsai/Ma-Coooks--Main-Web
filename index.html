@@ -294,10 +294,17 @@
             min-height: max(884px, 100dvh);
             overflow-x: hidden;
         }
+        .hidden-display {
+            display: none !important;
+        }
+        .hidden-input {
+            display: none;
+        }
     </style>
     <style>
         .glass-btn {
             background: rgba(255, 255, 255, 0.2);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
@@ -355,7 +362,7 @@
                 <button
                     class="cook-trigger relative overflow-hidden bg-primary-container text-white px-6 py-2 rounded-full font-label-sm scale-95 active:scale-90 transition-transform duration-200 group">
                     <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmVmOTRnOXY3aWpnMGhkeGw5aTN6ejAzcGZxNWdiaHdxOTJheW51eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/YoKaNSoTHog8Y3550r/giphy.gif"
-                        class="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        class="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" alt="Chef cooking animation" />
                     <span class="relative z-10">Join as Chef</span>
                 </button>
                 <div class="h-6 w-[1px] bg-stone-300"></div>
@@ -535,6 +542,7 @@
                         left: 50%;
                         transform: translateX(-50%);
                         background: rgba(255, 255, 255, 0.9);
+                        -webkit-backdrop-filter: blur(8px);
                         backdrop-filter: blur(8px);
                         -webkit-backdrop-filter: blur(8px);
                         border: 1px solid rgba(158, 67, 0, 0.15);
@@ -811,8 +819,7 @@
         </div>
 
         <!-- STORY VIEWER MODAL — paste once, right after the stories bar div above -->
-        <div id="storyModal" class="fixed inset-0 z-[99999] bg-black flex items-center justify-center"
-            style="display:none !important">
+        <div id="storyModal" class="fixed inset-0 z-[99999] bg-black flex items-center justify-center hidden-display">
 
             <!-- Progress bars -->
             <div class="absolute top-4 left-4 right-4 flex gap-1 z-10">
@@ -1196,6 +1203,7 @@
                             </div>
                             <a href="https://wa.me/919999999999?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question."
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 class="flex items-center gap-sm mt-md bg-[#25D366] text-white px-md py-sm rounded-full w-fit transition-transform hover:scale-105 active:scale-95 shadow-md">
                                 <span class="material-symbols-outlined">chat</span>
                                 Chat on WhatsApp
@@ -1230,7 +1238,7 @@
                                 class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="Tell us what's on your mind..." rows="4" required></textarea>
                         </div>
-                        <input type="text" name="_gotcha" style="display:none" />
+                        <input type="text" name="_gotcha" class="hidden-input" />
                         <input type="hidden" name="_subject" value="New message from Ruchi Rush website!" />
 
                         <button id="submitBtn" type="submit"
@@ -1258,8 +1266,7 @@
         </main>
 
         <!-- Fallback Waitlist Popup Modal -->
-        <div id="waitlistModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-            style="display:none !important">
+        <div id="waitlistModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 hidden-display">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modalBackdrop"></div>
             <div
                 class="relative bg-surface rounded-xl shadow-2xl max-w-md w-full p-lg z-10 border border-outline-variant/30">
@@ -1274,7 +1281,7 @@
                 <form id="waitlistForm" action="https://formspree.io/f/mkoybqqy" method="POST" class="space-y-md">
                     <input type="hidden" name="_subject" value="New Waitlist Signup — Ruchi Rush!" />
                     <input type="hidden" name="type" value="waitlist" />
-                    <input type="text" name="_gotcha" style="display:none" />
+                    <input type="text" name="_gotcha" class="hidden-input" />
                     <div class="flex flex-col gap-xs">
                         <label class="font-label-sm uppercase">Your Name</label>
                         <input name="name" type="text" placeholder="Priya Sharma"
@@ -1325,14 +1332,17 @@
                 <h1 class="text-black dark:text-stone-400 font-['Newsreader'] text-xl font-semibold">Follow Us</h1>
                 <div class="flex gap-4 mt-2">
                     <a href="https://www.facebook.com/ruchirush" target="_blank"
+                        rel="noopener noreferrer"
                         class="text-black dark:text-stone-400 hover:text-blue-600 transition-colors">
                         <i class="fa-brands fa-facebook"></i>
                     </a>
                     <a href="https://www.instagram.com/ruchirush" target="_blank"
+                        rel="noopener noreferrer"
                         class="text-black dark:text-stone-400 hover:text-pink-500 transition-colors">
                         <i class="fa-brands fa-square-instagram"></i>
                     </a>
                     <a href="https://www.twitter.com/ruchirush" target="_blank"
+                        rel="noopener noreferrer"
                         class="text-black dark:text-stone-400 hover:text-blue-400 transition-colors">
                         <i class="fa-brands fa-youtube"></i>
                 </div>
@@ -1387,6 +1397,7 @@
                 <div class="flex items-center gap-1.5 bg-stone-100 rounded-full px-3 py-1.5 border border-stone-200">
                     <span class="material-symbols-outlined text-primary text-base">location_on</span>
                     <select id="location-select"
+                        title="Select delivery location"
                         class="bg-transparent text-xs font-bold text-on-surface border-none p-0 pr-6 focus:ring-0 focus:outline-none cursor-pointer">
                         <option value="Gachibowli">Gachibowli</option>
                         <option value="Madhapur">Madhapur</option>
@@ -1431,7 +1442,7 @@
                             small-batches.</p>
                     </div>
                     <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"
-                        class="w-48 h-32 object-cover rounded-lg shadow-md shrink-0" alt="Home cooked delicacies" />
+                        class="w-48 h-32 object-cover rounded-lg shadow-md shrink-0" alt="Home cooked delicacies" title="Homemade food preparation" />
                 </div>
 
                 <!-- Search & Cuisine Filters -->
@@ -1484,7 +1495,7 @@
                     class="glass-card rounded-xl p-5 border border-primary/10 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between shadow-md">
                     <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
                         <img id="menu-chef-avatar" src=""
-                            class="w-24 h-24 rounded-full object-cover border-4 border-primary/20 shadow-md" alt="" />
+                            class="w-24 h-24 rounded-full object-cover border-4 border-primary/20 shadow-md" alt="Chef avatar" />
                         <div>
                             <div class="flex items-center gap-2">
                                 <h2 id="menu-chef-name" class="font-h1 text-2xl font-bold text-on-surface"></h2>
@@ -1668,13 +1679,13 @@
                 <!-- Delivery Info Fields -->
                 <div class="space-y-2.5">
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Delivery Area
+                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide" for="delivery-address-input">Delivery Area
                             Address</label>
                         <input id="delivery-address-input" type="text"
-                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow" required />
+                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow" placeholder="Enter your delivery address" required />
                     </div>
                     <div class="flex flex-col gap-0.5">
-                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Preferred Time
+                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide" for="delivery-time-select">Preferred Time
                             Slot</label>
                         <select id="delivery-time-select"
                             class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
@@ -2165,7 +2176,7 @@
 
                                 <div class="flex flex-col gap-1">
                                     <label
-                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Cuisine
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide" for="form-dish-category">Cuisine
                                         Category</label>
                                     <select id="form-dish-category"
                                         class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
@@ -2177,10 +2188,10 @@
                                 </div>
 
                                 <div class="flex flex-col gap-1">
-                                    <label
-                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Spicy
+                                    <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide" for="form-dish-spicy">Spicy
                                         Scale</label>
                                     <select id="form-dish-spicy"
+                                        title="Select spice level"
                                         class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
                                         <option value="❌">Not Spicy (❌)</option>
                                         <option value="🌶️">Mild (🌶️)</option>
@@ -2225,6 +2236,7 @@
          WHATSAPP FLOATING ACTION BUTTON
     ============================================================ -->
     <a href="https://wa.me/919999999999?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question." target="_blank"
+        rel="noopener noreferrer"
         id="whatsappFab" title="Chat with us on WhatsApp"
         class="fixed bottom-6 right-6 z-[9998] w-14 h-14 rounded-full bg-[#25D366] flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
         style="box-shadow: 0 4px 20px rgba(37,211,102,0.5)">

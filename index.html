@@ -345,102 +345,417 @@
                 Rush</span>
         </div>
 
-        <nav class="hidden md:flex gap-8 items-center">
-            <a class="text-orange-600 dark:text-orange-400 font-semibold font-['Newsreader'] transition-opacity hover:opacity-80"
-                href="#">Home</a>
-            <a class="text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
-                href="#">Explore</a>
-            <a class="text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
-                href="#">Story</a>
-            <button
-                class="relative overflow-hidden bg-primary-container text-white px-6 py-2 rounded-full font-label-sm scale-95 active:scale-90 transition-transform duration-200 group">
-                <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmVmOTRnOXY3aWpnMGhkeGw5aTN6ejAzcGZxNWdiaHdxOTJheW51eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/YoKaNSoTHog8Y3550r/giphy.gif"
-                    class="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span class="relative z-10">Join as Chef</span>
-            </button>
-        </nav>
+            <nav class="hidden md:flex gap-6 items-center">
+                <a class="text-orange-600 dark:text-orange-400 font-semibold font-['Newsreader'] transition-opacity hover:opacity-80 logo-trigger cursor-pointer"
+                    href="#">Home</a>
+                <a class="nav-link text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
+                    href="#why-us">Why Us</a>
+                <a class="nav-link text-stone-700 dark:text-stone-300 font-['Newsreader'] transition-opacity hover:opacity-80"
+                    href="#what-we-offer">Explore</a>
+                <button
+                    class="cook-trigger relative overflow-hidden bg-primary-container text-white px-6 py-2 rounded-full font-label-sm scale-95 active:scale-90 transition-transform duration-200 group">
+                    <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmVmOTRnOXY3aWpnMGhkeGw5aTN6ejAzcGZxNWdiaHdxOTJheW51eiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/YoKaNSoTHog8Y3550r/giphy.gif"
+                        class="absolute inset-0 w-full h-full object-contain object-center opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span class="relative z-10">Join as Chef</span>
+                </button>
+                <div class="h-6 w-[1px] bg-stone-300"></div>
+                <button id="btn-landing-auth"
+                    class="bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold px-4 py-2 border rounded-full text-xs font-['Newsreader'] transition-all">Login
+                    / Signup</button>
+                <div id="landing-user-profile" class="hidden flex items-center gap-3">
+                    <span id="landing-user-name" class="text-xs font-bold text-stone-700"></span>
+                    <button id="btn-landing-logout"
+                        class="text-xs font-bold text-red-600 hover:underline">Logout</button>
+                </div>
+                <button id="btn-install-pwa"
+                    class="hidden flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-xs">download</span>
+                    <span>Install App</span>
+                </button>
+            </nav>
 
         <!-- Hamburger -->
         <button id="menuBtn" class="md:hidden text-3xl text-primary z-[10000]">☰</button>
 
-        <!-- Mobile Menu -->
-        <div id="mobileMenu"
-            class="fixed top-0 right-[-100%] w-full h-full transition-all duration-300 z-[9998] bg-black backdrop-blur-lg flex flex-col">
-            <div class="flex justify-start p-5">
-                <button onclick="closeMenu()" class="text-2xl text-red-600">✕</button>
-            </div>
-            <div class="flex flex-col gap-5 p-5 text-xl text-white bg-black/70 backdrop-blur-lg">
-                <a href="#" class="hover:underline">Home</a>
-                <a href="#" class="hover:underline">Why Us</a>
-                <a href="#" class="hover:underline">What We Offer</a>
-                <a href="#" class="hover:underline">Contact</a>
-            </div>
-        </div>
-    </header>
-    <main>
-        <!-- Section 1: HERO -->
-        <section
-            class="hero-gradient hero-bg pt-28 pb-lg px-6 flex flex-col items-center justify-center text-center">
-            <div class="max-w-4xl mx-auto">
-                <!-- <h1 class="font-h1 text-h1 text-on-surface mb-md">From Home Kitchens to Your Home</h1> -->
-                <h1 class="hero-title text-6xl md:text-7xl font-semibold font-[Solway, serif]">
-                    <span class="left-text">From Home</span>
-                    <span class="center-text">Kitchens</span>
-                    <span class="right-text">to Your Home</span>
-                </h1>
-                <p class="font-body-lg text-body-lg text-on-surface-variant mb-lg max-w-2xl mx-auto mt-10">
-                    Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that
-                    cares.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-md justify-center">
-                    <div class="flex flex-row items-center justify-between">
-                        <button
-                            class="flex items-center gap-5 bg-primary px-lg py-md rounded-full text-on-primary font-h3 flex items-center transition-transform hover:scale-105 active:scale-95 shadow-xl"
-                            onclick="openWaitlist('customer')">
-                            I WANT TO EAT
-                            <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3J1N3o2cmE0YWkxNXF5NGFwNmF1eHM4ZHJ5NTF0dGxpajkzMHBxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/jUuhj2J2sYgV7VsW5h/giphy.gif"
-                                width="30" height="30" class="brightness-0 invert" />
-                            <!-- <span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span> -->
-                        </button>
+            <!-- Mobile Menu -->
+            <div id="mobileMenu"
+                class="fixed top-0 right-[-100%] w-full h-full transition-all duration-300 z-[9998] bg-black backdrop-blur-lg flex flex-col">
+                <div class="flex justify-start p-5">
+                    <button onclick="closeMenu()" class="text-2xl text-red-600">✕</button>
+                </div>
+                <div class="flex flex-col gap-5 p-5 text-xl text-white bg-black/70 backdrop-blur-lg">
+                    <a href="#" onclick="closeMenu(); Router.navigate('landing')" class="hover:underline">Home</a>
+                    <a href="#why-us" onclick="closeMenu();" class="hover:underline">Why Us</a>
+                    <a href="#what-we-offer" onclick="closeMenu();" class="hover:underline">What We Offer</a>
+                    <a href="#" onclick="closeMenu(); Router.navigate('chef-portal')"
+                        class="hover:underline font-bold text-orange-400">Chef Portal</a>
+                    <div class="h-[1px] bg-white/20 my-2"></div>
+                    <button id="btn-mobile-auth"
+                        class="bg-primary text-white py-2.5 rounded-full text-sm font-bold w-full"
+                        onclick="closeMenu(); Auth.openModal()">Login / Signup</button>
+                    <div id="mobile-user-profile" class="hidden flex flex-col gap-2">
+                        <span id="mobile-user-name" class="text-sm font-semibold text-stone-300"></span>
+                        <button id="btn-mobile-logout"
+                            class="bg-red-600 text-white py-2.5 rounded-full text-sm font-bold w-full"
+                            onclick="closeMenu(); Auth.logout()">Logout</button>
                     </div>
-                    <div class="flex flex-row items-center justify-between">
-                        <button
-                            class="flex items-center gap-2 bg-surface-container-highest px-lg py-md rounded-full text-primary font-h3 border-2 border-primary/10 transition-transform hover:scale-105 active:scale-95 shadow-xl"
-                            onclick="openWaitlist('customer')">
-                            I WANT TO COOK
-                            <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG44YWZta2l3bWNzeGxxMmh3aHRvOTdneDR3YXRqaDJ1MGlrbzAzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJJhxzipvPyi5zyOvT/giphy.gif"
-                                width="30" height="30" />
-                        </button>
-                    </div>
+                    <button id="btn-mobile-install-pwa"
+                        class="hidden bg-amber-500 text-white py-2.5 rounded-full text-sm font-bold w-full flex items-center justify-center gap-1"
+                        onclick="closeMenu(); PWA.install()">
+                        <span class="material-symbols-outlined text-base">download</span>
+                        <span>Install App</span>
+                    </button>
                 </div>
             </div>
-            <!-- <div class="mt-lg w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl">
-                <img class="w-full h-[400px] object-cover"
-                    data-alt="warm and cozy home kitchen with steam rising from a pot, natural sunlight streaming through a window onto a rustic wooden table"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkdvd4kzyYPF7HoCtBJcSKJlhsHkcwhER5NvSsI5eb5psiVv8oth_uUrelBEm-iH9KGg1epV6DW5opg_Gy8lTsBqnipv52d3h2wupeo1qnQUcR7t6ZUwXIlwmJZcix7kKgd_M07dl4jTrG-P4e-02VdwzdCMt3lURb7JHwpYSxKImPWe8jOW6JUDkbP6DxY9qomCg-Ow--E6Gu2Ks9lgllEHznSenPK1H17F8ESrlpe16f4ofFcEsphw9gJoTCY6mfC9lrlh0cmF44" />
-            </div> -->
-        </section>
-        <!-- Section 2: STORYTELLING SCROLL -->
-        <h1 class="font-h2 text-h2 text-center p-5">Chef's Stories</h1>
-        <div id="stories-bar"
-            class="w-full bg-white/80 backdrop-blur-md border-b border-outline-variant/20 py-4 px-6 overflow-x-auto flex gap-5 scrollbar-hide top-[72px] z-[100]">
-            <!-- Story: Priya -->
-            <button class="story-item flex flex-col items-center gap-1.5 cursor-pointer shrink-0 group"
-                onclick="openStory(0)">
-                <div class="relative">
-                    <div
-                        class="w-[60px] h-[60px] rounded-full p-[2.5px] bg-gradient-to-tr from-orange-500 via-red-500 to-yellow-400 shadow-md group-hover:scale-105 transition-transform">
-                        <div class="w-full h-full rounded-full overflow-hidden border-[2.5px] border-white">
-                            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABSrnTvbFreixjqy14ilrZVwk8pU-8UX4aw6r3BQbzbAJhPYTJhXKHYmPF92uoMzAfO_6-JuB7d-BGgsmOCelwl9oGflzmoX7p9zJ1GuLLwS9NHU3vaK0H9gpEqOXtuH_dE1c-uWom71xSfiNmlcemfYPzm-aVT1b2V640If-rs6j6lipCgwedmNPTIl9KVPDg2C2ihzQgLWMdHB6i0ny13z50splL2fq2RTqw6AZokG77xJflRHGuw3TDVVPeQuHz7OyywMSQn6xh"
-                                class="w-full h-full object-cover" />
+        </header>
+
+        <main>
+            <!-- Section 1: HERO -->
+            <section class="relative overflow-hidden pt-28 pb-lg px-6 flex items-center justify-center min-h-[90vh]" id="hero-storytelling">
+                <style>
+                    /* Custom Scoped CSS for Redesigned Hero Section */
+                    #hero-storytelling {
+                        position: relative;
+                        background: radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%), 
+                                    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+                        background-size: cover;
+                        background-position: center;
+                    }
+                    
+                    .hero-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 3rem;
+                    }
+                    @media (min-width: 1024px) {
+                        .hero-container {
+                            display: grid;
+                            grid-template-columns: 1fr 1.4fr 1fr;
+                            gap: 2rem;
+                            align-items: center;
+                        }
+                    }
+                    
+                    /* Left Column: Chef Hat */
+                    .chef-hat-wrapper {
+                        position: relative;
+                        width: 330px;
+                        height: 330px;
+                        margin: 0 auto;
+                        transform: rotate(-3deg);
+                        transition: transform 0.3s ease;
+                        filter: drop-shadow(0 15px 30px rgba(158, 67, 0, 0.12));
+                    }
+                    .chef-hat-wrapper:hover {
+                        transform: rotate(0deg) scale(1.02);
+                    }
+                    .chef-hat-svg-outline {
+                        position: absolute;
+                        inset: -6px;
+                        width: calc(100% + 12px);
+                        height: calc(100% + 12px);
+                        pointer-events: none;
+                        z-index: 2;
+                    }
+                    .chef-hat-dashed-outline {
+                        animation: chef-hat-dash 20s linear infinite;
+                    }
+                    @keyframes chef-hat-dash {
+                        to {
+                            stroke-dashoffset: -40;
+                        }
+                    }
+                    .chef-hat-video-container {
+                        position: absolute;
+                        inset: 0;
+                        width: 100%;
+                        height: 100%;
+                        clip-path: url(#chef-hat-clip);
+                        background: #ecd6cc;
+                        overflow: hidden;
+                        z-index: 1;
+                    }
+                    .chef-hat-video {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        scale: 1.1;
+                    }
+                    
+                    /* Right Column: Plate */
+                    .plate-wrapper {
+                        position: relative;
+                        width: 290px;
+                        height: 290px;
+                        margin: 0 auto;
+                        border-radius: 50%;
+                        padding: 14px;
+                        background: linear-gradient(135deg, #fbf7f4 0%, #ecd6cc 100%);
+                        filter: drop-shadow(0 15px 30px rgba(158, 67, 0, 0.12));
+                        transition: transform 0.3s ease;
+                    }
+                    .plate-wrapper:hover {
+                        transform: scale(1.03) rotate(5deg);
+                    }
+                    .plate-rim-circle-1 {
+                        position: absolute;
+                        inset: 4px;
+                        border-radius: 50%;
+                        border: 1px dashed rgba(255, 127, 50, 0.25);
+                        pointer-events: none;
+                    }
+                    .plate-rim-circle-2 {
+                        position: absolute;
+                        inset: 8px;
+                        border-radius: 50%;
+                        border: 1px solid rgba(255, 255, 255, 0.6);
+                        pointer-events: none;
+                    }
+                    .plate-inner {
+                        position: relative;
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        box-shadow: inset 0 8px 16px rgba(158, 67, 0, 0.15);
+                        background: #dfc0b2;
+                    }
+                    .plate-video {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        scale: 1.05;
+                    }
+                    
+                    /* Labels on video elements */
+                    .chef-hat-label, .plate-label {
+                        position: absolute;
+                        bottom: -20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(255, 255, 255, 0.9);
+                        backdrop-filter: blur(8px);
+                        -webkit-backdrop-filter: blur(8px);
+                        border: 1px solid rgba(158, 67, 0, 0.15);
+                        border-radius: 9999px;
+                        padding: 4px 14px;
+                        font-size: 0.75rem;
+                        font-weight: 700;
+                        color: #7a5446;
+                        white-space: nowrap;
+                        box-shadow: 0 4px 12px rgba(158, 67, 0, 0.05);
+                        z-index: 5;
+                    }
+                    
+                    /* Parallax classes */
+                    .parallax-bg {
+                        transition: transform 0.1s ease-out;
+                    }
+                    
+                    /* Canvas element positioning */
+                    .hero-connection-canvas {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        z-index: 2;
+                    }
+                    
+                    /* Media query adjustments for mobile/tablet */
+                    @media (max-width: 1023px) {
+                        .hero-container {
+                            gap: 2.5rem;
+                        }
+                        .hero-media-col.chef-side {
+                            order: 2;
+                        }
+                        .hero-text-col {
+                            order: 1;
+                        }
+                        .hero-media-col.customer-side {
+                            order: 3;
+                        }
+                        .chef-hat-wrapper {
+                            width: 260px;
+                            height: 260px;
+                            transform: rotate(-2deg);
+                        }
+                        .plate-wrapper {
+                            width: 220px;
+                            height: 220px;
+                        }
+                        .chef-hat-label, .plate-label {
+                            bottom: -15px;
+                            padding: 2px 10px;
+                            font-size: 0.7rem;
+                        }
+                    }
+                </style>
+
+                <!-- SVG chef hat mask definition -->
+                <svg width="0" height="0" style="position: absolute; width: 0; height: 0;">
+                    <defs>
+                        <clipPath id="chef-hat-clip" clipPathUnits="objectBoundingBox">
+                            <path d="M 0.28,0.85 C 0.45,0.92 0.60,0.92 0.78,0.83 L 0.78,0.55 C 0.92,0.55 0.98,0.42 0.88,0.30 C 0.80,0.20 0.70,0.08 0.60,0.08 C 0.45,0.08 0.35,0.18 0.28,0.22 C 0.18,0.25 0.05,0.38 0.08,0.50 C 0.10,0.58 0.20,0.58 0.28,0.58 Z" />
+                        </clipPath>
+                    </defs>
+                </svg>
+
+                <!-- Connection Canvas -->
+                <canvas id="hero-connection-canvas" class="hero-connection-canvas pointer-events-none"></canvas>
+                
+                <!-- Kitchen watermark background illustrations -->
+                <!-- Top-Left: Chef Hat -->
+                <div class="parallax-bg absolute top-20 left-10 w-24 h-24 opacity-[0.04] pointer-events-none transform -rotate-12">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="text-primary">
+                        <path d="M25,50 C25,35 35,25 50,25 C65,25 75,35 75,50 C80,50 85,55 85,62 C85,70 78,75 70,75 L30,75 C22,75 15,70 15,62 C15,55 20,50 25,50 Z" />
+                        <path d="M30,75 L30,85 C30,87 32,89 35,89 L65,89 C68,89 70,87 70,85 L70,75" />
+                        <line x1="30" y1="80" x2="70" y2="80" />
+                    </svg>
+                </div>
+                <!-- Bottom-Left: Steam Bowl -->
+                <div class="parallax-bg absolute bottom-20 left-20 w-28 h-28 opacity-[0.04] pointer-events-none transform rotate-15">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="text-primary">
+                        <path d="M20,50 C20,65 30,75 50,75 C70,75 80,65 80,50 L20,50 Z" />
+                        <path d="M25,75 L35,90 C36,92 38,93 40,93 L60,93 C62,93 64,92 65,90 L75,75" />
+                        <path d="M40,40 C40,30 45,35 45,25 M50,42 C50,32 55,37 55,27 M60,40 C60,30 65,35 65,25" />
+                    </svg>
+                </div>
+                <!-- Top-Right: Herb Leaves -->
+                <div class="parallax-bg absolute top-24 right-16 w-24 h-24 opacity-[0.04] pointer-events-none transform rotate-45">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="text-primary">
+                        <path d="M50,15 C50,15 35,35 35,55 C35,70 42,75 50,85 C58,75 65,70 65,55 C65,35 50,15 50,15 Z" />
+                        <path d="M50,15 L50,85" />
+                        <path d="M50,35 C42,40 40,48 40,48" />
+                        <path d="M50,50 C58,55 60,63 60,63" />
+                        <path d="M50,60 C42,65 40,73 40,73" />
+                    </svg>
+                </div>
+                <!-- Bottom-Right: Clay Pot -->
+                <div class="parallax-bg absolute bottom-16 right-24 w-28 h-28 opacity-[0.04] pointer-events-none transform -rotate-15">
+                    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" class="text-primary">
+                        <path d="M35,25 L65,25 C70,25 72,28 72,32 L68,40 C80,45 85,55 85,67 C85,82 72,92 50,92 C28,92 15,82 15,67 C15,55 20,45 32,40 L28,32 C28,28 30,25 35,25 Z" />
+                        <ellipse cx="50" cy="25" rx="15" ry="4" />
+                        <path d="M16,65 C16,65 30,70 50,70 C70,70 84,65 84,65" />
+                    </svg>
+                </div>
+                
+                <!-- Core layout grid -->
+                <div class="relative z-10 w-full max-w-7xl mx-auto hero-container">
+                    
+                    <!-- Left Column: Chef Side -->
+                    <div class="hero-media-col chef-side parallax-mid opacity-0">
+                        <div class="chef-hat-wrapper">
+                            <svg class="chef-hat-svg-outline" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <!-- Outer boundary matching clip-path shape -->
+                                <path d="M 28,85 C 45,92 60,92 78,83 L 78,55 C 92,55 98,42 88,30 C 80,20 70,8 60,8 C 45,8 35,18 28,22 C 18,25 5,38 8,50 C 10,58 20,58 28,58 Z" 
+                                      fill="none" stroke="rgba(255, 127, 50, 0.4)" stroke-width="1.5" stroke-dasharray="2,2" class="chef-hat-dashed-outline" />
+                                <!-- Base band top border curve -->
+                                <path d="M 28,58 C 45,65 60,65 78,55" fill="none" stroke="rgba(255, 127, 50, 0.3)" stroke-width="1.5" stroke-dasharray="2,2" />
+                                <!-- Puff creases / folds radiating upwards from the band top -->
+                                <path d="M 38,59 C 34,45 38,30 42,22" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 48,61 C 46,42 50,30 52,15" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 58,60 C 58,45 62,32 68,20" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                                <path d="M 68,57 C 70,45 74,38 80,32" fill="none" stroke="rgba(255, 127, 50, 0.25)" stroke-width="1.2" stroke-dasharray="2,2" />
+                            </svg>
+                            <div class="chef-hat-video-container">
+                                <video class="chef-hat-video" autoplay muted loop playsinline preload="auto">
+                                    <source src="https://media.istockphoto.com/id/1491291286/video/indian-couple-exploring-traditional-cooking-preserving-culinary-heritage-preparing-authentic.mp4?p=1&s=mp4-640x640-is&k=20&c=E0Y190v8O0G_a2ohCcUqDkK80v1PyJfQ3J7cxuxpOpI=" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="chef-hat-label">Verified Home Chef</div>
                         </div>
                     </div>
-                    <span
-                        class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    
+                    <!-- Center Column: Text Content -->
+                    <div class="hero-text-col text-center flex flex-col items-center">
+                        <!-- Headline -->
+                        <h1 class="hero-title flex flex-col items-center leading-[1.05] tracking-tight text-on-surface">
+                            <span class="hero-word-from-home font-[Solway,serif] text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">FROM HOME</span>
+                            <span class="hero-word-kitchens font-[Solway,serif] text-6xl md:text-7xl lg:text-8xl font-black text-primary block my-1 md:my-2 opacity-0">KITCHENS</span>
+                            <span class="hero-word-to-home font-[Solway,serif] text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">TO YOUR HOME</span>
+                        </h1>
+                        
+                        <!-- Subheading -->
+                        <p class="hero-subheading font-body-lg text-body-lg text-on-surface-variant my-8 max-w-xl mx-auto leading-relaxed opacity-0">
+                            Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that cares.
+                        </p>
+                        
+                        <!-- Action triggers -->
+                        <div class="hero-cta-buttons flex flex-col sm:flex-row gap-md justify-center w-full sm:w-auto opacity-0">
+                            <button class="eat-trigger flex items-center justify-center gap-2 bg-primary p-4 px-6 rounded-full text-on-primary font-h3 transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-primary/20">
+                                I WANT TO EAT
+                                <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3J1N3o2cmE0YWkxNXF5NGFwNmF1eHM4ZHJ5NTF0dGxpajkzMHBxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/jUuhj2J2sYgV7VsW5h/giphy.gif"
+                                    width="30" height="30" class="brightness-0 invert" />
+                            </button>
+                            <button class="cook-trigger flex items-center justify-center gap-2 bg-white/60 backdrop-blur-md p-4 px-6 rounded-full text-primary font-h3 border border-primary/25 transition-all hover:scale-105 active:scale-95 shadow-xl hover:bg-white/80">
+                                I WANT TO COOK
+                                <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG44YWZta2l3bWNzeGxxMmh3aHRvOTdneDR3YXRqaDJ1MGlrbzAzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJJhxzipvPyi5zyOvT/giphy.gif"
+                                    width="30" height="30" />
+                            </button>
+                        </div>
+                        
+                        <!-- Bottom trust indicators -->
+                        <div class="hero-trust-indicators mt-9 w-full max-w-2xl flex flex-wrap justify-center items-center gap-x-8 gap-y-4 border-t border-primary/10 pt-8 opacity-0">
+                            <div class="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
+                                <span class="material-symbols-outlined text-2xl text-primary">verified</span>
+                                <span>Verified Kitchens</span>
+                            </div>
+                            <div class="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
+                                <span class="material-symbols-outlined text-2xl text-primary">female</span>
+                                <span>Women-led Home Businesses</span>
+                            </div>
+                            <div class="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
+                                <span class="material-symbols-outlined text-2xl text-primary">soup_kitchen</span>
+                                <span>Freshly Cooked</span>
+                            </div>
+                            <div class="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
+                                <span class="material-symbols-outlined text-2xl text-primary">diversity_3</span>
+                                <span>Community Driven</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Customer Side -->
+                    <div class="hero-media-col customer-side parallax-mid opacity-0">
+                        <div class="plate-wrapper">
+                            <div class="plate-rim-circle-1"></div>
+                            <div class="plate-rim-circle-2"></div>
+                            <div class="plate-inner">
+                                <video class="plate-video" autoplay muted loop playsinline preload="auto">
+                                    <source src="https://media.istockphoto.com/id/1908833330/video/asian-family-care-about-each-other.mp4?p=1&s=mp4-640x640-is&k=20&c=IBCua2sqmofBKfn1EV-pvSL_diiG90hLZk5dnoRuk70=" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="plate-label">Happy Family Dining</div>
+                        </div>
+                    </div>
+                    
                 </div>
-                <span class="text-[11px] font-semibold text-on-surface truncate w-[60px] text-center">Priya K.</span>
-                <span class="text-[10px] text-primary font-medium">Today's Special</span>
-            </button>
+            </section>
+
+            <!-- Section 2: STORYTELLING SCROLL -->
+            <!-- <h2 class="font-h2 text-h2 text-center p-5">Chef's Stories</h2>
+            <div id="stories-bar"
+                class="w-full bg-white/80 backdrop-blur-md border-b border-outline-variant/20 py-4 px-6 overflow-x-auto flex gap-5 scrollbar-hide top-[72px] z-[100]">
+                 Story: Priya -->
+            <!-- <button class="story-item flex flex-col items-center gap-1.5 cursor-pointer shrink-0 group"
+                    onclick="openStory(0)">
+                    <div class="relative">
+                        <div
+                            class="w-[60px] h-[60px] rounded-full p-[2.5px] bg-gradient-to-tr from-orange-500 via-red-500 to-yellow-400 shadow-md group-hover:scale-105 transition-transform">
+                            <div class="w-full h-full rounded-full overflow-hidden border-[2.5px] border-white">
+                                <img src="https://img.magnific.com/premium-vector/hand-drawn-young-woman-cooking-kitchen-cartoon-smiling-character-with-apron_905829-5152.jpg?w=2000"
+                                    class="w-full h-full object-cover" />
+                            </div>
+                        </div>
+                        <span
+                            class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                    </div>
+                    <span class="text-[11px] font-semibold text-on-surface truncate w-[60px] text-center">Priya K.</span>
+                    <span class="text-[10px] text-primary font-medium">Today's Special</span>
+                </button>
 
             <!-- Story: Meena -->
             <button class="story-item flex flex-col items-center gap-1.5 cursor-pointer shrink-0 group"
@@ -830,216 +1145,1079 @@
                     </div>
 
                 </div>
+            </section>
 
-                <!-- CTA below -->
-                <div class="text-center mt-lg">
-                    <button onclick="openWaitlist('customer')"
-                        class="bg-primary text-on-primary px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95 shadow-lg">
-                        I Want This!
-                    </button>
+
+            <!-- Section 7: QUOTE -->
+            <section class="relative h-[360px] flex items-center justify-center overflow-hidden">
+                <img class="absolute inset-0 w-full h-full object-cover scale-110"
+                    src="https://res.cloudinary.com/dt79nhjkc/image/upload/v1780571501/cld-sample-2.png"
+                    alt="Delicious table spread" />
+                <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"></div>
+                <div class="relative z-10 text-center text-surface px-6 max-w-2xl">
+                    <blockquote class="font-h1 text-h2 italic mb-md">"Food is not just eaten. It is felt."</blockquote>
+                    <p class="font-label-sm tracking-widest uppercase">— THE RUCHI RUSH PHILOSOPHY</p>
                 </div>
-            </div>
-        </section>
-        <!-- Section 7: EMOTIONAL BLOCK (Parallax Feel) -->
-        <section class="relative h-[530px] flex items-center justify-center overflow-hidden">
-            <img class="absolute inset-0 w-full h-full object-cover scale-110"
-                data-alt="dramatic lighting on a table spread with mediterranean dishes, olives, fresh bread, and wine"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyY5IZ9om0T4IR6jkvrPFILPh73j3D4C5P_8ZWuau3nJ6TGPkg1HBQx_XAw58RmI0Css-IuPkJcHvhKthvIA1fXEq4mUNnBrlo0zIaP2y2BkNynDAScUmaS0FzpxrIfaD7QNBQaagvDI8oJF-Ksq9fK_BUIgv47ILF3YSTDJFHxTq-IPhB-YPdU40Fgu55bhp4I8b_ls8ZvJoNJK-FRSLH0rRWmaLSkndpBsGBekJcub2kCARSxCVgqGbCj06WBgjoW3HI3S0M86eY" />
-            <div class="absolute inset-0 bg-on-surface/40 backdrop-blur-[2px]"></div>
-            <div class="relative z-10 text-center text-surface px-6 max-w-2xl">
-                <blockquote class="font-h1 text-h2 italic mb-md">"Food is not just eaten. It is felt."</blockquote>
-                <p class="font-label-sm tracking-widest uppercase">— THE RUCHI RUSH PHILOSOPHY</p>
-            </div>
-        </section>
-        <!-- Section 8: CTA SECTION -->
-        <section class="py-xl px-6 bg-surface-container text-center">
-            <div class="max-w-3xl mx-auto">
-                <h2 class="font-h2 text-h2 mb-md">Ready to be part of something real?</h2>
-                <p class="font-body-lg text-on-surface-variant mb-lg">Join thousands of neighbors rediscovering the
-                    magic of a home-cooked meal.</p>
-                <div class="flex flex-col sm:flex-row gap-md justify-center">
-                    <button onclick="openWaitlist('customer')"
-                        class="bg-primary text-on-primary px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95 shadow-lg">Start
-                        Eating</button>
-                    <button onclick="openWaitlist('chef')"
-                        class="bg-on-surface text-surface px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95">Open
-                        Your Kitchen</button>
+            </section>
+
+            <!-- Section 8: CTA SECTION -->
+            <!-- <section class="cta-section py-xl px-6 text-center">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="font-h2 text-h2 mb-md">Ready to be part of something real?</h2>
+                    <p class="font-body-lg text-on-surface-variant mb-lg">Join thousands of neighbors rediscovering the
+                        magic of a home-cooked meal.</p>
+                    <div class="flex flex-col sm:flex-row gap-md justify-center">
+                        <button class="eat-trigger bg-primary text-on-primary px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95 shadow-lg">Start
+                            Eating</button>
+                        <button class="cook-trigger bg-on-surface text-surface px-lg py-md rounded-full font-h3 transition-transform hover:scale-105 active:scale-95">Open
+                            Your Kitchen</button>
+                    </div>
                 </div>
-            </div>
-        </section>
-        <!-- Section 9: CONTACT -->
-        <section class="py-xl px-6 max-w-7xl mx-auto">
+            </section> -->
+
+            <!-- Section 9: CONTACT -->
+            <section class="py-xl px-6 max-w-7xl mx-auto" id="contact">
+                <div
+                    class="grid md:grid-cols-2 gap-xl bg-surface rounded-xl overflow-hidden border border-outline-variant/30">
+                    <div class="get-in-touch p-lg flex flex-col justify-between">
+                        <div>
+                            <h2 class="font-h2 text-h2 mb-sm text-primary">Get in touch</h2>
+                            <p class="font-body-md text-on-surface-variant">Have questions about becoming a chef or a
+                                customer? We're here to chat.</p>
+                        </div>
+                        <div class="space-y-sm">
+                            <div class="flex items-center gap-sm">
+                                <span class="material-symbols-outlined text-primary">mail</span>
+                                <span class="font-body-md">hello@ruchirush.com</span>
+                            </div>
+                            <div class="flex items-center gap-sm">
+                                <span class="material-symbols-outlined text-primary">location_on</span>
+                                <span class="font-body-md">Hyderabad</span>
+                            </div>
+                            <a href="https://wa.me/919999999999?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question."
+                                target="_blank"
+                                class="flex items-center gap-sm mt-md bg-[#25D366] text-white px-md py-sm rounded-full w-fit transition-transform hover:scale-105 active:scale-95 shadow-md">
+                                <span class="material-symbols-outlined">chat</span>
+                                Chat on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                    <form id="contactForm" action="https://formspree.io/f/mkoybqqy" method="POST"
+                        class="p-lg space-y-md">
+                        <div class="grid grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <label class="font-label-sm uppercase" for="firstName">First Name</label>
+                                <input id="firstName" name="firstName"
+                                    class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="Jane" type="text" required />
+                            </div>
+                            <div class="flex flex-col gap-xs">
+                                <label class="font-label-sm uppercase" for="lastName">Last Name</label>
+                                <input id="lastName" name="lastName"
+                                    class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="Doe" type="text" required />
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-xs">
+                            <label class="font-label-sm uppercase" for="email">Email Address</label>
+                            <input id="email" name="email"
+                                class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="jane@example.com" type="email" required />
+                        </div>
+                        <div class="flex flex-col gap-xs">
+                            <label class="font-label-sm uppercase" for="message">Message</label>
+                            <textarea id="message" name="message"
+                                class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Tell us what's on your mind..." rows="4" required></textarea>
+                        </div>
+                        <input type="text" name="_gotcha" style="display:none" />
+                        <input type="hidden" name="_subject" value="New message from Ruchi Rush website!" />
+
+                        <button id="submitBtn" type="submit"
+                            class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform active:scale-95 hover:scale-[1.02] flex items-center justify-center gap-2">
+                            <span id="submitText">Send Message</span>
+                            <span id="submitSpinner" class="hidden">
+                                <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div id="formSuccess"
+                            class="hidden text-center py-sm px-md bg-green-100 text-green-800 rounded-xl font-body-md">
+                            ✅ Message sent! We'll reply within 24 hours.
+                        </div>
+                        <div id="formError"
+                            class="hidden text-center py-sm px-md bg-red-100 text-red-800 rounded-xl font-body-md">
+                            ❌ Something went wrong. Please try again.
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <!-- Fallback Waitlist Popup Modal -->
+        <div id="waitlistModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
+            style="display:none !important">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modalBackdrop"></div>
             <div
-                class="grid md:grid-cols-2 gap-xl bg-surface rounded-xl overflow-hidden border border-outline-variant/30">
-                <div class="p-lg bg-surface-container-low flex flex-col justify-between">
-                    <div>
-                        <h2 class="font-h2 text-h2 mb-sm text-primary">Get in touch</h2>
-                        <p class="font-body-md text-on-surface-variant">Have questions about becoming a chef or a
-                            customer? We're here to chat.</p>
-                    </div>
-                    <div class="space-y-sm">
-                        <div class="flex items-center gap-sm">
-                            <span class="material-symbols-outlined text-primary" data-icon="mail">mail</span>
-                            <span class="font-body-md">hello@ruchirush.com</span>
-                        </div>
-                        <div class="flex items-center gap-sm">
-                            <span class="material-symbols-outlined text-primary"
-                                data-icon="location_on">location_on</span>
-                            <span class="font-body-md">Hyderabad</span>
-                        </div>
-                        <a href="https://chat.whatsapp.com/Ikywuf9T7P9Gn3RGYAqThA" target="_blank"
-                            class="flex items-center gap-sm mt-md bg-[#25D366] text-white px-md py-sm rounded-full w-fit transition-transform hover:scale-105 active:scale-95 shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="white">
-                                <path
-                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                            </svg>
-                            Chat on WhatsApp
-                        </a>
-                    </div>
+                class="relative bg-surface rounded-xl shadow-2xl max-w-md w-full p-lg z-10 border border-outline-variant/30">
+                <button id="closeModal"
+                    class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface text-2xl leading-none">✕</button>
+                <div class="text-center mb-md">
+                    <div class="text-4xl mb-sm">🍲</div>
+                    <h3 class="font-h2 text-h2 text-primary mb-xs">Join the Waitlist</h3>
+                    <p class="font-body-md text-on-surface-variant">Be the first to know when Ruchi Rush launches. Early
+                        members get free delivery!</p>
                 </div>
-                <!-- Formspree Form — replace YOUR_FORM_ID with your actual Formspree ID from formspree.io -->
-                <form id="contactForm" action="https://formspree.io/f/mkoybqqy" method="POST" class="p-lg space-y-md">
-                    <div class="grid grid-cols-2 gap-md">
-                        <div class="flex flex-col gap-xs">
-                            <label class="font-label-sm uppercase" for="firstName">First Name</label>
-                            <input id="firstName" name="firstName"
-                                class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Jane" type="text" required />
-                        </div>
-                        <div class="flex flex-col gap-xs">
-                            <label class="font-label-sm uppercase" for="lastName">Last Name</label>
-                            <input id="lastName" name="lastName"
-                                class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                placeholder="Doe" type="text" required />
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-xs">
-                        <label class="font-label-sm uppercase" for="email">Email Address</label>
-                        <input id="email" name="email"
-                            class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="jane@example.com" type="email" required />
-                    </div>
-                    <div class="flex flex-col gap-xs">
-                        <label class="font-label-sm uppercase" for="message">Message</label>
-                        <textarea id="message" name="message"
-                            class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="Tell us what's on your mind..." rows="4" required></textarea>
-                    </div>
-                    <!-- Honeypot spam filter -->
+                <form id="waitlistForm" action="https://formspree.io/f/mkoybqqy" method="POST" class="space-y-md">
+                    <input type="hidden" name="_subject" value="New Waitlist Signup — Ruchi Rush!" />
+                    <input type="hidden" name="type" value="waitlist" />
                     <input type="text" name="_gotcha" style="display:none" />
-                    <input type="hidden" name="_subject" value="New message from Ruchi Rush website!" />
-
-                    <button id="submitBtn" type="submit"
-                        class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform active:scale-95 hover:scale-[1.02] flex items-center justify-center gap-2">
-                        <span id="submitText">Send Message</span>
-                        <span id="submitSpinner" class="hidden">
-                            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="white" stroke-width="4">
-                                </circle>
-                                <path class="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z"></path>
-                            </svg>
-                        </span>
-                    </button>
-
-                    <!-- Success / Error messages -->
-                    <div id="formSuccess"
-                        class="hidden text-center py-sm px-md bg-green-100 text-green-800 rounded-xl font-body-md">
-                        ✅ Message sent! We'll reply within 24 hours.
-                    </div>
-                    <div id="formError"
-                        class="hidden text-center py-sm px-md bg-red-100 text-red-800 rounded-xl font-body-md">
-                        ❌ Something went wrong. Please try again or WhatsApp us.
-                    </div>
-                </form>
-                <!-- <form class="p-lg space-y-md">
-                    <div class="grid grid-cols-2 gap-md">
-                        <div class="flex flex-col gap-xs">
-                            <label class="font-label-sm uppercase">First Name</label>
-                            <input
-                                class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
-                                placeholder="Jane" type="text" />
-                        </div>
-                        <div class="flex flex-col gap-xs">
-                            <label class="font-label-sm uppercase">Last Name</label>
-                            <input
-                                class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
-                                placeholder="Doe" type="text" />
-                        </div>
+                    <div class="flex flex-col gap-xs">
+                        <label class="font-label-sm uppercase">Your Name</label>
+                        <input name="name" type="text" placeholder="Priya Sharma"
+                            class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            required />
                     </div>
                     <div class="flex flex-col gap-xs">
                         <label class="font-label-sm uppercase">Email Address</label>
-                        <input
-                            class="w-full bg-surface-container-low border-outline-variant/30 rounded-full px-md py-sm focus:ring-primary focus:border-primary"
-                            placeholder="jane@example.com" type="email" />
+                        <input name="email" type="email" placeholder="priya@example.com"
+                            class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            required />
                     </div>
                     <div class="flex flex-col gap-xs">
-                        <label class="font-label-sm uppercase">Message</label>
-                        <textarea
-                            class="w-full bg-surface-container-low border-outline-variant/30 rounded-lg px-md py-sm focus:ring-primary focus:border-primary"
-                            placeholder="Tell us what's on your mind..." rows="4"></textarea>
+                        <label class="font-label-sm uppercase">I am a...</label>
+                        <div class="flex gap-sm">
+                            <label
+                                class="flex-1 flex items-center justify-center gap-xs border-2 border-outline-variant/30 rounded-full py-sm cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                <input type="radio" name="role" value="customer" class="hidden" required /> 🍽️ Customer
+                            </label>
+                            <label
+                                class="flex-1 flex items-center justify-center gap-xs border-2 border-outline-variant/30 rounded-full py-sm cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
+                                <input type="radio" name="role" value="chef" class="hidden" /> 👨‍🍳 Home Chef
+                            </label>
+                        </div>
                     </div>
-                    <button
-                        class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform active:scale-95">Send
-                        Message</button>
-                </form> -->
+                    <button type="submit"
+                        class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform hover:scale-[1.02] active:scale-95">
+                        Count Me In! 🎉
+                    </button>
+                    <div id="waitlistSuccess"
+                        class="hidden text-center py-sm px-md bg-green-100 text-green-800 rounded-xl font-body-md">
+                        🎊 You're on the list!
+                    </div>
+                </form>
             </div>
-        </section>
-    </main>
+        </div>
+
+        <!-- Footer -->
+        <footer
+            class="footer w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800">
+            <div class="flex flex-col items-center md:items-start gap-2">
+                <span class="text-2xl font-bold text-black dark:text-stone-200 font-['Newsreader'] font-semibold">Ruchi
+                    Rush</span>
+                <span class="text-stone-900 dark:text-stone-400 font-['Newsreader'] text-md">© 2026 Ruchi Rush. Made
+                    with love.</span>
+            </div>
+            <div>
+                <h1 class="text-black dark:text-stone-400 font-['Newsreader'] text-xl font-semibold">Follow Us</h1>
+                <div class="flex gap-4 mt-2">
+                    <a href="https://www.facebook.com/ruchirush" target="_blank"
+                        class="text-black dark:text-stone-400 hover:text-blue-600 transition-colors">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+                    <a href="https://www.instagram.com/ruchirush" target="_blank"
+                        class="text-black dark:text-stone-400 hover:text-pink-500 transition-colors">
+                        <i class="fa-brands fa-square-instagram"></i>
+                    </a>
+                    <a href="https://www.twitter.com/ruchirush" target="_blank"
+                        class="text-black dark:text-stone-400 hover:text-blue-400 transition-colors">
+                        <i class="fa-brands fa-youtube"></i>
+                </div>
+            </div>
+            <div class="flex gap-8">
+                <a class="text-black dark:text-stone-400 font-['Newsreader'] font-semibold text-xl hover:text-orange-500 transition-colors"
+                    href="#">About Us</a>
+                <a class="text-black dark:text-stone-400 font-['Newsreader'] font-semibold text-xl hover:text-orange-500 transition-colors"
+                    href="#">Privacy Policy</a>
+                <a class="text-black dark:text-stone-400 font-['Newsreader'] font-semibold text-xl hover:text-orange-500 transition-colors"
+                    href="#">Terms of Service</a>
+            </div>
+            <div>
+                <h1 class="text-black dark:text-stone-400 font-['Newsreader'] text-xl font-semibold">Address</h1>
+                <p class="text-black dark:text-stone-400 font-['Newsreader'] text-xl">Hyderabad, Telangana</p>
+            </div>
+        </footer>
+    </div>
+
     <!-- ============================================================
-         WAITLIST POPUP MODAL
-    ============================================================ -->
-    <div id="waitlistModal" class="fixed inset-0 z-[99999] flex items-center justify-center p-4"
-        style="display:none !important">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modalBackdrop"></div>
-        <div
-            class="relative bg-surface rounded-xl shadow-2xl max-w-md w-full p-lg z-10 border border-outline-variant/30">
-            <button id="closeModal"
-                class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface text-2xl leading-none">✕</button>
-            <div class="text-center mb-md">
-                <div class="text-4xl mb-sm">🍲</div>
-                <h3 class="font-h2 text-h2 text-primary mb-xs">Join the Waitlist</h3>
-                <p class="font-body-md text-on-surface-variant">Be the first to know when Ruchi Rush launches in your
-                    area. Early members get <strong>free delivery for a month!</strong></p>
+         VIEW 2: CUSTOMER WEB APP PORTAL
+         ============================================================ -->
+    <div id="customer-portal-view" class="hidden min-h-screen pt-24 pb-12 px-4 sm:px-6 transition-all duration-300">
+        <!-- Customer Portal Header -->
+        <header
+            class="fixed top-0 left-0 w-full z-[9998] flex justify-between items-center px-4 sm:px-6 py-3 bg-white/90 backdrop-blur-md border-b border-outline-variant/20 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button
+                    class="flex items-center gap-1 text-primary hover:opacity-85 font-semibold text-sm transition-opacity"
+                    onclick="Router.navigate('landing')">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    <span>Home</span>
+                </button>
+                <div class="h-6 w-[1px] bg-stone-300"></div>
+                <div class="flex items-center gap-2 text-stone-800 font-bold font-['Newsreader'] text-xl">
+                    <span>Ruchi Portal</span>
+                    <span
+                        class="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full uppercase tracking-wider">EAT</span>
+                </div>
             </div>
-            <form id="waitlistForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="space-y-md">
-                <input type="hidden" name="_subject" value="New Waitlist Signup — Ruchi Rush!" />
-                <input type="hidden" name="type" value="waitlist" />
-                <input type="text" name="_gotcha" style="display:none" />
-                <div class="flex flex-col gap-xs">
-                    <label class="font-label-sm uppercase">Your Name</label>
-                    <input name="name" type="text" placeholder="Priya Sharma"
-                        class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        required />
+
+            <!-- Header Quick Controls -->
+            <div class="flex items-center gap-3">
+                <!-- My Orders Button -->
+                <button id="btn-customer-orders"
+                    class="flex items-center gap-1 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-3 py-1.5 rounded-full text-xs font-bold transition-all text-stone-700">
+                    <span class="material-symbols-outlined text-sm">receipt_long</span>
+                    <span>My Orders</span>
+                </button>
+
+                <!-- Location drop selector -->
+                <div class="flex items-center gap-1.5 bg-stone-100 rounded-full px-3 py-1.5 border border-stone-200">
+                    <span class="material-symbols-outlined text-primary text-base">location_on</span>
+                    <select id="location-select"
+                        class="bg-transparent text-xs font-bold text-on-surface border-none p-0 pr-6 focus:ring-0 focus:outline-none cursor-pointer">
+                        <option value="Gachibowli">Gachibowli</option>
+                        <option value="Madhapur">Madhapur</option>
+                        <option value="Jubilee Hills">Jubilee Hills</option>
+                        <option value="Kukatpally">Kukatpally</option>
+                        <option value="Kondapur">Kondapur</option>
+                    </select>
                 </div>
-                <div class="flex flex-col gap-xs">
-                    <label class="font-label-sm uppercase">Email Address</label>
-                    <input name="email" type="email" placeholder="priya@example.com"
-                        class="w-full bg-surface-container-low border border-outline-variant/30 rounded-full px-md py-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        required />
+
+                <!-- Floating Cart Button -->
+                <button id="btn-open-cart"
+                    class="relative flex items-center justify-center w-10 h-10 rounded-full bg-primary text-on-primary hover:scale-105 active:scale-95 transition-transform shadow-md">
+                    <span class="material-symbols-outlined text-lg">shopping_cart</span>
+                    <span id="cart-count-badge"
+                        class="absolute -top-1 -right-1 w-5 h-5 bg-red-600 border border-white text-white text-[10px] font-bold rounded-full flex items-center justify-center hidden">0</span>
+                </button>
+
+                <!-- User profile badge -->
+                <div id="customer-user-profile" class="hidden flex items-center gap-2 border-l pl-3 border-stone-200">
+                    <span id="customer-user-name" class="text-xs font-bold text-stone-700 max-w-[80px] truncate"></span>
+                    <button id="btn-customer-logout"
+                        class="text-[11px] font-bold text-red-600 hover:underline">Logout</button>
                 </div>
-                <div class="flex flex-col gap-xs">
-                    <label class="font-label-sm uppercase">I am a...</label>
-                    <div class="flex gap-sm">
-                        <label
-                            class="flex-1 flex items-center justify-center gap-xs border-2 border-outline-variant/30 rounded-full py-sm cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
-                            <input type="radio" name="role" value="customer" class="hidden" required /> 🍽️ Customer
-                        </label>
-                        <label
-                            class="flex-1 flex items-center justify-center gap-xs border-2 border-outline-variant/30 rounded-full py-sm cursor-pointer has-[:checked]:border-primary has-[:checked]:bg-primary/10 transition-all">
-                            <input type="radio" name="role" value="chef" class="hidden" /> 👨‍🍳 Home Chef
-                        </label>
+            </div>
+        </header>
+
+        <!-- Customer App Content Layout -->
+        <main class="max-w-7xl mx-auto mt-4">
+            <!-- Layout A: Chefs Browser Directory -->
+            <div id="chefs-browser-container" class="space-y-6">
+                <!-- Banner Slider/Promo -->
+                <div
+                    class="premium-gradient border border-outline-variant/20 rounded-xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+                    <div class="max-w-md">
+                        <span
+                            class="bg-primary/10 text-primary text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Verified
+                            Home Chefs</span>
+                        <h2 class="font-h1 text-2xl md:text-3xl mt-3 mb-2 text-on-surface">Taste the warmth of real home
+                            kitchens</h2>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">No mass machinery or restaurant
+                            additives. Verified neighbors in Hyderabad prepping fresh, traditional recipes in dynamic
+                            small-batches.</p>
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"
+                        class="w-48 h-32 object-cover rounded-lg shadow-md shrink-0" alt="Home cooked delicacies" />
+                </div>
+
+                <!-- Search & Cuisine Filters -->
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-80">
+                        <span
+                            class="absolute left-3 top-2.5 text-stone-400 material-symbols-outlined text-lg">search</span>
+                        <input id="search-input" type="text"
+                            class="w-full pl-9 pr-4 py-2 border border-outline-variant/30 rounded-full text-xs input-glow bg-white"
+                            placeholder="Search dish, chef, or cuisine..." />
+                    </div>
+                    <!-- Cuisine Pills -->
+                    <div class="flex gap-2 overflow-x-auto w-full md:w-auto scrollbar-hide py-1">
+                        <button
+                            class="cuisine-pill bg-primary text-on-primary px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 shadow-sm"
+                            data-cuisine="all">All Specialties</button>
+                        <button
+                            class="cuisine-pill bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 hover:bg-stone-100"
+                            data-cuisine="south">South Indian</button>
+                        <button
+                            class="cuisine-pill bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 hover:bg-stone-100"
+                            data-cuisine="north">North Indian</button>
+                        <button
+                            class="cuisine-pill bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 hover:bg-stone-100"
+                            data-cuisine="hyderabadi">Hyderabadi Dum</button>
+                        <button
+                            class="cuisine-pill bg-surface-container-high text-on-surface-variant px-4 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 hover:bg-stone-100"
+                            data-cuisine="diet">Healthy / Diet</button>
                     </div>
                 </div>
-                <button type="submit"
-                    class="w-full bg-primary text-on-primary py-md rounded-full font-h3 transition-transform hover:scale-[1.02] active:scale-95">
-                    Count Me In! 🎉
-                </button>
-                <div id="waitlistSuccess"
-                    class="hidden text-center py-sm px-md bg-green-100 text-green-800 rounded-xl font-body-md">
-                    🎊 You're on the list! We'll be in touch soon.
+
+                <!-- Grid of Chefs -->
+                <div id="chefs-grid-container" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Dynamically populated chef cards -->
                 </div>
-            </form>
+            </div>
+
+            <!-- Layout B: Selected Chef Menu -->
+            <div id="chef-menu-container" class="hidden space-y-6">
+                <!-- Back trigger -->
+                <button id="btn-back-to-chefs"
+                    class="flex items-center gap-1 text-primary hover:opacity-85 font-semibold text-xs transition-opacity">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    <span>Back to Home Chefs</span>
+                </button>
+
+                <!-- Chef Profile Detail Banner -->
+                <div
+                    class="glass-card rounded-xl p-5 border border-primary/10 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between shadow-md">
+                    <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
+                        <img id="menu-chef-avatar" src=""
+                            class="w-24 h-24 rounded-full object-cover border-4 border-primary/20 shadow-md" alt="" />
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 id="menu-chef-name" class="font-h1 text-2xl font-bold text-on-surface"></h2>
+                                <span class="material-symbols-outlined text-green-600"
+                                    title="Verified Chef">verified</span>
+                            </div>
+                            <p id="menu-chef-area" class="text-xs text-on-surface-variant font-medium mt-0.5 mb-2"></p>
+                            <p id="menu-chef-bio" class="text-xs text-stone-600 max-w-xl leading-relaxed"></p>
+                        </div>
+                    </div>
+                    <!-- Badges -->
+                    <div
+                        class="flex flex-row md:flex-col gap-3 shrink-0 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-outline-variant/15 justify-between">
+                        <div class="text-left md:text-right">
+                            <span class="text-[10px] text-stone-500 font-bold block uppercase tracking-wide">Avg
+                                Rating</span>
+                            <span id="menu-chef-rating" class="text-sm font-bold text-on-surface block"></span>
+                        </div>
+                        <div class="text-left md:text-right">
+                            <span class="text-[10px] text-stone-500 font-bold block uppercase tracking-wide">Hygiene
+                                Certified</span>
+                            <span id="menu-chef-hygiene" class="text-xs font-bold text-green-700 block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menu Title -->
+                <h3 class="font-h2 text-xl font-bold border-b border-outline-variant/15 pb-2">Active Kitchen Menu</h3>
+
+                <!-- Dishes Grid -->
+                <div id="chef-dishes-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamically populated dishes -->
+                </div>
+            </div>
+
+            <!-- Layout C: Order Live Tracker Panel -->
+            <div id="order-tracker-container"
+                class="hidden max-w-xl mx-auto glass-card rounded-xl p-6 border border-primary/10 shadow-lg mt-8">
+                <div class="text-center pb-4 border-b border-outline-variant/20 mb-6">
+                    <span class="text-4xl">🛵</span>
+                    <h3 id="tracker-order-id" class="font-h2 text-xl text-primary font-bold mt-2">Order #XXXX</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">Live tracking order details from <strong
+                            id="tracker-chef-name">Chef</strong></p>
+                </div>
+
+                <!-- Stepper Progress Tracker -->
+                <div class="relative flex justify-between items-center mb-8 px-2">
+                    <!-- Tracker progress bar track line -->
+                    <div class="absolute top-4 left-0 right-0 h-[3px] bg-stone-200 z-0">
+                        <div id="tracker-line-progress" class="h-full bg-primary transition-all duration-500"
+                            style="width:0%"></div>
+                    </div>
+
+                    <!-- Steps -->
+                    <div id="track-node-Placed" class="journey-node flex flex-col items-center relative z-10">
+                        <div
+                            class="track-dot w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center font-bold text-sm">
+                            1</div>
+                        <span class="track-label text-xs mt-2 font-medium text-stone-400">Placed</span>
+                    </div>
+                    <div id="track-node-Preparing" class="journey-node flex flex-col items-center relative z-10">
+                        <div
+                            class="track-dot w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center font-bold text-sm">
+                            2</div>
+                        <span class="track-label text-xs mt-2 font-medium text-stone-400">Preparing</span>
+                    </div>
+                    <div id="track-node-OnItsWay" class="journey-node flex flex-col items-center relative z-10">
+                        <div
+                            class="track-dot w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center font-bold text-sm">
+                            3</div>
+                        <span class="track-label text-xs mt-2 font-medium text-stone-400">On Way</span>
+                    </div>
+                    <div id="track-node-Delivered" class="journey-node flex flex-col items-center relative z-10">
+                        <div
+                            class="track-dot w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center font-bold text-sm">
+                            4</div>
+                        <span class="track-label text-xs mt-2 font-medium text-stone-400">Delivered</span>
+                    </div>
+                </div>
+
+                <!-- Cooking simmering animated graphic -->
+                <div id="cooking-simmer-graphic"
+                    class="flex flex-col items-center py-4 bg-orange-50/50 rounded-xl mb-6 hidden">
+                    <div class="flex gap-2 mb-2 items-end h-8">
+                        <div class="w-1.5 h-6 bg-[#ff7f32] rounded-full simmer-flame-1"></div>
+                        <div class="w-1.5 h-8 bg-primary rounded-full simmer-flame-2"></div>
+                        <div class="w-1.5 h-5 bg-[#ff7f32] rounded-full simmer-flame-3"></div>
+                    </div>
+                    <span class="material-symbols-outlined text-4xl text-stone-700 animate-bounce">cooking</span>
+                    <p class="text-xs text-primary font-bold mt-2">Chef is slow cooking your fresh home meal now...</p>
+                </div>
+
+                <!-- Logistics / Delivery Details -->
+                <div class="bg-surface-container-low rounded-lg p-4 space-y-3 mb-6">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-stone-500">Delivery Details</h4>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-on-surface-variant font-medium">Delivery Slot:</span>
+                        <span id="tracker-delivery-slot" class="font-bold text-on-surface"></span>
+                    </div>
+                    <div class="flex justify-between text-xs items-start gap-4">
+                        <span class="text-on-surface-variant font-medium shrink-0">Address:</span>
+                        <span id="tracker-delivery-address" class="font-bold text-on-surface text-right"></span>
+                    </div>
+                </div>
+
+                <!-- Delivery Rider Info Box -->
+                <div id="tracker-rider-box"
+                    class="bg-primary/5 border border-primary/10 rounded-lg p-4 space-y-3 mb-6 hidden">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-primary font-['Newsreader']">Your
+                        Delivery Partner</h4>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">🛵
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p id="tracker-rider-name" class="text-xs font-bold text-on-surface"></p>
+                            <p id="tracker-rider-vehicle" class="text-[11px] text-on-surface-variant"></p>
+                        </div>
+                        <a id="tracker-rider-phone" class="text-xs font-bold text-primary hover:underline" href="#">Call
+                            Rider</a>
+                    </div>
+                </div>
+
+                <!-- Order items summary -->
+                <div class="border-t border-outline-variant/20 pt-4 mb-6">
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-stone-500 mb-2">Order Items</h4>
+                    <ul id="tracker-items-list" class="space-y-1.5 mb-4">
+                        <!-- Populated by JS -->
+                    </ul>
+                    <div class="flex justify-between font-bold text-sm pt-2 border-t border-outline-variant/10">
+                        <span>Total Amount Paid:</span>
+                        <span id="tracker-total-amount" class="text-primary"></span>
+                    </div>
+                </div>
+
+                <button id="btn-tracker-finish"
+                    class="w-full bg-primary text-white py-3 rounded-full font-bold text-sm hover:scale-[1.02] transition-transform shadow-md hidden">
+                    Back to Browse Chefs
+                </button>
+            </div>
+
+            <!-- Layout D: Customer Orders History -->
+            <div id="customer-orders-container" class="hidden space-y-6">
+                <button id="btn-back-to-chefs-from-orders"
+                    class="flex items-center gap-1 text-primary hover:opacity-85 font-semibold text-xs transition-opacity">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    <span>Back to Home Chefs</span>
+                </button>
+
+                <h3 class="font-h2 text-xl font-bold border-b border-outline-variant/15 pb-2">Your Order History</h3>
+
+                <div id="customer-orders-list" class="space-y-4">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Cart backdrop screen -->
+        <div id="cart-backdrop" class="fixed inset-0 z-[10000] bg-black/40 backdrop-blur-xs hidden"></div>
+
+        <!-- Cart drawer sliding screen -->
+        <div id="cart-drawer"
+            class="fixed top-0 right-0 h-full w-[380px] max-w-[90vw] z-[10001] bg-surface shadow-2xl border-l border-outline-variant/30 flex flex-col justify-between transform translate-x-full transition-transform duration-300">
+            <div>
+                <!-- Header -->
+                <div class="px-5 py-4 border-b border-outline-variant/20 flex justify-between items-center bg-stone-50">
+                    <h3 class="font-h2 text-lg font-bold flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary">shopping_bag</span>
+                        <span>Your Basket</span>
+                    </h3>
+                    <button id="btn-close-cart" class="text-stone-500 hover:text-stone-800 text-xl font-bold">✕</button>
+                </div>
+
+                <!-- Scrollable items -->
+                <div id="cart-items-container" class="p-5 overflow-y-auto max-h-[50vh] flex flex-col gap-1">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Delivery slots & Price info footer -->
+            <div id="cart-price-summary" class="p-5 border-t border-outline-variant/20 bg-stone-50 space-y-4">
+                <!-- Delivery Info Fields -->
+                <div class="space-y-2.5">
+                    <div class="flex flex-col gap-0.5">
+                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Delivery Area
+                            Address</label>
+                        <input id="delivery-address-input" type="text"
+                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow" required />
+                    </div>
+                    <div class="flex flex-col gap-0.5">
+                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Preferred Time
+                            Slot</label>
+                        <select id="delivery-time-select"
+                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
+                            <option value="12:30 PM - 1:30 PM">Lunch (12:30 PM - 1:30 PM)</option>
+                            <option value="1:30 PM - 2:30 PM">Late Lunch (1:30 PM - 2:30 PM)</option>
+                            <option value="7:30 PM - 8:30 PM">Dinner (7:30 PM - 8:30 PM)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Breakdowns -->
+                <div class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+                    <div class="flex justify-between">
+                        <span>Items Subtotal:</span>
+                        <span id="summary-subtotal">₹0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Delivery Fee (Home Chef):</span>
+                        <span>₹30</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Platform Handling:</span>
+                        <span>₹10</span>
+                    </div>
+                    <div
+                        class="flex justify-between font-bold text-sm text-on-surface pt-2 border-t border-outline-variant/10">
+                        <span>Total Pay:</span>
+                        <span id="summary-total" class="text-primary">₹0</span>
+                    </div>
+                </div>
+
+                <button id="btn-proceed-checkout"
+                    class="w-full bg-primary text-on-primary py-3 rounded-full font-h3 hover:scale-[1.02] active:scale-95 transition-transform shadow-md">
+                    Proceed to Payment
+                </button>
+            </div>
+        </div>
+
+        <!-- Checkout / Payment Modal -->
+        <div id="checkout-modal"
+            class="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs hidden">
+            <div class="glass-modal rounded-xl w-full max-w-sm p-6 relative border border-white/50">
+                <button id="btn-close-checkout"
+                    class="absolute top-4 right-4 text-stone-500 hover:text-stone-800 text-xl font-bold">✕</button>
+
+                <div class="text-center mb-6">
+                    <span class="text-3xl">🔒</span>
+                    <h3 class="font-h2 text-lg font-bold mt-2">Secure UPI Checkout</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">Paying total amount: <strong id="checkout-amount"
+                            class="text-primary text-sm">₹0</strong></p>
+                </div>
+
+                <!-- Mock UPI Form -->
+                <div id="upi-input-container" class="space-y-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Enter UPI
+                            ID</label>
+                        <input id="upi-address-input" type="text"
+                            class="w-full border border-stone-300 rounded-full px-4 py-2 text-xs input-glow text-center font-semibold"
+                            value="rahul@okhdfc" placeholder="username@upi" required />
+                        <span class="text-[9px] text-stone-400 text-center block mt-1">Enter your phonepe/gpay/paytm UPI
+                            ID to authorize</span>
+                    </div>
+                    <button id="btn-complete-payment"
+                        class="w-full bg-green-600 text-white py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all">
+                        Pay UPI
+                    </button>
+                </div>
+
+                <!-- UPI verifying loader -->
+                <div id="payment-loading" class="flex flex-col items-center py-6 hidden">
+                    <svg class="animate-spin h-10 w-10 text-primary mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <p class="text-xs text-primary font-bold animate-pulse">Requesting authorization from UPI App...</p>
+                    <p class="text-[10px] text-stone-400 mt-1">Open your phone payment app to approve the popup request
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         VIEW 3: CHEF PORTAL DASHBOARD (CRUD & Analytics)
+         ============================================================ -->
+    <div id="chef-portal-view" class="hidden min-h-screen pt-24 pb-12 transition-all duration-300 bg-stone-50">
+        <!-- Chef Portal Header -->
+        <header
+            class="fixed top-0 left-0 w-full z-[9998] flex justify-between items-center px-6 py-3 bg-white border-b border-stone-200 shadow-xs">
+            <div class="flex items-center gap-4">
+                <button
+                    class="flex items-center gap-1 text-stone-600 hover:text-stone-900 font-semibold text-sm transition-colors"
+                    onclick="Router.navigate('landing')">
+                    <span class="material-symbols-outlined text-lg">arrow_back</span>
+                    <span>Home</span>
+                </button>
+                <div class="h-6 w-[1px] bg-stone-300"></div>
+                <div class="flex items-center gap-2 text-stone-800 font-bold font-['Newsreader'] text-xl">
+                    <span>Chef Hub</span>
+                    <span
+                        class="text-xs bg-orange-600 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">COOK</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="chef-verified-badge"
+                    class="hidden text-xs font-bold text-green-700 bg-green-100 border border-green-200 px-3 py-1 rounded-full uppercase tracking-wider">Verified
+                    Kitchen</span>
+                <span id="chef-pending-badge"
+                    class="hidden text-xs font-bold text-amber-700 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">Verification
+                    Pending</span>
+                <span id="chef-unverified-badge"
+                    class="hidden text-xs font-bold text-red-700 bg-red-100 border border-red-200 px-3 py-1 rounded-full uppercase tracking-wider">Unverified
+                    Kitchen</span>
+                <div class="h-6 w-[1px] bg-stone-300"></div>
+                <button id="btn-chef-logout" class="text-xs font-bold text-red-600 hover:underline">Logout</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Container -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
+            <div class="grid md:grid-cols-4 gap-6">
+                <!-- Dashboard Sidebar Navigator -->
+                <aside
+                    class="md:col-span-1 glass-card rounded-xl p-5 border border-stone-200 shadow-sm flex flex-col items-center gap-4 text-center h-fit">
+                    <img id="chef-profile-sidebar-avatar" src=""
+                        class="w-20 h-20 rounded-full object-cover border-4 border-primary/20 shadow-md"
+                        alt="Chef Avatar" />
+                    <div>
+                        <h3 id="chef-profile-sidebar-name" class="font-h3 text-lg font-bold">Chef</h3>
+                        <p id="chef-profile-sidebar-area" class="text-xs text-on-surface-variant mt-0.5 font-medium">
+                        </p>
+                    </div>
+
+                    <!-- Panel Tabs buttons -->
+                    <div class="w-full flex flex-col gap-1 pt-4 border-t border-stone-200">
+                        <button
+                            class="chef-tab-btn w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all bg-primary text-on-primary"
+                            data-panel="dashboard">
+                            📈 Dashboard Overview
+                        </button>
+                        <button
+                            class="chef-tab-btn w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all text-stone-600 hover:bg-primary/5"
+                            data-panel="orders">
+                            🛍️ Customer Orders
+                        </button>
+                        <button
+                            class="chef-tab-btn w-full text-left px-4 py-2.5 rounded-lg text-xs font-bold transition-all text-stone-600 hover:bg-primary/5"
+                            data-panel="menu">
+                            🍽️ Menu Manager
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Panel Content Container -->
+                <main class="md:col-span-3 space-y-6">
+                    <!-- Chef Verification Checklist Panel -->
+                    <section id="chef-verification-panel"
+                        class="glass-card rounded-xl p-6 border border-orange-200 bg-orange-50/10 shadow-md space-y-6 hidden">
+                        <div class="flex items-center gap-3 border-b border-orange-100 pb-4">
+                            <span class="text-3xl">🏠</span>
+                            <div>
+                                <h3 class="font-h2 text-xl font-bold text-stone-800">Kitchen Onboarding Verification
+                                </h3>
+                                <p class="text-xs text-on-surface-variant mt-1">Complete the mandatory checklist below
+                                    to launch your digital kitchen and accept orders.</p>
+                            </div>
+                        </div>
+
+                        <form id="chef-verification-form" class="space-y-6">
+                            <!-- Step 1: FSSAI Registration -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-base">gavel</span>
+                                        <span class="text-xs font-bold text-stone-700">1. FSSAI Registration</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase">Required</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500">Provide your 14-digit Food Safety and Standards
+                                    Authority of India (FSSAI) license number.</p>
+                                <input id="chef-fssai-input" type="text"
+                                    class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase input-glow"
+                                    placeholder="e.g. 14325678901234" maxlength="14" required />
+                            </div>
+
+                            <!-- Step 2: PAN Card -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-base">badge</span>
+                                        <span class="text-xs font-bold text-stone-700">2. PAN Card</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase">Required</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500">Enter the 10-character alphanumeric PAN (Permanent
+                                    Account Number) of your business or proprietor.</p>
+                                <input id="chef-pan-input" type="text"
+                                    class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase input-glow"
+                                    placeholder="e.g. ABCDE1234F" maxlength="10" required />
+                            </div>
+
+                            <!-- Step 3: Bank Account -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            class="material-symbols-outlined text-primary text-base">account_balance</span>
+                                        <span class="text-xs font-bold text-stone-700">3. Bank Account</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase">Required</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500">Provide details for the business/current bank
+                                    account where payouts should be deposited.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-[9px] text-stone-500 font-extrabold uppercase">Account
+                                            Number</label>
+                                        <input id="chef-bank-account-input" type="text"
+                                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold input-glow"
+                                            placeholder="e.g. 123456789012" maxlength="18" required />
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <label class="text-[9px] text-stone-500 font-extrabold uppercase">IFSC
+                                            Code</label>
+                                        <input id="chef-bank-ifsc-input" type="text"
+                                            class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase input-glow"
+                                            placeholder="e.g. SBIN0001234" maxlength="11" required />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: UPI ID -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-base">qr_code_2</span>
+                                        <span class="text-xs font-bold text-stone-700">4. UPI QR / UPI ID</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase">Required</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500">Specify your business bank account's UPI ID
+                                    (Virtual Payment Address) to accept customer digital transactions.</p>
+                                <input id="chef-upi-input" type="text"
+                                    class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold input-glow"
+                                    placeholder="e.g. businessname@okaxis" required />
+                            </div>
+
+                            <!-- Step 5: GST - ONLY IF NEEDED -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-base">percent</span>
+                                        <span class="text-xs font-bold text-stone-700">5. GST Registration</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase"
+                                        id="gst-status-badge">Conditional</span>
+                                </div>
+                                <p class="text-[11px] text-stone-500">Is your annual kitchen turnover expected to exceed
+                                    ₹20 Lakhs or does a platform partner require GST?</p>
+
+                                <div class="flex gap-4 items-center">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="chef-gst-turnover" value="no" checked
+                                            class="text-primary focus:ring-primary border-stone-300" />
+                                        <span class="text-xs font-semibold text-stone-700">No (Under ₹20L)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="chef-gst-turnover" value="yes"
+                                            class="text-primary focus:ring-primary border-stone-300" />
+                                        <span class="text-xs font-semibold text-stone-700">Yes (Over ₹20L /
+                                            Required)</span>
+                                    </label>
+                                </div>
+
+                                <div id="gst-input-container"
+                                    class="hidden flex flex-col gap-1 transition-all duration-300">
+                                    <label class="text-[9px] text-stone-500 font-extrabold uppercase">15-digit
+                                        GSTIN</label>
+                                    <input id="chef-gst-input" type="text"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase input-glow"
+                                        placeholder="e.g. 36ABCDE1234F1Z5" maxlength="15" />
+                                </div>
+                                <div id="gst-not-required-message"
+                                    class="text-emerald-600 bg-emerald-50 border border-emerald-200/50 p-2.5 rounded-lg text-[11px] flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-xs">check_circle</span>
+                                    <span>GST registration not required at this stage. Proceeding without GST.</span>
+                                </div>
+                            </div>
+
+                            <!-- Address and Photos -->
+                            <div class="bg-white p-4 rounded-xl border border-stone-200 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary text-base">home</span>
+                                        <span class="text-xs font-bold text-stone-700">6. Kitchen Location &
+                                            Photo</span>
+                                    </div>
+                                    <span class="text-[10px] text-stone-400 font-bold uppercase">Required</span>
+                                </div>
+
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-stone-500 font-extrabold uppercase">Full Kitchen
+                                        Address</label>
+                                    <textarea id="chef-address-input"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs font-medium input-glow"
+                                        rows="2" placeholder="Street name, landmark, building number, area..."
+                                        required></textarea>
+                                </div>
+
+                                <div class="flex flex-col gap-1">
+                                    <label class="text-[10px] text-stone-500 font-extrabold uppercase">Kitchen Setup
+                                        Photo</label>
+                                    <div class="border-2 border-dashed border-stone-300 rounded-lg p-4 flex flex-col items-center justify-center gap-2 bg-stone-50/50 hover:bg-stone-50 transition-colors cursor-pointer relative"
+                                        id="kitchen-upload-box">
+                                        <input type="file" id="chef-photo-input"
+                                            class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*"
+                                            required />
+                                        <span
+                                            class="material-symbols-outlined text-3xl text-stone-400">upload_file</span>
+                                        <span class="text-[11px] font-bold text-stone-600"
+                                            id="kitchen-photo-filename">Click or Drag to Upload Kitchen Photo</span>
+                                        <span class="text-[9px] text-stone-400">PNG, JPG up to 5MB</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <button type="submit" id="btn-submit-verification"
+                                class="w-full bg-primary text-on-primary py-3.5 rounded-full font-bold text-xs uppercase tracking-widest shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">verified</span>
+                                <span>Verify My Kitchen</span>
+                            </button>
+                        </form>
+
+                        <!-- Verification Progress Simulator -->
+                        <div id="verification-progress-box"
+                            class="hidden bg-white p-6 rounded-xl border border-stone-200 text-center space-y-4">
+                            <div class="relative w-20 h-20 mx-auto flex items-center justify-center">
+                                <svg class="animate-spin absolute inset-0 w-full h-full text-primary" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="3"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                <span class="text-2xl animate-pulse">🍳</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-stone-700">Verifying Documents...</h4>
+                                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Our compliance bot is
+                                    checking your FSSAI license & Aadhaar registration status with government databases.
+                                </p>
+                            </div>
+                            <!-- Simulation visual bar -->
+                            <div class="w-full bg-stone-100 rounded-full h-2 overflow-hidden border">
+                                <div id="verification-progress-bar"
+                                    class="h-full bg-primary transition-all duration-300" style="width:0%"></div>
+                            </div>
+                            <p id="verification-progress-step"
+                                class="text-[10px] text-stone-400 font-extrabold uppercase tracking-wide">Initializing
+                                checks...</p>
+                        </div>
+                    </section>
+
+                    <!-- Panel A: Dashboard Overview -->
+                    <section id="chef-panel-dashboard" class="chef-panel space-y-6">
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white border border-stone-200 p-4 rounded-xl shadow-xs">
+                                <span
+                                    class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide block">Chef
+                                    Payout (92%)</span>
+                                <span id="metric-earnings"
+                                    class="text-2xl font-bold text-on-surface block mt-1">₹0</span>
+                            </div>
+                            <div class="bg-white border border-stone-200 p-4 rounded-xl shadow-xs">
+                                <span
+                                    class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide block">Total
+                                    Meals Sold</span>
+                                <span id="metric-orders-count"
+                                    class="text-2xl font-bold text-on-surface block mt-1">0</span>
+                            </div>
+                            <div class="bg-white border border-stone-200 p-4 rounded-xl shadow-xs">
+                                <span
+                                    class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide block">Kitchen
+                                    Rating</span>
+                                <span id="metric-chef-rating" class="text-2xl font-bold text-on-surface block mt-1">0
+                                    ⭐</span>
+                            </div>
+                            <div class="bg-white border border-stone-200 p-4 rounded-xl shadow-xs">
+                                <span
+                                    class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide block">Active
+                                    Orders</span>
+                                <span id="metric-active-orders"
+                                    class="text-2xl font-bold text-primary block mt-1">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Charts Layout & Tips -->
+                        <div class="grid lg:grid-cols-3 gap-6">
+                            <!-- SVG Earnings chart widget -->
+                            <div
+                                class="lg:col-span-2 bg-white border border-stone-200 p-5 rounded-xl shadow-xs space-y-4">
+                                <div class="flex justify-between items-center border-b border-stone-100 pb-2">
+                                    <h4 class="font-bold text-sm text-stone-700">Weekly Orders Volume</h4>
+                                    <span class="text-xs text-primary font-bold">Real Data</span>
+                                </div>
+                                <div id="analytics-chart-svg" class="h-44 w-full flex items-center justify-center">
+                                    <!-- Dynamic SVG Graph here -->
+                                </div>
+                            </div>
+
+                            <!-- Chef Tips Box -->
+                            <div
+                                class="lg:col-span-1 bg-white border border-stone-200 p-5 rounded-xl shadow-xs flex flex-col justify-between">
+                                <div>
+                                    <h4 class="font-bold text-sm text-stone-700 border-b border-stone-100 pb-2 mb-3">
+                                        Kitchen Reminders</h4>
+                                    <ul class="space-y-2 text-xs leading-relaxed text-on-surface-variant font-medium">
+                                        <li class="flex items-start gap-1">
+                                            <span class="text-primary font-bold">•</span>
+                                            <span>Pre-order menu batches close 12 hours before delivery slot.</span>
+                                        </li>
+                                        <li class="flex items-start gap-1">
+                                            <span class="text-primary font-bold">•</span>
+                                            <span>Accept new orders within 5 minutes to keep rating high.</span>
+                                        </li>
+                                        <li class="flex items-start gap-1">
+                                            <span class="text-primary font-bold">•</span>
+                                            <span>Ensure FSSAI certification documents are renewed.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div
+                                    class="bg-orange-50 border border-orange-100 rounded-lg p-3 mt-4 text-[11px] text-primary leading-relaxed font-semibold">
+                                    💡 Tip: Slow-dum rice specialties sells 30% higher on Friday/Sunday nights. Prep
+                                    menus accordingly!
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Panel B: Customer Orders Queue -->
+                    <section id="chef-panel-orders" class="chef-panel space-y-4 hidden">
+                        <h3 class="font-h2 text-lg font-bold border-b border-stone-200 pb-2">Active Order Operations
+                        </h3>
+                        <div id="chef-orders-list" class="space-y-4">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </section>
+
+                    <!-- Panel C: Menu CRUD Manager -->
+                    <section id="chef-panel-menu" class="chef-panel space-y-6 hidden">
+                        <!-- Add/Edit form -->
+                        <div class="bg-white border border-stone-200 p-5 rounded-xl shadow-xs">
+                            <h4 class="font-bold text-sm text-stone-700 border-b border-stone-100 pb-2 mb-4">Dish
+                                Manager Form</h4>
+                            <form id="chef-add-dish-form" class="grid sm:grid-cols-2 gap-4">
+                                <input type="hidden" id="form-dish-id" />
+
+                                <div class="flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Dish
+                                        Name</label>
+                                    <input id="form-dish-name" type="text"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow"
+                                        placeholder="e.g. Masala Dosa" required />
+                                </div>
+
+                                <div class="flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Price
+                                        (₹)</label>
+                                    <input id="form-dish-price" type="number"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow"
+                                        placeholder="e.g. 100" required />
+                                </div>
+
+                                <div class="sm:col-span-2 flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Description</label>
+                                    <textarea id="form-dish-desc"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow"
+                                        rows="2" placeholder="Describe the ingredients, taste profile, and details..."
+                                        required></textarea>
+                                </div>
+
+                                <div class="flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Cuisine
+                                        Category</label>
+                                    <select id="form-dish-category"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
+                                        <option value="south">South Indian</option>
+                                        <option value="north">North Indian</option>
+                                        <option value="hyderabadi">Hyderabadi</option>
+                                        <option value="diet">Healthy / Diet</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Spicy
+                                        Scale</label>
+                                    <select id="form-dish-spicy"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow bg-white">
+                                        <option value="❌">Not Spicy (❌)</option>
+                                        <option value="🌶️">Mild (🌶️)</option>
+                                        <option value="🌶️🌶️">Medium Spicy (🌶️🌶️)</option>
+                                        <option value="🌶️🌶️🌶️">Hot (🌶️🌶️🌶️)</option>
+                                        <option value="🌶️🌶️🌶️🌶️">Extra Hot (🌶️🌶️🌶️🌶️)</option>
+                                    </select>
+                                </div>
+
+                                <div class="sm:col-span-2 flex flex-col gap-1">
+                                    <label
+                                        class="text-[10px] text-stone-500 font-extrabold uppercase tracking-wide">Food
+                                        Image URL</label>
+                                    <input id="form-dish-image" type="url"
+                                        class="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-xs input-glow"
+                                        placeholder="e.g. https://images.unsplash.com/photo-..." />
+                                </div>
+
+                                <div class="sm:col-span-2 flex gap-3 pt-2">
+                                    <button id="form-submit-btn" type="submit"
+                                        class="flex-1 bg-primary text-white py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:scale-[1.01] active:scale-95 transition-all shadow-md">Add
+                                        Dish to Menu</button>
+                                    <button id="btn-reset-dish-form" type="button"
+                                        class="px-5 border border-stone-300 text-stone-600 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-stone-50">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Current menu grid list -->
+                        <h4 class="font-bold text-sm text-stone-700 border-b border-stone-200 pb-2 mb-2 mt-4">Current
+                            Active Menu Grid</h4>
+                        <div id="chef-menu-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </section>
+                </main>
+            </div>
         </div>
     </div>
 
@@ -1057,13 +2235,19 @@
         <!-- Pulse ring -->
         <span class="absolute w-full h-full rounded-full bg-[#25D366] animate-ping opacity-30"></span>
     </a>
-    <!-- Footer -->
-    <footer
-        class="w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-stone-50 dark:bg-stone-950 border-t border-stone-200 dark:border-stone-800">
-        <div class="flex flex-col items-center md:items-start gap-2">
-            <span class="text-lg font-bold text-stone-800 dark:text-stone-200 font-['Newsreader']">Ruchi Rush</span>
-            <span class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm">© 2026 Ruchi Rush. Made with
-                love.</span>
+
+    <!-- Cookie Consent Legal Banner -->
+    <div id="cookieBanner"
+        class="fixed bottom-6 left-6 max-w-sm z-[9999] bg-stone-900 text-stone-100 rounded-xl p-4 shadow-2xl border border-stone-800 transition-transform duration-500 translate-y-[150%]"
+        style="display:none">
+        <p class="text-xs leading-relaxed mb-3">Ruchi Rush uses local cookies to save your home delivery address, active
+            cart selections, and secure chef session profiles for peak usability. Learn more in our <a href="#"
+                class="underline text-orange-400">Privacy Policy</a>.</p>
+        <div class="flex gap-2">
+            <button id="cookieAccept"
+                class="flex-1 bg-primary text-white py-1.5 rounded-full text-xs font-bold hover:bg-orange-600 transition-colors">Accept</button>
+            <button id="cookieDecline"
+                class="px-4 border border-stone-600 rounded-full text-xs font-bold hover:bg-stone-800 transition-colors text-stone-300">Decline</button>
         </div>
         <div class="flex gap-8">
             <a class="text-stone-500 dark:text-stone-400 font-['Newsreader'] text-sm hover:text-orange-500 transition-colors"
@@ -1108,17 +2292,126 @@
             delay: 0.5
         });
 
-        const hero = document.querySelector(".hero-bg");
+            // 2. Parallax Effect
+            const heroSection = document.getElementById("hero-storytelling");
+            if (heroSection) {
+                heroSection.addEventListener("mousemove", (e) => {
+                    const rect = heroSection.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    
+                    // Background elements move same direction as mouse
+                    gsap.to(".parallax-bg", {
+                        x: x * 35,
+                        y: y * 35,
+                        duration: 1,
+                        ease: "power2.out"
+                    });
+                    
+                    // Midground text moves slightly
+                    gsap.to(".hero-text-col", {
+                        x: x * 12,
+                        y: y * 12,
+                        duration: 1,
+                        ease: "power2.out"
+                    });
+                    
+                    // Foreground media moves opposite direction
+                    gsap.to(".hero-media-col", {
+                        x: x * -20,
+                        y: y * -20,
+                        duration: 1,
+                        ease: "power2.out"
+                    });
+                });
+            }
 
-        hero.addEventListener("mousemove", (e) => {
-            let x = (e.clientX / window.innerWidth - 0.5) * 20;
-            let y = (e.clientY / window.innerHeight - 0.5) * 20;
-
-            gsap.fromTo(hero, {
-                backgroundPosition: `${50 + x}% ${50 + y}%`,
-                duration: 0.5
-            });
-        });
+            // 3. Canvas Connection Animation (Steam & Spice Particles)
+            const canvas = document.getElementById("hero-connection-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            
+            let canvasWidth = 0;
+            let canvasHeight = 0;
+            
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                canvasWidth = rect.width;
+                canvasHeight = rect.height;
+            }
+            resizeCanvas();
+            window.addEventListener("resize", resizeCanvas);
+            
+            const particles = [];
+            const chefHatEl = document.querySelector(".chef-hat-wrapper");
+            const plateEl = document.querySelector(".plate-wrapper");
+            
+            class Particle {
+                constructor(sx, sy) {
+                    this.x = sx;
+                    this.y = sy;
+                    this.age = 0;
+                    this.maxAge = 60 + Math.random() * 30; // 1 to 1.5 seconds
+                    
+                    this.vx = (Math.random() - 0.5) * 0.6;
+                    this.vy = -0.6 - Math.random() * 0.6; // rise up
+                    this.steamAlpha = 0.2 + Math.random() * 0.25;
+                }
+                
+                update() {
+                    this.age++;
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy *= 0.97; // slow down rising
+                }
+                
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 6 + Math.random() * 4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(236, 214, 204, ${this.steamAlpha * (1 - this.age / this.maxAge)})`;
+                    ctx.fill();
+                }
+            }
+            
+            function getElementCenter(el) {
+                if (!el) return { x: 0, y: 0 };
+                const rect = el.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                return {
+                    x: rect.left - canvasRect.left + rect.width / 2,
+                    y: rect.top - canvasRect.top + rect.height / 2
+                };
+            }
+            
+            function animLoop() {
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                
+                const chefCenter = getElementCenter(chefHatEl);
+                
+                // Spawn particles from chef hat area
+                if (Math.random() < 0.15 && chefCenter.x > 0) {
+                    const spawnX = chefCenter.x + (Math.random() - 0.5) * 45;
+                    const spawnY = chefCenter.y - 45 + (Math.random() - 0.5) * 30;
+                    particles.push(new Particle(spawnX, spawnY));
+                }
+                
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    p.draw();
+                    
+                    if (p.age >= p.maxAge) {
+                        particles.splice(i, 1);
+                    }
+                }
+                
+                requestAnimationFrame(animLoop);
+            }
+            
+            setTimeout(animLoop, 1000);
+        })();
 
         gsap.from(".why-left", {
             x: -100,

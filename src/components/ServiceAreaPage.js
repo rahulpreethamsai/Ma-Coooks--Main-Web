@@ -255,7 +255,7 @@ export default function ServiceAreaPage({
 
           <div className="grid lg:grid-cols-12 gap-8 items-center">
             {/* Left Side: Visual Commission Graph Card */}
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4">
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100/50 border border-stone-200 shadow-sm space-y-4">
               <h3 className="font-h3 text-lg font-bold text-stone-900">Why Chefs Earn More</h3>
               <p className="text-xs text-stone-600 leading-relaxed font-body-md">
                 We keep our operational costs low and pass the savings back to our neighborhood partners.

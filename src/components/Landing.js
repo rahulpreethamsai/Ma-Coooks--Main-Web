@@ -560,7 +560,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       </section>
 
       {/* SECTION 5: TRUST & TRANSPARENCY */}
-      <div className="trust-section bg-gradient-to-br from-[#ffeae0] to-[#fff8f6] text-stone-900 border-y border-primary/5">
+      <div className="trust-section bg-gradient-to-br from-orange-50 to-orange-100/50 text-stone-900 border-y border-primary/5">
         <section className="py-20 px-6 text-center max-w-4xl mx-auto">
           <h2 className="font-h2 text-4xl mb-4 font-bold text-stone-900">Transparency You Can Feel</h2>
           <p className="font-body-lg text-stone-700 mb-8 max-w-2xl mx-auto">
@@ -650,7 +650,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             {testimonials.map((t, idx) => (
               <div
                 key={idx}
-                className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col justify-between hover:shadow-md transition-shadow relative"
+                className="bg-gradient-to-br from-orange-50 to-orange-100/50 p-8 rounded-2xl shadow-2xl flex flex-col justify-between hover:shadow-md transition-shadow relative"
               >
                 <span className="text-6xl text-yellow-500 absolute top-4 right-6 font-serif">“</span>
                 <div className="space-y-4">
@@ -700,7 +700,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           <div className="grid lg:grid-cols-12 gap-10 items-center">
             {/* Left Side: Visual Commission Graph Card */}
-            <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-stone-200 shadow-sm space-y-6">
+            <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-stone-200 shadow-xl space-y-6">
               <h3 className="font-h3 text-xl font-bold text-stone-900">Why Chefs Earn More</h3>
               <p className="text-xs text-stone-600 leading-relaxed font-body-md">
                 We keep our operational costs low and pass the savings back to our neighborhood partners.
@@ -736,25 +736,25 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
             {/* Right Side: Promise Items Grid */}
             <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
-              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
                 <span className="material-symbols-outlined text-3xl text-primary">account_balance_wallet</span>
                 <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">92% Chef Payouts</h4>
                 <p className="text-xs text-stone-500 leading-relaxed font-body-md">You keep 92% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
               </div>
 
-              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
                 <span className="material-symbols-outlined text-3xl text-primary">verified_user</span>
                 <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Vetted Culinary Trust</h4>
                 <p className="text-xs text-stone-500 leading-relaxed font-body-md">We verify your kitchen safety and FSSAI credentials to build premium neighborhood trust and brand recognition.</p>
               </div>
 
-              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
                 <span className="material-symbols-outlined text-3xl text-primary">schedule</span>
                 <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Complete Autonomy</h4>
                 <p className="text-xs text-stone-500 leading-relaxed font-body-md">You decide your own menu, set your own pricing, select prep slots, and open/close your kitchen at your convenience.</p>
               </div>
 
-              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
                 <span className="material-symbols-outlined text-3xl text-primary">local_shipping</span>
                 <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Doorstep Courier Pickup</h4>
                 <p className="text-xs text-stone-500 leading-relaxed font-body-md">Focus purely on cooking. Vetted local couriers pick up orders directly from your doorstep and deliver them in insulated bags.</p>

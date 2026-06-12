@@ -25,8 +25,10 @@ export default function ChefPortal({ Toast, navigate }) {
   // Submission States
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formattedMessage, setFormattedMessage] = useState('');
+  const [submissionStatus, setSubmissionStatus] = useState('pending'); // 'success' or 'failed'
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleVerificationSubmit = (e) => {
+  const handleVerificationSubmit = async (e) => {
     e.preventDefault();
 
     if (chefName.trim().length < 2) {
@@ -100,8 +102,47 @@ UPI ID: ${upiId}
 Food Safety Quiz: Completed & Passed (A, B, A)`;
 
     setFormattedMessage(msg);
-    setShowSuccessModal(true);
-    Toast.show("Form validated successfully!", "success");
+    setIsSubmitting(true);
+    Toast.show("Submitting onboarding application...", "info");
+
+    try {
+      const response = await fetch("https://formspree.io/f/mkoybqqy", {
+        method: "POST",
+        body: JSON.stringify({
+          name: chefName,
+          phone: chefPhone,
+          email: chefEmail,
+          kitchenName: kitchenName,
+          address: kitchenAddress,
+          fssai: fssai,
+          pan: pan,
+          bankAccount: bankAccount,
+          bankIfsc: bankIfsc,
+          upiId: upiId,
+          gstin: gstin || 'N/A',
+          quiz: `Q1: ${q1}, Q2: ${q2}, Q3: ${q3}`,
+          _subject: `New Chef Onboarding - ${chefName} (${kitchenName})`
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
+      });
+
+      if (response.ok) {
+        setSubmissionStatus('success');
+        Toast.show("Application submitted successfully!", "success");
+      } else {
+        throw new Error("Formspree failed");
+      }
+    } catch (err) {
+      console.error(err);
+      setSubmissionStatus('failed');
+      Toast.show("Direct submission failed. Please use backup options.", "error");
+    } finally {
+      setIsSubmitting(false);
+      setShowSuccessModal(true);
+    }
   };
 
   const handleWhatsAppSubmit = () => {
@@ -362,9 +403,13 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
           <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => setShowSuccessModal(false)}></div>
           <div className="relative bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-primary/15 text-center space-y-5 z-10">
             <span className="text-5xl block animate-bounce">🎉</span>
-            <h3 className="font-h1 text-2xl font-bold text-primary">Onboarding Form Ready!</h3>
+            <h3 className="font-h1 text-2xl font-bold text-primary">
+              {submissionStatus === 'success' ? 'Application Submitted!' : 'Onboarding Form Ready!'}
+            </h3>
             <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-              Your onboarding information has been successfully compiled and validated. Choose how you would like to submit it to the Ruchi Rush team:
+              {submissionStatus === 'success' 
+                ? 'Your onboarding application has been successfully submitted to our team! If you would like to chat with us directly or ask any questions, feel free to use the options below:' 
+                : 'Your onboarding information has been compiled and validated. Direct submission had an issue, but you can choose how you would like to submit it to the Ruchi Rush team below:'}
             </p>
 
             <div className="flex flex-col gap-3 pt-2">

@@ -80,24 +80,46 @@ export default function Home() {
     };
   }, []);
 
-  const handleWaitlistSubmit = (e) => {
+  const handleWaitlistSubmit = async (e) => {
     e.preventDefault();
     if (!waitlistName || !waitlistEmail) {
       showToast("Please fill in all details.", "error");
       return;
     }
     
-    // Create WhatsApp/Email prefilled submission details
-    const subject = "Ruchi Rush Customer Waitlist Join";
-    const body = `Hi Ruchi Rush team! I would like to join the customer waitlist:\n\nName: ${waitlistName}\nEmail: ${waitlistEmail}\nLocation: ${waitlistLocation}`;
+    showToast("Submitting waitlist application...", "info");
     
-    // Propose options to the user
-    showToast("Opening WhatsApp to submit your details...", "success");
-    const waUrl = `https://wa.me/919908574741?text=${encodeURIComponent(body)}`;
-    window.open(waUrl, "_blank");
-    
-    setWaitlistName('');
-    setWaitlistEmail('');
+    try {
+      const response = await fetch("https://formspree.io/f/mkoybqqy", {
+        method: "POST",
+        body: JSON.stringify({
+          name: waitlistName,
+          email: waitlistEmail,
+          location: waitlistLocation,
+          _subject: `New Customer Waitlist Sign-up - ${waitlistName}`
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
+      });
+      
+      if (response.ok) {
+        showToast("Joined waitlist successfully!", "success");
+        setWaitlistName('');
+        setWaitlistEmail('');
+      } else {
+        throw new Error("Formspree submission failed");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Submission failed. Opening WhatsApp...", "error");
+      const body = `Hi Ruchi Rush team! I would like to join the customer waitlist:\n\nName: ${waitlistName}\nEmail: ${waitlistEmail}\nLocation: ${waitlistLocation}`;
+      const waUrl = `https://wa.me/919908574741?text=${encodeURIComponent(body)}`;
+      window.open(waUrl, "_blank");
+      setWaitlistName('');
+      setWaitlistEmail('');
+    }
   };
 
   const acceptCookies = () => {

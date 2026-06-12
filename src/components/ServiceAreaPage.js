@@ -2,9 +2,43 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import LegalModal from './LegalModal';
-import AuthModal from './AuthModal';
-import { auth, signOut } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+// import AuthModal from './AuthModal';
+
+const MOCK_CHEFS = [
+  {
+    id: "chef_1",
+    name: "Priya Krishna",
+    avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=150&h=150&fit=crop",
+    bio: "Passionate about authentic South Indian breakfasts and traditional Godavari curries.",
+    cuisine: "South Indian, Godavari Special",
+    rating: 4.9,
+    reviewsCount: 124,
+    deliveryTime: "30-45 mins",
+    area: "Gachibowli"
+  },
+  {
+    id: "chef_2",
+    name: "Lakshmi Reddy",
+    avatar: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=150&h=150&fit=crop",
+    bio: "Specializes in healthy millets, homemade ragi mudde, and organic meals.",
+    cuisine: "Diet Friendly, Millet Specials",
+    rating: 4.8,
+    reviewsCount: 98,
+    deliveryTime: "25-35 mins",
+    area: "Madhapur"
+  },
+  {
+    id: "chef_3",
+    name: "Srinivas Rao",
+    avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=150&h=150&fit=crop",
+    bio: "Slow-cooked authentic Hyderabadi Dum Biryani and local kebab specialties.",
+    cuisine: "Hyderabadi, North Indian",
+    rating: 5.0,
+    reviewsCount: 312,
+    deliveryTime: "40-50 mins",
+    area: "Jubilee Hills"
+  }
+];
 
 export default function ServiceAreaPage({ 
   areaName, 
@@ -17,9 +51,8 @@ export default function ServiceAreaPage({
 }) {
   const [activeView, setActiveView] = useState('landing');
   const [currentUser, setCurrentUser] = useState(null);
-  const [chefs, setChefs] = useState([]);
+  const [chefs, setChefs] = useState(MOCK_CHEFS);
   const [dishes, setDishes] = useState([]);
-  const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
   const [legalModal, setLegalModal] = useState({ isOpen: false, policyType: 'privacy' });
   const [toasts, setToasts] = useState([]);
 
@@ -38,69 +71,11 @@ export default function ServiceAreaPage({
   const ToastHelper = { show: showToast };
 
   useEffect(() => {
-    // Sync active user
-    const cachedUser = localStorage.getItem('ruchirush_active_user');
-    if (cachedUser) {
-      try {
-        setCurrentUser(JSON.parse(cachedUser));
-      } catch (e) {}
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        try {
-          const res = await fetch(`/api/users?email=${encodeURIComponent(fbUser.email)}`);
-          if (res.ok) {
-            const profile = await res.json();
-            if (profile) {
-              setCurrentUser(profile);
-              localStorage.setItem('ruchirush_active_user', JSON.stringify(profile));
-            }
-          }
-        } catch (e) {}
-      } else {
-        setCurrentUser(null);
-      }
-    });
-
-    // Fetch Chefs and Dishes
-    const fetchVettedData = async () => {
-      try {
-        const [chefsRes, dishesRes] = await Promise.all([
-          fetch('/api/chefs'),
-          fetch('/api/dishes')
-        ]);
-        const chefsData = await chefsRes.json();
-        const dishesData = await dishesRes.json();
-        setChefs(chefsData || []);
-        setDishes(dishesData || []);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    fetchVettedData();
-
-    return () => unsubscribe();
+    // Keep chefs list static
+    setChefs(MOCK_CHEFS);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setCurrentUser(null);
-      localStorage.removeItem('ruchirush_active_user');
-      showToast("Logged out successfully.", "info");
-    } catch (err) {
-      showToast("Logout failed.", "error");
-    }
-  };
-
-  const handleAuthSuccess = (profile) => {
-    setCurrentUser(profile);
-    localStorage.setItem('ruchirush_active_user', JSON.stringify(profile));
-    showToast(`Welcome back, ${profile.name}!`, 'success');
-  };
-
-  const areaChefs = chefs.filter(c => chefIds.includes(c.id));
+  const areaChefs = chefs.filter(c => chefIds.includes(c.id) || c.area.toLowerCase() === areaName.toLowerCase());
 
   // Localized Schema.org JSON-LD
   const schemaData = {
@@ -109,7 +84,7 @@ export default function ServiceAreaPage({
     "name": `Ruchi Rush ${areaName}`,
     "description": metaDescription,
     "url": `https://ruchirush.netlify.app/${areaName.toLowerCase().replace(' ', '-')}-food-delivery`,
-    "telephone": "+919999999999",
+    "telephone": "+919908574741",
     "priceRange": "$$",
     "areaServed": {
       "@type": "AdministrativeArea",
@@ -135,11 +110,10 @@ export default function ServiceAreaPage({
   };
 
   const handleOrderRedirect = () => {
-    // Pre-set location filter to this area
-    localStorage.setItem('ruchirush_delivery_area_filter', areaName);
     // Redirect to root landing and open eat view
     window.location.href = `/?eat_portal=true&area=${encodeURIComponent(areaName)}`;
   };
+
 
   return (
     <div className="min-h-screen bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)">
@@ -156,9 +130,6 @@ export default function ServiceAreaPage({
           if (view === 'landing') window.location.href = '/';
           else window.location.href = `/?portal=${view}`;
         }}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        openAuthModal={(tab) => setAuthModal({ isOpen: true, tab })}
       />
 
       <main className="relative z-10 pt-28 pb-20 px-6 max-w-5xl mx-auto space-y-16">
@@ -469,12 +440,7 @@ export default function ServiceAreaPage({
         </div>
       </footer>
 
-      <AuthModal 
-        isOpen={authModal.isOpen}
-        initialTab={authModal.tab}
-        onClose={() => setAuthModal({ isOpen: false, tab: 'login' })}
-        onAuthSuccess={handleAuthSuccess}
-      />
+
 
       <LegalModal 
         isOpen={legalModal.isOpen}

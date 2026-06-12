@@ -2,18 +2,16 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Landing from '@/components/Landing';
-import CustomerPortal from '@/components/CustomerPortal';
+// import CustomerPortal from '@/components/CustomerPortal';
 import ChefPortal from '@/components/ChefPortal';
-import AuthModal from '@/components/AuthModal';
+// import AuthModal from '@/components/AuthModal';
 import LegalModal from '@/components/LegalModal';
-import { auth, signOut, onAuthStateChanged } from '@/lib/firebase';
 
 export default function Home() {
   const [activeView, setActiveView] = useState('landing');
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null); // Keep as null since login/signup is removed
   
   // Modal states
-  const [authModal, setAuthModal] = useState({ isOpen: false, tab: 'login' });
   const [legalModal, setLegalModal] = useState({ isOpen: false, policyType: 'privacy' });
 
   // Cookie banner state
@@ -24,6 +22,11 @@ export default function Home() {
 
   // Floating action button scroll state
   const [fabScale, setFabScale] = useState(1);
+
+  // Coming Soon Form State
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistName, setWaitlistName] = useState('');
+  const [waitlistLocation, setWaitlistLocation] = useState('Gachibowli');
 
   const showToast = (message, type = 'success') => {
     const id = Date.now();
@@ -42,16 +45,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // 1. Initial State checks from localStorage & URL parameters
-    const cachedUser = localStorage.getItem('ruchirush_active_user');
-    if (cachedUser) {
-      try {
-        setCurrentUser(JSON.parse(cachedUser));
-      } catch (e) {
-        localStorage.removeItem('ruchirush_active_user');
-      }
-    }
-
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('eat_portal') === 'true') {
@@ -67,29 +60,7 @@ export default function Home() {
       setTimeout(() => setShowCookieBanner(true), 2500);
     }
 
-    // 2. Firebase Auth Listener
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        try {
-          // Fetch custom user profile (role, chefId, etc.) from backend
-          const res = await fetch(`/api/users?email=${encodeURIComponent(fbUser.email)}`);
-          if (res.ok) {
-            const profile = await res.json();
-            if (profile) {
-              setCurrentUser(profile);
-              localStorage.setItem('ruchirush_active_user', JSON.stringify(profile));
-            }
-          }
-        } catch (e) {
-          console.error("Auth listener backend sync error:", e);
-        }
-      } else {
-        setCurrentUser(null);
-        localStorage.removeItem('ruchirush_active_user');
-      }
-    });
-
-    // 3. Scroll listener for WhatsApp FAB
+    // Scroll listener for WhatsApp FAB
     let lastScroll = 0;
     const handleScroll = () => {
       const curr = window.scrollY;
@@ -105,29 +76,28 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      unsubscribe();
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      const oldName = currentUser?.name || 'User';
-      await signOut(auth);
-      setCurrentUser(null);
-      localStorage.removeItem('ruchirush_active_user');
-      setActiveView('landing');
-      showToast(`Logged out successfully. See you again, ${oldName}!`, 'info');
-    } catch (err) {
-      console.error(err);
-      showToast("Logout failed.", "error");
+  const handleWaitlistSubmit = (e) => {
+    e.preventDefault();
+    if (!waitlistName || !waitlistEmail) {
+      showToast("Please fill in all details.", "error");
+      return;
     }
-  };
-
-  const handleAuthSuccess = (profile) => {
-    setCurrentUser(profile);
-    localStorage.setItem('ruchirush_active_user', JSON.stringify(profile));
-    showToast(`Welcome back, ${profile.name}!`, 'success');
+    
+    // Create WhatsApp/Email prefilled submission details
+    const subject = "Ruchi Rush Customer Waitlist Join";
+    const body = `Hi Ruchi Rush team! I would like to join the customer waitlist:\n\nName: ${waitlistName}\nEmail: ${waitlistEmail}\nLocation: ${waitlistLocation}`;
+    
+    // Propose options to the user
+    showToast("Opening WhatsApp to submit your details...", "success");
+    const waUrl = `https://wa.me/919908574741?text=${encodeURIComponent(body)}`;
+    window.open(waUrl, "_blank");
+    
+    setWaitlistName('');
+    setWaitlistEmail('');
   };
 
   const acceptCookies = () => {
@@ -149,9 +119,9 @@ export default function Home() {
       <Header 
         activeView={activeView}
         navigate={setActiveView}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        openAuthModal={(tab) => setAuthModal({ isOpen: true, tab })}
+        currentUser={null} // No logged-in user
+        onLogout={() => {}}
+        openAuthModal={() => {}}
       />
 
       {/* Main portal render view router */}
@@ -159,19 +129,70 @@ export default function Home() {
         {activeView === 'landing' && (
           <Landing 
             navigate={setActiveView}
-            openAuthModal={(tab) => setAuthModal({ isOpen: true, tab })}
+            openAuthModal={() => showToast("Login is currently disabled.", "info")}
             openLegalModal={(policyType) => setLegalModal({ isOpen: true, policyType })}
             Toast={ToastHelper}
           />
         )}
         
         {activeView === 'customer-portal' && (
-          <CustomerPortal 
-            currentUser={currentUser}
-            Toast={ToastHelper}
-            navigate={setActiveView}
-            openAuthModal={(tab) => setAuthModal({ isOpen: true, tab })}
-          />
+          <section className="min-h-screen pt-32 pb-20 px-6 flex items-center justify-center bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)">
+            <div className="max-w-md w-full bg-white border border-stone-200 rounded-3xl p-8 shadow-xl text-center space-y-6 animate-fade-in hover:shadow-2xl transition-shadow">
+              <span className="text-6xl block">🍲</span>
+              <h2 className="font-h1 text-3xl font-bold text-primary font-['Newsreader']">Coming Soon!</h2>
+              <p className="text-sm text-black leading-relaxed">
+                We are currently onboarding the finest certified home chefs in Hyderabad to bring authentic, warm homemade food to your table.
+              </p>
+              
+              <div className="border-t border-[#9E3400] pt-6 space-y-4">
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Join our launch waitlist</p>
+                <form onSubmit={handleWaitlistSubmit} className="space-y-3">
+                  <input 
+                    type="text" 
+                    placeholder="Your Full Name" 
+                    required 
+                    value={waitlistName}
+                    onChange={e => setWaitlistName(e.target.value)}
+                    className="w-full bg-white border border-stone-200 rounded-full px-5 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900"
+                  />
+                  <input 
+                    type="email" 
+                    placeholder="Your Email Address" 
+                    required 
+                    value={waitlistEmail}
+                    onChange={e => setWaitlistEmail(e.target.value)}
+                    className="w-full bg-white border border-stone-200 rounded-full px-5 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900"
+                  />
+                  <select 
+                    value={waitlistLocation} 
+                    onChange={e => setWaitlistLocation(e.target.value)}
+                    className="w-full bg-white border border-stone-200 rounded-full px-5 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                  >
+                    <option value="Gachibowli">Gachibowli, Hyd</option>
+                    <option value="Madhapur">Madhapur, Hyd</option>
+                    <option value="Jubilee Hills">Jubilee Hills, Hyd</option>
+                    <option value="Kondapur">Kondapur, Hyd</option>
+                    <option value="Hi-Tech City">Hi-Tech City, Hyd</option>
+                  </select>
+                  <button 
+                    type="submit" 
+                    className="w-full bg-primary text-white py-2.5 rounded-full font-bold text-xs hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer shadow-md"
+                  >
+                    Get Notified on Launch
+                  </button>
+                </form>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  onClick={() => setActiveView('landing')}
+                  className="text-stone-500 hover:text-stone-700 text-xs font-semibold underline cursor-pointer"
+                >
+                  Back to Homepage
+                </button>
+              </div>
+            </div>
+          </section>
         )}
         
         {activeView === 'chef-portal' && (
@@ -179,15 +200,15 @@ export default function Home() {
             currentUser={currentUser}
             Toast={ToastHelper}
             navigate={setActiveView}
-            onAuthSuccess={handleAuthSuccess}
-            openAuthModal={(tab) => setAuthModal({ isOpen: true, tab })}
+            onAuthSuccess={() => {}}
+            openAuthModal={() => {}}
           />
         )}
       </main>
 
       {/* Floating Action Button (WhatsApp) */}
       <a 
-        href="https://wa.me/919999999999?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question." 
+        href="https://wa.me/919908574741?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question%20about%20ordering%20or%20joining." 
         target="_blank" 
         rel="noopener noreferrer"
         id="whatsappFab" 
@@ -211,7 +232,7 @@ export default function Home() {
           className="fixed bottom-6 left-6 max-w-sm z-[9999] bg-stone-900 text-stone-100 rounded-2xl p-5 shadow-2xl border border-stone-800 transition-transform duration-500"
         >
           <p className="text-xs leading-relaxed mb-3">
-            Ruchi Rush uses local cookies to save your home delivery address, active cart selections, and secure chef session profiles for peak usability. Learn more in our{' '}
+            Ruchi Rush uses local cookies to save your settings for peak usability. Learn more in our{' '}
             <button 
               onClick={() => setLegalModal({ isOpen: true, policyType: 'privacy' })}
               className="underline text-orange-400 font-semibold cursor-pointer"
@@ -255,14 +276,6 @@ export default function Home() {
         })}
       </div>
 
-      {/* Auth Modal Trigger */}
-      <AuthModal 
-        isOpen={authModal.isOpen}
-        initialTab={authModal.tab}
-        onClose={() => setAuthModal({ isOpen: false, tab: 'login' })}
-        onAuthSuccess={handleAuthSuccess}
-      />
-
       {/* Legal Document Modal */}
       <LegalModal 
         isOpen={legalModal.isOpen}
@@ -272,3 +285,4 @@ export default function Home() {
     </div>
   );
 }
+

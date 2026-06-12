@@ -28,25 +28,25 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
   const testimonials = [
     {
-      name: "Rahul Sai",
+      name: "Nagamani Kamatam",
       role: "Customer from Gachibowli",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop",
+      avatar: "https://static.vecteezy.com/system/resources/previews/029/197/032/non_2x/icon-of-social-media-avatar-girl-indian-girl-from-india-indian-culture-portrait-of-a-young-woman-of-national-image-flat-graphic-illustration-vector.jpg",
       rating: 5,
       date: "May 28, 2026",
       quote: "The spicy parotta and egg curry from Priya's Godavari Kitchen was amazing. Tasted exactly like the meals my grandmother cooks back home in Godavari. Verified hygiene scores give me total peace of mind!"
     },
     {
-      name: "Sneha Reddy",
+      name: "Nasleen Sheik",
       role: "Customer from Madhapur",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop",
+      avatar: "https://img.freepik.com/premium-vector/beautiful-indian-woman-sari-indian-woman-wearing-saree_726899-98.jpg",
       rating: 5,
       date: "June 2, 2026",
       quote: "As a busy software engineer working in Madhapur, I was tired of ordering oily restaurant food. Finding Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily."
     },
     {
-      name: "Karthik Vignesh",
+      name: "Arjun Reddy",
       role: "Customer from Jubilee Hills",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop",
+      avatar: "https://static.vecteezy.com/system/resources/thumbnails/051/187/635/small_2x/demure-indian-man-in-cardigan-with-white-shirt-2d-linear-avatar-illustration-south-asian-guy-cartoon-character-face-portrait-head-and-shoulders-round-frame-flat-user-profile-image-isolated-vector.jpg",
       rating: 5,
       date: "June 5, 2026",
       quote: "Srinivas Reddy's Hyderabadi Dum Biryani is authentic slow-cooked gold. You can smell the pure ghee and whole spices the moment you unbox it. The live courier tracking is super reliable."
@@ -65,54 +65,54 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
     const heroCtx = gsap.context(() => {
       const heroTl = gsap.timeline({ delay: 0.2 });
 
-      heroTl.fromTo(".hero-word-from-home", 
+      heroTl.fromTo(".hero-word-from-home",
         { y: -60, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.5)" }
       );
-      
-      heroTl.fromTo(".hero-word-kitchens", 
+
+      heroTl.fromTo(".hero-word-kitchens",
         { scale: 0.3, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.9, ease: "elastic.out(1, 0.5)" },
         "-=0.5"
       );
-      
-      heroTl.fromTo(".hero-word-to-home", 
+
+      heroTl.fromTo(".hero-word-to-home",
         { y: 60, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.5)" },
         "-=0.6"
       );
-      
-      heroTl.fromTo(".hero-media-col.chef-side", 
+
+      heroTl.fromTo(".hero-media-col.chef-side",
         { x: -120, opacity: 0, rotate: -20 },
         { x: 0, opacity: 1, rotate: -5, duration: 1.2, ease: "power4.out" },
         "-=0.7"
       );
-      
-      heroTl.fromTo(".hero-media-col.customer-side", 
+
+      heroTl.fromTo(".hero-media-col.customer-side",
         { x: 120, opacity: 0, rotate: 20 },
         { x: 0, opacity: 1, rotate: 0, duration: 1.2, ease: "power4.out" },
         "-=1.2"
       );
-      
-      heroTl.fromTo(".hero-subheading", 
+
+      heroTl.fromTo(".hero-subheading",
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8 },
         "-=0.8"
       );
-      
-      heroTl.fromTo(".hero-cta-buttons", 
+
+      heroTl.fromTo(".hero-cta-buttons",
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
         "-=0.6"
       );
-      
-      heroTl.fromTo(".trust-badge", 
+
+      heroTl.fromTo(".trust-badge",
         { y: 15, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6, stagger: 0.15, ease: "power2.out" },
         "-=0.4"
       );
-      
-      heroTl.fromTo(".hero-trust-indicators", 
+
+      heroTl.fromTo(".hero-trust-indicators",
         { opacity: 0 },
         { opacity: 1, duration: 0.6 },
         "-=0.8"
@@ -150,14 +150,14 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         duration: 1,
         ease: "power2.out"
       });
-      
+
       gsap.to(heroSection.querySelector(".hero-text-col"), {
         x: x * 12,
         y: y * 12,
         duration: 1,
         ease: "power2.out"
       });
-      
+
       gsap.to(heroSection.querySelectorAll(".hero-media-col"), {
         x: x * -20,
         y: y * -20,
@@ -227,7 +227,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       cards.forEach((card, index) => {
         masterTl.addLabel("step-" + index);
         const stepTl = gsap.timeline();
-        
+
         stepTl.to(card, {
           opacity: 1,
           scale: 1.02,
@@ -275,7 +275,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         vid.classList.add("active-media");
         const playPromise = vid.play();
         if (playPromise !== undefined) {
-          playPromise.catch(() => {});
+          playPromise.catch(() => { });
         }
       } else {
         vid.classList.remove("active-media");
@@ -329,11 +329,11 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
   return (
     <div id="landing-view" className="transition-all duration-300">
-      
+
       {/* SECTION 1: STORYTELLING HERO */}
-      <section 
+      <section
         ref={heroRef}
-        id="hero-storytelling" 
+        id="hero-storytelling"
         className="relative overflow-hidden pt-28 pb-12 px-6 flex items-center justify-center min-h-[95vh] bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)"
         style={{
           backgroundImage: `radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%), url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
@@ -388,8 +388,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <div className="hero-media-col chef-side parallax-mid opacity-0 hidden lg:block">
             <div className="chef-hat-wrapper">
               <svg className="chef-hat-svg-outline" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M 28,85 C 45,92 60,92 78,83 L 78,55 C 92,55 98,42 88,30 C 80,20 70,8 60,8 C 45,8 35,18 28,22 C 18,25 5,38 8,50 C 10,58 20,58 28,58 Z" 
-                      fill="none" stroke="rgba(255, 127, 50, 0.4)" strokeWidth="1.5" strokeDasharray="2,2" className="chef-hat-dashed-outline" />
+                <path d="M 28,85 C 45,92 60,92 78,83 L 78,55 C 92,55 98,42 88,30 C 80,20 70,8 60,8 C 45,8 35,18 28,22 C 18,25 5,38 8,50 C 10,58 20,58 28,58 Z"
+                  fill="none" stroke="rgba(255, 127, 50, 0.4)" strokeWidth="1.5" strokeDasharray="2,2" className="chef-hat-dashed-outline" />
                 <path d="M 28,58 C 45,65 60,65 78,55" fill="none" stroke="rgba(255, 127, 50, 0.3)" strokeWidth="1.5" strokeDasharray="2,2" />
                 <path d="M 38,59 C 34,45 38,30 42,22" fill="none" stroke="rgba(255, 127, 50, 0.25)" strokeWidth="1.2" strokeDasharray="2,2" />
                 <path d="M 48,61 C 46,42 50,30 52,15" fill="none" stroke="rgba(255, 127, 50, 0.25)" strokeWidth="1.2" strokeDasharray="2,2" />
@@ -412,30 +412,30 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
               <span className="hero-word-kitchens font-h1 text-6xl md:text-7xl lg:text-8xl font-black text-primary block my-1 md:my-2 opacity-0">KITCHENS</span>
               <span className="hero-word-to-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">TO YOUR HOME</span>
             </h1>
-            
+
             <p className="hero-subheading font-body-lg text-body-lg text-on-surface-variant my-8 max-w-xl mx-auto leading-relaxed opacity-0">
               Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that cares.
             </p>
-            
+
             <div className="hero-cta-buttons flex flex-col sm:flex-row gap-6 justify-center w-full sm:w-auto opacity-0 z-10">
-              <button 
+              <button
                 onClick={() => navigate('customer-portal')}
                 className="eat-trigger flex items-center justify-center gap-2 bg-primary p-4 px-8 rounded-full text-white font-bold transition-transform hover:scale-105 active:scale-95 shadow-xl hover:shadow-primary/20 cursor-pointer"
               >
                 I WANT TO EAT
                 <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3J1N3o2cmE0YWkxNXF5NGFwNmF1eHM4ZHJ5NTF0dGxpajkzMHBxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/jUuhj2J2sYgV7VsW5h/giphy.gif"
-                     width="30" height="30" className="brightness-0 invert" alt="eat icon" />
+                  width="30" height="30" className="brightness-0 invert" alt="eat icon" />
               </button>
-              <button 
+              <button
                 onClick={() => navigate('chef-portal')}
                 className="cook-trigger flex items-center justify-center gap-2 bg-white/80 backdrop-blur-md p-4 px-8 rounded-full text-primary font-bold border border-primary/25 transition-transform hover:scale-105 active:scale-95 shadow-xl hover:bg-white cursor-pointer"
               >
                 I WANT TO COOK
                 <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG44YWZta2l3bWNzeGxxMmh3aHRvOTdneDR3YXRqaDJ1MGlrbzAzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJJhxzipvPyi5zyOvT/giphy.gif"
-                     width="30" height="30" alt="cook icon" />
+                  width="30" height="30" alt="cook icon" />
               </button>
             </div>
-            
+
             <div className="hero-trust-indicators mt-9 w-full max-w-2xl flex flex-wrap justify-center items-center gap-x-8 gap-y-4 border-t border-primary/10 pt-8 opacity-0">
               <div className="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
                 <span className="material-symbols-outlined text-2xl text-primary">verified</span>
@@ -495,7 +495,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 </li>
               </ul>
             </div>
-            
+
             {/* Ruchi Rush */}
             <div className="why-right bg-gradient-to-br from-orange-50 to-orange-100/50 p-8 rounded-2xl border-2 border-primary/20 shadow-xl flex flex-col gap-4">
               <div className="flex justify-between items-start">
@@ -528,12 +528,12 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
             <div className="md:col-span-2 md:row-span-2 bg-white rounded-2xl p-6 overflow-hidden flex flex-col shadow-sm border border-stone-200 group">
               <img className="w-full h-2/3 object-cover rounded-xl mb-4 transition-transform group-hover:scale-105"
-                   src="https://t4.ftcdn.net/jpg/02/84/46/89/360_F_284468940_1bg6BwgOfjCnE3W0wkMVMVqddJgtMynE.jpg"
-                   alt="Authentic home cooked stews and curries" />
+                src="https://t4.ftcdn.net/jpg/02/84/46/89/360_F_284468940_1bg6BwgOfjCnE3W0wkMVMVqddJgtMynE.jpg"
+                alt="Authentic home cooked stews and curries" />
               <h3 className="font-h3 text-xl mb-1">Pre-order meals</h3>
               <p className="font-body-md text-stone-600">Reserve authentic dishes 24h in advance for peak freshness and personalization.</p>
             </div>
-            
+
             <div className="md:col-span-2 bg-orange-100/40 rounded-2xl p-6 flex items-center justify-between border border-primary/5">
               <div>
                 <h3 className="font-h3 text-xl mb-1 text-primary">Office meal plans</h3>
@@ -541,17 +541,17 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
               </div>
               <span className="material-symbols-outlined text-5xl text-primary/80">corporate_fare</span>
             </div>
-            
+
             <div className="bg-primary/90 rounded-2xl p-6 flex flex-col justify-end text-white shadow-lg">
               <span className="material-symbols-outlined text-4xl mb-2">groups</span>
               <h3 className="font-bold uppercase mb-1 text-xs tracking-wider">Community Circles</h3>
               <p className="text-sm text-orange-50">Join local neighborhood food swaps and cookouts.</p>
             </div>
-            
+
             <div className="bg-white rounded-2xl p-6 border border-stone-200 flex flex-col justify-end shadow-sm">
               <img className="w-12 h-12 rounded-full object-cover mb-3"
-                   src="https://thumbs.dreamstime.com/b/cartoon-chef-hat-orange-background-playful-cartoon-chef-hat-bright-orange-background-424160968.jpg"
-                   alt="Verified chef badge" />
+                src="https://thumbs.dreamstime.com/b/cartoon-chef-hat-orange-background-playful-cartoon-chef-hat-bright-orange-background-424160968.jpg"
+                alt="Verified chef badge" />
               <h3 className="font-bold uppercase mb-1 text-xs tracking-wider text-stone-500">Chef Profiles</h3>
               <p className="text-sm text-stone-600">Meet the local hands and hearts that prepare your food.</p>
             </div>
@@ -587,18 +587,18 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       <section ref={howWorksRef} className="pt-20 pb-12 px-6 bg-white" id="how-it-works">
         <div className="max-w-7xl p-6 mx-auto">
           <h2 className="how-works-title text-4xl font-bold font-['Newsreader'] text-center mb-10 text-on-primary-fixed-variant">How Ruchi Rush Works</h2>
-          
+
           <div className="how-works-grid">
             {/* Sticky Media Column */}
             <div className="how-works-media-col">
               <div className="how-works-media-wrapper">
                 {stepVideos.map((url, idx) => (
-                  <video 
+                  <video
                     key={idx}
                     ref={el => videoRefs.current[idx] = el}
-                    className="how-works-video" 
-                    muted 
-                    playsInline 
+                    className="how-works-video"
+                    muted
+                    playsInline
                     preload="none"
                   >
                     <source src={url} type="video/mp4" />
@@ -645,10 +645,10 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Loved by Neighbors, Made by Hand</h2>
             <p className="text-sm text-stone-500 mt-3 font-body-md">See why families and professionals across Hyderabad trust Ruchi Rush for daily home cooking.</p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((t, idx) => (
-              <div 
+              <div
                 key={idx}
                 className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col justify-between hover:shadow-md transition-shadow relative"
               >
@@ -663,7 +663,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                     "{t.quote}"
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-4 mt-8 pt-4 border-t border-stone-100 dark:border-stone-800">
                   <img src={t.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-primary/10" alt={t.name} />
                   <div>
@@ -680,9 +680,9 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* SECTION 7: QUOTE BAR */}
       <section className="relative h-[360px] flex items-center justify-center overflow-hidden">
         <img className="absolute inset-0 w-full h-full object-cover scale-110"
-             src="https://res.cloudinary.com/dt79nhjkc/image/upload/v1780571501/cld-sample-2.png"
-             alt="Delicious table spread" />
-        <div className="absolute inset-0 bg-stone-950/50 backdrop-blur-[2px]"></div>
+          src="https://img.magnific.com/free-photo/healthy-lunch-meal-with-cooked-beef-curry-generated-by-ai_188544-38833.jpg?semt=ais_hybrid&w=740&q=80"
+          alt="Delicious table spread" />
+        <div className="absolute inset-0 bg-stone-950/50 backdrop-blur-[4px]"></div>
         <div className="relative z-10 text-center text-white px-6 max-w-2xl">
           <blockquote className="font-h1 text-4xl italic mb-4">"Food is not just eaten. It is felt."</blockquote>
           <p className="font-bold tracking-widest text-xs uppercase text-orange-200">— THE RUCHI RUSH PHILOSOPHY</p>
@@ -690,77 +690,79 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       </section>
 
       {/* SECTION 8: OUR PROMISE TO HOME CHEFS */}
-      <section className="py-20 px-6 max-w-7xl mx-auto border-t border-primary/10" id="chef-promise">
-        <div className="text-center max-w-xl mx-auto mb-16">
-          <span className="text-primary font-bold uppercase tracking-widest text-xs">Our Commitment</span>
-          <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Our Promise to Home Chefs</h2>
-          <p className="text-sm text-stone-500 mt-3 font-body-md">We believe in a fair, community-first food economy. Here is our pledge to every culinary partner on our platform.</p>
-        </div>
+      <div id="chef-promise">
+        <section className="py-20 px-6 max-w-7xl mx-auto border-t border-primary/10">
+          <div className="text-center max-w-xl mx-auto mb-16">
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">Our Commitment</span>
+            <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Our Promise to Home Chefs</h2>
+            <p className="text-sm text-stone-500 mt-3 font-body-md">We believe in a fair, community-first food economy. Here is our pledge to every culinary partner on our platform.</p>
+          </div>
 
-        <div className="grid lg:grid-cols-12 gap-10 items-center">
-          {/* Left Side: Visual Commission Graph Card */}
-          <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-stone-200 shadow-sm space-y-6">
-            <h3 className="font-h3 text-xl font-bold text-stone-900">Why Chefs Earn More</h3>
-            <p className="text-xs text-stone-600 leading-relaxed font-body-md">
-              We keep our operational costs low and pass the savings back to our neighborhood partners.
-            </p>
-            
-            {/* Commission bars comparison */}
-            <div className="space-y-4 pt-2">
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs font-bold text-stone-500">
-                  <span>Other Apps Commission</span>
-                  <span className="text-red-600">30%</span>
+          <div className="grid lg:grid-cols-12 gap-10 items-center">
+            {/* Left Side: Visual Commission Graph Card */}
+            <div className="lg:col-span-5 bg-white p-8 rounded-2xl border border-stone-200 shadow-sm space-y-6">
+              <h3 className="font-h3 text-xl font-bold text-stone-900">Why Chefs Earn More</h3>
+              <p className="text-xs text-stone-600 leading-relaxed font-body-md">
+                We keep our operational costs low and pass the savings back to our neighborhood partners.
+              </p>
+
+              {/* Commission bars comparison */}
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-stone-500">
+                    <span>Other Apps Commission</span>
+                    <span className="text-red-600">30%</span>
+                  </div>
+                  <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
+                    <div className="bg-red-500 h-full rounded-full" style={{ width: '30%' }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
-                  <div className="bg-red-500 h-full rounded-full" style={{ width: '30%' }}></div>
+
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-stone-850">
+                    <span>Ruchi Rush Commission</span>
+                    <span className="text-primary">8%</span>
+                  </div>
+                  <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
+                    <div className="bg-primary h-full rounded-full" style={{ width: '8%' }}></div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs font-bold text-stone-850">
-                  <span>Ruchi Rush Commission</span>
-                  <span className="text-primary">8%</span>
-                </div>
-                <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
-                  <div className="bg-primary h-full rounded-full" style={{ width: '8%' }}></div>
-                </div>
+              <div className="pt-4 border-t border-stone-200 text-center">
+                <span className="text-xs font-black text-primary">Chefs Retain 92% of Sales Payouts!</span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-stone-200 text-center">
-              <span className="text-xs font-black text-primary">Chefs Retain 92% of Sales Payouts!</span>
+            {/* Right Side: Promise Items Grid */}
+            <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-3xl text-primary">account_balance_wallet</span>
+                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">92% Chef Payouts</h4>
+                <p className="text-xs text-stone-500 leading-relaxed font-body-md">You keep 92% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
+              </div>
+
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-3xl text-primary">verified_user</span>
+                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Vetted Culinary Trust</h4>
+                <p className="text-xs text-stone-500 leading-relaxed font-body-md">We verify your kitchen safety and FSSAI credentials to build premium neighborhood trust and brand recognition.</p>
+              </div>
+
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-3xl text-primary">schedule</span>
+                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Complete Autonomy</h4>
+                <p className="text-xs text-stone-500 leading-relaxed font-body-md">You decide your own menu, set your own pricing, select prep slots, and open/close your kitchen at your convenience.</p>
+              </div>
+
+              <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
+                <span className="material-symbols-outlined text-3xl text-primary">local_shipping</span>
+                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Doorstep Courier Pickup</h4>
+                <p className="text-xs text-stone-500 leading-relaxed font-body-md">Focus purely on cooking. Vetted local couriers pick up orders directly from your doorstep and deliver them in insulated bags.</p>
+              </div>
             </div>
           </div>
-
-          {/* Right Side: Promise Items Grid */}
-          <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
-            <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
-              <span className="material-symbols-outlined text-3xl text-primary">account_balance_wallet</span>
-              <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">92% Chef Payouts</h4>
-              <p className="text-xs text-stone-500 leading-relaxed font-body-md">You keep 92% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
-            </div>
-
-            <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
-              <span className="material-symbols-outlined text-3xl text-primary">verified_user</span>
-              <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Vetted Culinary Trust</h4>
-              <p className="text-xs text-stone-500 leading-relaxed font-body-md">We verify your kitchen safety and FSSAI credentials to build premium neighborhood trust and brand recognition.</p>
-            </div>
-
-            <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
-              <span className="material-symbols-outlined text-3xl text-primary">schedule</span>
-              <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Complete Autonomy</h4>
-              <p className="text-xs text-stone-500 leading-relaxed font-body-md">You decide your own menu, set your own pricing, select prep slots, and open/close your kitchen at your convenience.</p>
-            </div>
-
-            <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-md transition-shadow">
-              <span className="material-symbols-outlined text-3xl text-primary">local_shipping</span>
-              <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">Doorstep Courier Pickup</h4>
-              <p className="text-xs text-stone-500 leading-relaxed font-body-md">Focus purely on cooking. Vetted local couriers pick up orders directly from your doorstep and deliver them in insulated bags.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* SECTION 8.5: DOWNLOAD APP NOW (PLAYSTORE APP ANIMATION) */}
       <section className="py-20 px-6 bg-gradient-to-br from-[#ffeae0] to-[#fff8f6] text-stone-900 relative overflow-hidden border-t border-primary/5" id="download-app">
@@ -779,7 +781,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-4">
               {/* Mock PlayStore Button */}
-              <a 
+              <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); Toast.show("App downloading starts shortly...", "success"); }}
                 className="bg-black border border-stone-850 hover:bg-stone-900 text-white flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
@@ -794,7 +796,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
               </a>
 
               {/* Mock AppStore Button */}
-              <a 
+              <a
                 href="#"
                 onClick={(e) => { e.preventDefault(); Toast.show("App downloading starts shortly...", "success"); }}
                 className="bg-black border border-stone-850 hover:bg-stone-900 text-white flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
@@ -819,7 +821,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
               {/* In-app mockup wrapper */}
               <div className="relative w-full h-full bg-[#fff8f6] rounded-[30px] overflow-hidden flex flex-col p-4 z-10 justify-between border border-stone-100">
-                
+
                 {/* Mock header */}
                 <div className="flex justify-between items-center text-[10px] text-stone-500">
                   <span className="font-bold">Ruchi Rush Live</span>
@@ -872,7 +874,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 </div>
 
                 {/* Action button inside app mock */}
-                <button 
+                <button
                   onClick={() => Toast.show("PWA installation triggered!", "info")}
                   className="w-full bg-primary text-white text-[9px] py-2 rounded-full font-bold shadow-md active:scale-95 transition-transform cursor-pointer"
                 >
@@ -905,45 +907,45 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <span className="font-body-md font-semibold">Hyderabad, Telangana</span>
               </div>
               <a href="https://wa.me/919999999999?text=Hi%20Ruchi%20Rush!%20I%20have%20a%20question."
-                 target="_blank" rel="noopener noreferrer"
-                 className="flex items-center gap-2 mt-6 bg-[#25D366] text-white px-6 py-3 rounded-full w-fit transition-transform hover:scale-105 active:scale-95 shadow-md font-semibold text-sm cursor-pointer"
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 mt-6 bg-[#25D366] text-white px-6 py-3 rounded-full w-fit transition-transform hover:scale-105 active:scale-95 shadow-md font-semibold text-sm cursor-pointer"
               >
                 <span className="material-symbols-outlined">chat</span>
                 Chat on WhatsApp
               </a>
             </div>
           </div>
-          
+
           <form onSubmit={handleContactSubmit} className="p-10 space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="firstName">First Name</label>
                 <input id="firstName" name="firstName" type="text" required placeholder="Jane"
-                       value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="lastName">Last Name</label>
                 <input id="lastName" name="lastName" type="text" required placeholder="Doe"
-                       value={lastName} onChange={(e) => setLastName(e.target.value)}
-                       className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  value={lastName} onChange={(e) => setLastName(e.target.value)}
+                  className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="email">Email Address</label>
               <input id="email" name="email" type="email" required placeholder="jane@example.com"
-                     value={email} onChange={(e) => setEmail(e.target.value)}
-                     className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white border border-stone-200 rounded-full px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500" htmlFor="message">Message</label>
               <textarea id="message" name="message" required rows="4" placeholder="Tell us what's on your mind..."
-                        value={message} onChange={(e) => setMessage(e.target.value)}
-                        className="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                value={message} onChange={(e) => setMessage(e.target.value)}
+                className="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
 
             <button id="submitBtn" type="submit" disabled={sending}
-                    className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm transition-transform active:scale-95 hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full bg-primary text-white py-3 rounded-full font-bold text-sm transition-transform active:scale-95 hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
               <span>{sending ? 'Sending...' : 'Send Message'}</span>
               {sending && (
@@ -955,7 +957,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 </span>
               )}
             </button>
-            
+
             {formSuccess && (
               <div className="text-center py-2 px-4 bg-green-50 text-green-700 rounded-full text-xs font-semibold border border-green-100 animate-fade-in">
                 ✅ Message sent! We'll reply within 24 hours.
@@ -971,22 +973,28 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       </section>
 
       {/* FOOTER */}
-      <footer className="footer w-full py-16 px-8 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-primary/10 bg-[#fff8f6] text-stone-750">
+      <footer className="footer w-full py-8 px-8 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-primary/10 bg-[#fff8f6] text-stone-750">
         <div className="flex flex-col items-center md:items-start gap-2">
           <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">Ruchi Rush</span>
           <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 Ruchi Rush. Made with love.</span>
         </div>
         <div>
           <h1 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-2">Follow Us</h1>
-          <div className="flex gap-4">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-primary transition-colors font-medium">
-              Facebook
+          <div className="flex gap-2 items-center">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-stone-700 hover:text-primary transition-colors p-2" aria-label="Facebook">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z" />
+              </svg>
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-primary transition-colors font-medium">
-              Instagram
+            <a href="https://www.instagram.com/ruchirush_india?igsh=MWttZ3Z1dmlweWhlOA==" target="_blank" rel="noopener noreferrer" className="text-stone-700 hover:text-primary transition-colors p-2" aria-label="Instagram">
+              <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+              </svg>
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-primary transition-colors font-medium">
-              Twitter
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-stone-700 hover:text-primary transition-colors p-2" aria-label="Twitter">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
             </a>
           </div>
         </div>

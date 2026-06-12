@@ -44,7 +44,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       quote: "As a busy software engineer working in Madhapur, I was tired of ordering oily restaurant food. Finding Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily."
     },
     {
-      name: "Arjun Reddy",
+      name: "Srinivas Reddy",
       role: "Customer from Jubilee Hills",
       avatar: "https://static.vecteezy.com/system/resources/thumbnails/051/187/635/small_2x/demure-indian-man-in-cardigan-with-white-shirt-2d-linear-avatar-illustration-south-asian-guy-cartoon-character-face-portrait-head-and-shoulders-round-frame-flat-user-profile-image-isolated-vector.jpg",
       rating: 5,
@@ -214,45 +214,18 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       const cards = gsap.utils.toArray(".how-works-step-card");
       if (cards.length === 0) return;
 
-      const masterTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: ".how-works-grid",
-          start: "top 45%",
-          end: "bottom 55%",
-          scrub: true,
-          pin: false
-        }
-      });
-
       cards.forEach((card, index) => {
-        masterTl.addLabel("step-" + index);
-        const stepTl = gsap.timeline();
-
-        stepTl.to(card, {
-          opacity: 1,
-          scale: 1.02,
-          borderColor: "rgba(158, 67, 0, 0.3)",
-          backgroundColor: "rgba(255, 255, 255, 0.7)",
-          boxShadow: "0 12px 30px rgba(158, 67, 0, 0.08)",
-          duration: 0.5,
-          onStart: () => {
+        ScrollTrigger.create({
+          trigger: card,
+          start: "top 55%",
+          end: "bottom 45%",
+          onEnter: () => {
+            setActiveStep(index);
+          },
+          onEnterBack: () => {
             setActiveStep(index);
           }
         });
-
-        if (index > 0) {
-          stepTl.to(cards[index - 1], {
-            opacity: 0.5,
-            scale: 0.96,
-            borderColor: "rgba(255, 255, 255, 0.3)",
-            backgroundColor: "rgba(255, 255, 255, 0.3)",
-            boxShadow: "0 4px 20px rgba(158, 67, 0, 0.02)",
-            duration: 0.3
-          }, "-=0.5");
-        }
-
-        masterTl.add(stepTl);
-        masterTl.to({}, { duration: 0.5 }); // spacing pause
       });
     }, howWorksRef);
 
@@ -284,6 +257,16 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       }
     });
   }, [activeStep]);
+
+  const handleStepClick = (index) => {
+    setActiveStep(index);
+    const card = document.querySelectorAll('.how-works-step-card')[index];
+    if (card) {
+      const offset = window.innerHeight / 2 - card.offsetHeight / 2;
+      const top = card.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
 
   // Contact Form Submission AJAX
   const handleContactSubmit = async (e) => {
@@ -527,7 +510,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <h2 className="font-h2 text-4xl text-center mb-12 font-bold text-on-primary-fixed-variant">What we offer</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
             <div className="md:col-span-2 md:row-span-2 bg-white rounded-2xl p-6 overflow-hidden flex flex-col shadow-sm border border-stone-200 group">
-              <img className="w-full h-2/3 object-cover rounded-xl mb-4 transition-transform group-hover:scale-105"
+              <img className="w-full h-2/3 object-cover rounded-xl mb-4 transition-transform"
                 src="https://t4.ftcdn.net/jpg/02/84/46/89/360_F_284468940_1bg6BwgOfjCnE3W0wkMVMVqddJgtMynE.jpg"
                 alt="Authentic home cooked stews and curries" />
               <h3 className="font-h3 text-xl mb-1">Pre-order meals</h3>
@@ -567,18 +550,27 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             We don't just vet the food; we know the people. Every kitchen is inspected and every chef is certified for safety, passion, and heritage.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <div className="flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm">
+            <button 
+              className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
+              style={{ animationDelay: '0s' }}
+            >
               <span className="material-symbols-outlined text-primary">verified_user</span>
               <span className="font-semibold text-sm text-stone-800">Inspected Kitchens</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm">
+            </button>
+            <button 
+              className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
+              style={{ animationDelay: '0.4s' }}
+            >
               <span className="material-symbols-outlined text-primary">health_and_safety</span>
               <span className="font-semibold text-sm text-stone-800">Hygiene Certified</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm">
+            </button>
+            <button 
+              className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
+              style={{ animationDelay: '0.8s' }}
+            >
               <span className="material-symbols-outlined text-primary">contact_page</span>
               <span className="font-semibold text-sm text-stone-800">Identity Verified</span>
-            </div>
+            </button>
           </div>
         </section>
       </div>
@@ -609,25 +601,25 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
             {/* Steps Column */}
             <div className="how-works-steps-col">
-              <div className={`how-works-step-card ${activeStep === 0 ? 'active-step' : ''}`} onClick={() => setActiveStep(0)}>
+              <div className={`how-works-step-card ${activeStep === 0 ? 'active-step' : ''}`} onClick={() => handleStepClick(0)}>
                 <div className="step-badge">1</div>
                 <h3 className="font-h3 text-xl mb-1 font-semibold text-stone-900">Browse & Order</h3>
                 <p className="font-body-md text-stone-600">Explore authentic meals from certified home chefs in your local neighborhood and place your order instantly.</p>
               </div>
 
-              <div className={`how-works-step-card ${activeStep === 1 ? 'active-step' : ''}`} onClick={() => setActiveStep(1)}>
+              <div className={`how-works-step-card ${activeStep === 1 ? 'active-step' : ''}`} onClick={() => handleStepClick(1)}>
                 <div className="step-badge">2</div>
                 <h3 className="font-h3 text-xl mb-1 font-semibold text-stone-900">Chef Prepares</h3>
                 <p className="font-body-md text-stone-600">Our checked home chefs source fresh ingredients and prepare your meal with traditional home-cooked love and care.</p>
               </div>
 
-              <div className={`how-works-step-card ${activeStep === 2 ? 'active-step' : ''}`} onClick={() => setActiveStep(2)}>
+              <div className={`how-works-step-card ${activeStep === 2 ? 'active-step' : ''}`} onClick={() => handleStepClick(2)}>
                 <div className="step-badge">3</div>
                 <h3 className="font-h3 text-xl mb-1 font-semibold text-stone-900">Packed Clean</h3>
                 <p className="font-body-md text-stone-600">Meals are packed in premium, eco-friendly, and temperature-insulated containers to preserve peak freshness.</p>
               </div>
 
-              <div className={`how-works-step-card ${activeStep === 3 ? 'active-step' : ''}`} onClick={() => setActiveStep(3)}>
+              <div className={`how-works-step-card ${activeStep === 3 ? 'active-step' : ''}`} onClick={() => handleStepClick(3)}>
                 <div className="step-badge">4</div>
                 <h3 className="font-h3 text-xl mb-1 font-semibold text-stone-900">Hot Delivery</h3>
                 <p className="font-body-md text-stone-600">Our delivery partners pick up and deliver the hot meal directly to your doorstep with live order tracking.</p>
@@ -664,10 +656,10 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4 mt-8 pt-4 border-t border-stone-100 dark:border-stone-800">
+                <div className="flex items-center gap-4 mt-8 pt-4 border-t border-orange-700">
                   <img src={t.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-primary/10" alt={t.name} />
                   <div>
-                    <h4 className="font-bold text-stone-900 dark:text-white text-sm">{t.name}</h4>
+                    <h4 className="font-bold text-black text-sm">{t.name}</h4>
                     <p className="text-[11px] text-stone-500 font-semibold">{t.role}</p>
                   </div>
                 </div>

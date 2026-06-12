@@ -115,7 +115,7 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
   };
 
   return (
-    <div id="chef-portal-view" className="min-h-screen pt-28 pb-12 px-4 sm:px-6 bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)">
+    <div id="chef-portal-view" className="min-h-screen cook pt-28 pb-12 px-4 sm:px-6">
       
       {/* Chef Portal Header */}
       <div className="max-w-3xl mx-auto flex justify-between items-center gap-4 mb-8 bg-white p-4 rounded-2xl shadow-xl">

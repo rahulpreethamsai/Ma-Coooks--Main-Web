@@ -136,7 +136,7 @@ export default function Home() {
         )}
         
         {activeView === 'customer-portal' && (
-          <section className="min-h-screen pt-32 pb-20 px-6 flex items-center justify-center bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)">
+          <section className="eat min-h-screen pt-32 pb-20 px-6 flex items-center justify-center bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)">
             <div className="max-w-md w-full bg-white border border-stone-200 rounded-3xl p-8 shadow-xl text-center space-y-6 animate-fade-in hover:shadow-2xl transition-shadow">
               <span className="text-6xl block">🍲</span>
               <h2 className="font-h1 text-3xl font-bold text-primary font-['Newsreader']">Coming Soon!</h2>

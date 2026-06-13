@@ -63,9 +63,8 @@ export default function Header({ activeView, navigate }) {
   };
 
   return (
-    <header className={`nav-anim fixed top-0 left-0 w-full z-[9999] border-b border-primary/5 backdrop-filter backdrop-blur-lg bg-inherit transition-transform duration-300 ${
-      isVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
+    <header className={`nav-anim fixed top-0 left-0 right-0 z-[9999] border-b border-primary/5 backdrop-filter backdrop-blur-lg bg-inherit transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
       <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-6 py-4">
         <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
           <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader']">Ruchi Rush</span>
@@ -123,9 +122,8 @@ export default function Header({ activeView, navigate }) {
       {/* Mobile Menu - uses absolute positioning with fade/scale animation, preventing offscreen horizontal overflow */}
       <div
         id="mobileMenu"
-        className={`fixed inset-0 w-full h-screen bg-stone-950/95 backdrop-blur-lg flex flex-col justify-center items-center transition-all duration-300 z-[9998] ${
-          isMenuOpen ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-95'
-        }`}
+        className={`fixed inset-0 w-full h-screen bg-stone-950/95 backdrop-blur-lg flex flex-col justify-center items-center transition-all duration-300 z-[9998] ${isMenuOpen ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-95'
+          }`}
       >
         <div className="flex flex-col gap-8 text-center text-2xl text-stone-100 font-['Newsreader']">
           <a

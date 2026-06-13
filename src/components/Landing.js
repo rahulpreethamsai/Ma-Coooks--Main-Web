@@ -368,7 +368,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
         <div className="relative z-10 w-full max-w-7xl mx-auto hero-container">
           {/* Left Column: Chef Side (Hidden on Mobile) */}
-          <div className="hero-media-col chef-side parallax-mid opacity-0 hidden lg:block">
+          <div className="hero-media-col chef-side parallax-mid opacity-0 hidden xl:block">
             <div className="chef-hat-wrapper">
               <svg className="chef-hat-svg-outline" viewBox="0 0 100 100" preserveAspectRatio="none">
                 <path d="M 28,85 C 45,92 60,92 78,83 L 78,55 C 92,55 98,42 88,30 C 80,20 70,8 60,8 C 45,8 35,18 28,22 C 18,25 5,38 8,50 C 10,58 20,58 28,58 Z"
@@ -440,7 +440,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           </div>
 
           {/* Right Column: Customer Side (Hidden on Mobile) */}
-          <div className="hero-media-col customer-side parallax-mid opacity-0 hidden lg:block">
+          <div className="hero-media-col customer-side parallax-mid opacity-0 hidden xl:block">
             <div className="plate-wrapper">
               <div className="plate-rim-circle-1"></div>
               <div className="plate-rim-circle-2"></div>
@@ -550,21 +550,21 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             We don't just vet the food; we know the people. Every kitchen is inspected and every chef is certified for safety, passion, and heritage.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button 
+            <button
               className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
               style={{ animationDelay: '0s' }}
             >
               <span className="material-symbols-outlined text-primary">verified_user</span>
               <span className="font-semibold text-sm text-stone-800">Inspected Kitchens</span>
             </button>
-            <button 
+            <button
               className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
               style={{ animationDelay: '0.4s' }}
             >
               <span className="material-symbols-outlined text-primary">health_and_safety</span>
               <span className="font-semibold text-sm text-stone-800">Hygiene Certified</span>
             </button>
-            <button 
+            <button
               className="premium-glow-btn flex items-center gap-2 bg-white border border-primary/15 px-6 py-3 rounded-full shadow-sm"
               style={{ animationDelay: '0.8s' }}
             >

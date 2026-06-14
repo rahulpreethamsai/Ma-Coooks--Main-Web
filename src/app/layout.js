@@ -38,11 +38,11 @@ export default function RootLayout({ children }) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "FoodDeliveryService",
-              "name": "Ruchi Rush",
+              "name": "RuchiRush",
               "image": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1780987405/samples/woman-on-a-football-field.png",
-              "@id": "https://ruchirush.netlify.app",
-              "url": "https://ruchirush.netlify.app",
-              "telephone": "+919999999999",
+              "@id": "https://helloruchirush.netlify.app",
+              "url": "https://helloruchirush.netlify.app",
+              "telephone": "+919908574741",
               "priceRange": "$$",
               "address": {
                 "@type": "PostalAddress",

@@ -254,7 +254,7 @@ export default function Home() {
           className="fixed bottom-6 left-6 max-w-sm z-[9999] bg-stone-900 text-stone-100 rounded-2xl p-5 shadow-2xl border border-stone-800 transition-transform duration-500"
         >
           <p className="text-xs leading-relaxed mb-3">
-            Ruchi Rush uses local cookies to save your settings for peak usability. Learn more in our{' '}
+            RuchiRush uses local cookies to save your settings for peak usability. Learn more in our{' '}
             <button 
               onClick={() => setLegalModal({ isOpen: true, policyType: 'privacy' })}
               className="underline text-orange-400 font-semibold cursor-pointer"

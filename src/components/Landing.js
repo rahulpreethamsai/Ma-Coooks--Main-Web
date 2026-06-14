@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import ConnectionCanvas from './ConnectionCanvas';
+import MobileAppShowcase from './MobileAppShowcase';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -458,7 +459,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* SECTION 3: WHY CHOOSE US */}
       <div ref={whyUsRef} className="why-choose-us bg-white">
         <section id="why-us" className="py-20 px-6 max-w-7xl mx-auto">
-          <h2 className="font-h2 text-4xl text-center mb-12 font-bold text-on-primary-fixed-variant">Why choose Ruchi Rush?</h2>
+          <h2 className="font-h2 text-4xl text-center mb-12 font-bold text-on-primary-fixed-variant">Why choose RuchiRush?</h2>
           <div className="grid md:grid-cols-2 gap-12">
             {/* Other Apps */}
             <div className="why-left bg-stone-100 p-8 rounded-2xl border border-stone-200 flex flex-col gap-4 opacity-75 grayscale">
@@ -482,13 +483,13 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             {/* Ruchi Rush */}
             <div className="why-right bg-gradient-to-br from-orange-50 to-orange-100/50 p-8 rounded-2xl border-2 border-primary/20 shadow-xl flex flex-col gap-4">
               <div className="flex justify-between items-start">
-                <h3 className="font-h2 text-2xl text-primary font-bold">Ruchi Rush Connection</h3>
+                <h3 className="font-h2 text-2xl text-primary font-bold">RuchiRush Connection</h3>
                 <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider">RECOMMENDED</span>
               </div>
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 font-body-md font-semibold text-stone-800">
                   <span className="material-symbols-outlined text-green-600 font-bold">check</span>
-                  Low 8% commission — Chefs keep more
+                  Low 10% commission — Chefs keep more
                 </li>
                 <li className="flex items-center gap-2 font-body-md font-semibold text-stone-800">
                   <span className="material-symbols-outlined text-green-600 font-bold">check</span>
@@ -578,7 +579,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* SECTION 6: HOW IT WORKS CAROUSEL */}
       <section ref={howWorksRef} className="pt-20 pb-12 px-6 bg-white" id="how-it-works">
         <div className="max-w-7xl p-6 mx-auto">
-          <h2 className="how-works-title text-4xl font-bold font-['Newsreader'] text-center mb-10 text-on-primary-fixed-variant">How Ruchi Rush Works</h2>
+          <h2 className="how-works-title text-4xl font-bold font-['Newsreader'] text-center mb-10 text-on-primary-fixed-variant">How RuchiRush Works</h2>
 
           <div className="how-works-grid">
             {/* Sticky Media Column */}
@@ -677,7 +678,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         <div className="absolute inset-0 bg-stone-950/50 backdrop-blur-[4px]"></div>
         <div className="relative z-10 text-center text-white px-6 max-w-2xl">
           <blockquote className="font-h1 text-4xl italic mb-4">"Food is not just eaten. It is felt."</blockquote>
-          <p className="font-bold tracking-widest text-xs uppercase text-orange-200">— THE RUCHI RUSH PHILOSOPHY</p>
+          <p className="font-bold tracking-widest text-xs uppercase text-orange-200">— THE RUCHIRUSH PHILOSOPHY</p>
         </div>
       </section>
 
@@ -713,16 +714,16 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-stone-850">
                     <span>Ruchi Rush Commission</span>
-                    <span className="text-primary">8%</span>
+                    <span className="text-primary">10%</span>
                   </div>
                   <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full rounded-full" style={{ width: '8%' }}></div>
+                    <div className="bg-primary h-full rounded-full" style={{ width: '10%' }}></div>
                   </div>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-stone-200 text-center">
-                <span className="text-xs font-black text-primary">Chefs Retain 92% of Sales Payouts!</span>
+                <span className="text-xs font-black text-primary">Chefs Retain 90% of Sales Payouts!</span>
               </div>
             </div>
 
@@ -730,8 +731,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6">
               <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
                 <span className="material-symbols-outlined text-3xl text-primary">account_balance_wallet</span>
-                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">92% Chef Payouts</h4>
-                <p className="text-xs text-stone-500 leading-relaxed font-body-md">You keep 92% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
+                <h4 className="font-bold text-sm text-stone-900 uppercase tracking-wider">90% Chef Payouts</h4>
+                <p className="text-xs text-stone-500 leading-relaxed font-body-md">You keep 90% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
               </div>
 
               <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-3 shadow-sm hover:shadow-2xl transition-shadow">
@@ -765,7 +766,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10">
           {/* Left Column: CTA details */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <span className="text-primary font-bold uppercase tracking-widest text-xs">Ruchi Rush Mobile App</span>
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">RuchiRush Mobile App</span>
             <h2 className="font-h2 text-4xl lg:text-5xl font-bold font-['Newsreader'] leading-tight text-stone-900">Homemade Warmth, Delivered in a Tap</h2>
             <p className="text-sm text-stone-700 max-w-xl mx-auto lg:mx-0 leading-relaxed font-body-md">
               Download our mobile app to track deliveries live, chat directly with home chefs, and easily pre-order custom meals for your family.
@@ -806,77 +807,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           {/* Right Column: PlayStore App Download Mockup Animation */}
           <div className="lg:col-span-5 flex justify-center">
-            {/* CSS Phone Frame */}
-            <div className="relative w-[240px] h-[480px] bg-white rounded-[40px] border-4 border-stone-200 shadow-2xl p-3 flex flex-col justify-between overflow-hidden">
-              {/* Speaker notch */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 bg-stone-200 rounded-full z-25"></div>
-
-              {/* In-app mockup wrapper */}
-              <div className="relative w-full h-full bg-[#fff8f6] rounded-[30px] overflow-hidden flex flex-col p-4 z-10 justify-between border border-stone-100">
-
-                {/* Mock header */}
-                <div className="flex justify-between items-center text-[10px] text-stone-500">
-                  <span className="font-bold">Ruchi Rush Live</span>
-                  <div className="flex gap-1 items-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
-                    <span className="text-green-600 font-bold uppercase tracking-wider">Active</span>
-                  </div>
-                </div>
-
-                {/* Radar tracking map animation */}
-                <div className="relative w-full h-[180px] bg-orange-50/50 rounded-2xl overflow-hidden border border-primary/10 flex items-center justify-center">
-                  {/* Grid lines pattern */}
-                  <div className="absolute inset-0 opacity-5 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:16px_16px]"></div>
-
-                  {/* Pulsing radar rings */}
-                  <div className="absolute w-24 h-24 rounded-full border border-primary/30 bg-primary/10 ani-radar"></div>
-                  <div className="absolute w-36 h-36 rounded-full border border-primary/25 bg-primary/5 ani-radar" style={{ animationDelay: '0.8s' }}></div>
-
-                  {/* Map Pin Point (Chef Location) */}
-                  <div className="absolute left-6 top-12 flex flex-col items-center">
-                    <span className="text-base">🏡</span>
-                    <span className="text-[7px] bg-primary text-white px-1 rounded-full font-bold">Priya's</span>
-                  </div>
-
-                  {/* Dashed Route Path */}
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 200 180">
-                    <path d="M 40,80 Q 90,40 120,90 T 160,110" fill="none" stroke="rgba(158,67,0,0.4)" strokeWidth="2" strokeDasharray="4,4" />
-                  </svg>
-
-                  {/* Animated Delivery Bike Emoji traveling the path */}
-                  <div className="absolute left-6 top-12 text-base ani-bike">🛵</div>
-
-                  {/* Map Pin Point (Customer Location) */}
-                  <div className="absolute right-6 bottom-10 flex flex-col items-center">
-                    <span className="text-base text-primary animate-bounce">📍</span>
-                    <span className="text-[7px] bg-stone-200 text-stone-850 px-1 rounded-full font-bold">You</span>
-                  </div>
-                </div>
-
-                {/* Simulated Order Status Slide-up card */}
-                <div className="bg-white border border-primary/10 rounded-xl p-3 space-y-2 text-left ani-status-card shadow-sm">
-                  <div className="flex justify-between items-center text-[7px] text-stone-500 uppercase tracking-widest font-bold">
-                    <span>Order Tracking</span>
-                    <span className="text-primary">On Its Way</span>
-                  </div>
-                  <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full" style={{ width: '75%' }}></div>
-                  </div>
-                  <p className="text-[9px] font-bold text-stone-800 truncate">Rider Ramesh is 2 mins away</p>
-                </div>
-
-                {/* Action button inside app mock */}
-                <button
-                  onClick={() => Toast.show("PWA installation triggered!", "info")}
-                  className="w-full bg-primary text-white text-[9px] py-2 rounded-full font-bold shadow-md active:scale-95 transition-transform cursor-pointer"
-                >
-                  Download Native App
-                </button>
-              </div>
-
-              {/* Bottom home button bar */}
-              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-28 h-1 bg-stone-300 rounded-full z-20"></div>
-            </div>
+            <MobileAppShowcase />
           </div>
         </div>
       </section>
@@ -967,8 +898,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* FOOTER */}
       <footer className="footer w-full py-8 px-8 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-primary/10 bg-[#fff8f6] text-stone-750">
         <div className="flex flex-col items-center md:items-start gap-2">
-          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">Ruchi Rush</span>
-          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 Ruchi Rush. Made with love.</span>
+          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">RuchiRush</span>
+          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 RuchiRush. Made with love.</span>
         </div>
         <div>
           <h1 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-2">Follow Us</h1>

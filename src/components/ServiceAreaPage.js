@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Header from './Header';
 import LegalModal from './LegalModal';
+import MobileAppShowcase from './MobileAppShowcase';
 // import AuthModal from './AuthModal';
 
 const MOCK_CHEFS = [
@@ -276,16 +277,16 @@ export default function ServiceAreaPage({
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-stone-850">
                     <span>Ruchi Rush Commission</span>
-                    <span className="text-primary">8%</span>
+                    <span className="text-primary">10%</span>
                   </div>
                   <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full rounded-full" style={{ width: '8%' }}></div>
+                    <div className="bg-primary h-full rounded-full" style={{ width: '10%' }}></div>
                   </div>
                 </div>
               </div>
 
               <div className="pt-3 border-t border-stone-200 text-center">
-                <span className="text-xs font-black text-primary">Chefs Retain 92% of Sales Payouts!</span>
+                <span className="text-xs font-black text-primary">Chefs Retain 90% of Sales Payouts!</span>
               </div>
             </div>
 
@@ -293,8 +294,8 @@ export default function ServiceAreaPage({
             <div className="lg:col-span-7 grid sm:grid-cols-2 gap-4">
               <div className="bg-white border border-stone-200 p-5 rounded-2xl space-y-2 shadow-sm">
                 <span className="material-symbols-outlined text-2xl text-primary">account_balance_wallet</span>
-                <h4 className="font-bold text-xs text-stone-900 uppercase tracking-wider">92% Chef Payouts</h4>
-                <p className="text-[11px] text-stone-500 leading-relaxed font-body-md">You keep 92% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
+                <h4 className="font-bold text-xs text-stone-900 uppercase tracking-wider">90% Chef Payouts</h4>
+                <p className="text-[11px] text-stone-500 leading-relaxed font-body-md">You keep 90% of your hard-earned revenue. No listing fees, no setup charges, and zero hidden operational costs.</p>
               </div>
 
               <div className="bg-white border border-stone-200 p-5 rounded-2xl space-y-2 shadow-sm">
@@ -326,7 +327,7 @@ export default function ServiceAreaPage({
           <div className="grid lg:grid-cols-12 gap-8 items-center relative z-10">
             {/* Left Column: CTA details */}
             <div className="lg:col-span-7 space-y-4 text-center lg:text-left">
-              <span className="text-primary font-bold uppercase tracking-widest text-xs">Ruchi Rush Mobile App</span>
+              <span className="text-primary font-bold uppercase tracking-widest text-xs">RuchiRush Mobile App</span>
               <h2 className="font-h2 text-3xl md:text-4xl font-bold font-['Newsreader'] leading-tight text-stone-900">Homemade Warmth, Delivered in a Tap</h2>
               <p className="text-xs text-stone-700 max-w-xl mx-auto lg:mx-0 leading-relaxed font-body-md">
                 Download our mobile app to track deliveries live, chat directly with home chefs, and easily pre-order custom meals for your family.
@@ -365,64 +366,7 @@ export default function ServiceAreaPage({
 
             {/* Right Column: PlayStore App Download Mockup Animation */}
             <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-[210px] h-[420px] bg-white rounded-[35px] border-4 border-stone-200 shadow-xl p-2.5 flex flex-col justify-between overflow-hidden animate-none">
-                {/* Speaker notch */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-stone-200 rounded-full z-25"></div>
-
-                {/* In-app mockup wrapper */}
-                <div className="relative w-full h-full bg-[#fff8f6] rounded-[28px] overflow-hidden flex flex-col p-3 z-10 justify-between border border-stone-100">
-                  <div className="flex justify-between items-center text-[9px] text-stone-500">
-                    <span className="font-bold">Ruchi Rush Live</span>
-                    <div className="flex gap-1 items-center">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
-                      <span className="text-green-600 font-bold uppercase tracking-wider">Active</span>
-                    </div>
-                  </div>
-
-                  <div className="relative w-full h-[150px] bg-orange-50/50 rounded-2xl overflow-hidden border border-primary/10 flex items-center justify-center">
-                    <div className="absolute inset-0 opacity-5 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:14px_14px]"></div>
-
-                    <div className="absolute w-20 h-20 rounded-full border border-primary/30 bg-primary/10 ani-radar"></div>
-                    <div className="absolute w-30 h-30 rounded-full border border-primary/25 bg-primary/5 ani-radar" style={{ animationDelay: '0.8s' }}></div>
-
-                    <div className="absolute left-4 top-10 flex flex-col items-center">
-                      <span className="text-sm">🏡</span>
-                      <span className="text-[6px] bg-primary text-white px-1 rounded-full font-bold">Chef</span>
-                    </div>
-
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 180 150">
-                      <path d="M 30,70 Q 75,35 100,75 T 140,95" fill="none" stroke="rgba(158,67,0,0.4)" strokeWidth="2" strokeDasharray="3,3" />
-                    </svg>
-
-                    <div className="absolute left-4 top-10 text-sm ani-bike">🛵</div>
-
-                    <div className="absolute right-4 bottom-8 flex flex-col items-center">
-                      <span className="text-sm text-primary animate-bounce">📍</span>
-                      <span className="text-[6px] bg-stone-200 text-stone-850 px-1 rounded-full font-bold">You</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-primary/10 rounded-xl p-2 space-y-1.5 text-left ani-status-card shadow-sm">
-                    <div className="flex justify-between items-center text-[6px] text-stone-500 uppercase tracking-widest font-bold">
-                      <span>Order Tracking</span>
-                      <span className="text-primary">On Its Way</span>
-                    </div>
-                    <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                    <p className="text-[8px] font-bold text-stone-800 truncate">Rider Ramesh is 2 mins away</p>
-                  </div>
-
-                  <button 
-                    onClick={() => showToast("PWA installation triggered!", "info")}
-                    className="w-full bg-primary text-white text-[8px] py-1.5 rounded-full font-bold shadow-md active:scale-95 transition-transform cursor-pointer"
-                  >
-                    Download Native App
-                  </button>
-                </div>
-
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-20 h-1 bg-stone-300 rounded-full z-20"></div>
-              </div>
+              <MobileAppShowcase />
             </div>
           </div>
         </section>

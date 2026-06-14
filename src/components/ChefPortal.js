@@ -5,22 +5,19 @@ export default function ChefPortal({ Toast, navigate }) {
   // Form states
   const [chefName, setChefName] = useState('');
   const [chefPhone, setChefPhone] = useState('');
-  const [chefEmail, setChefEmail] = useState('');
-  const [kitchenName, setKitchenName] = useState('');
-  const [kitchenAddress, setKitchenAddress] = useState('');
+  const [chefAge, setChefAge] = useState('');
+  const [chefArea, setChefArea] = useState('');
 
-  // KYC Verification Form States
-  const [fssai, setFssai] = useState('');
-  const [pan, setPan] = useState('');
-  const [bankAccount, setBankAccount] = useState('');
-  const [bankIfsc, setBankIfsc] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [gstin, setGstin] = useState('');
+  // Cooking states
+  const [cuisineSpecialty, setCuisineSpecialty] = useState('Multi cuisine');
+  const [ordersPerDay, setOrdersPerDay] = useState('10-20 orders');
+  const [bestDishes, setBestDishes] = useState('');
+  const [preferredCookingTime, setPreferredCookingTime] = useState('Morning (7am-10am)');
 
-  // Food safety quiz states
-  const [q1, setQ1] = useState('');
-  const [q2, setQ2] = useState('');
-  const [q3, setQ3] = useState('');
+  // Kitchen states
+  const [hasPackaging, setHasPackaging] = useState("Yes, I'm ready");
+  const [hasSmartphone, setHasSmartphone] = useState('Yes, Android');
+  const [whyJoin, setWhyJoin] = useState('');
 
   // Submission States
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -39,67 +36,42 @@ export default function ChefPortal({ Toast, navigate }) {
       Toast.show("Please enter a valid 10-digit phone number.", "error");
       return;
     }
-    if (fssai.length !== 14 || isNaN(fssai)) {
-      Toast.show("FSSAI License must be exactly 14 digits.", "error");
+    if (!chefAge.trim()) {
+      Toast.show("Please enter your age.", "error");
       return;
     }
-    if (pan.length !== 10) {
-      Toast.show("PAN Card must be exactly 10 characters.", "error");
+    if (!chefArea.trim()) {
+      Toast.show("Please enter your area in Hyderabad.", "error");
       return;
     }
-    if (bankAccount.length < 9 || bankAccount.length > 18 || isNaN(bankAccount)) {
-      Toast.show("Bank Account Number must be between 9 and 18 digits.", "error");
+    if (!bestDishes.trim()) {
+      Toast.show("Please enter your best dishes.", "error");
       return;
     }
-    if (bankIfsc.length !== 11) {
-      Toast.show("Bank IFSC Code must be a valid 11-character code.", "error");
-      return;
-    }
-    if (!upiId.includes('@')) {
-      Toast.show("UPI ID must be a valid format (e.g. name@okaxis).", "error");
-      return;
-    }
-    if (kitchenAddress.length < 15) {
-      Toast.show("Please enter a full, valid address (minimum 15 characters).", "error");
-      return;
-    }
-
-    // Verify qualification test answers
-    if (q1 !== 'A') {
-      Toast.show("Safety Test Q1 answer is incorrect. Minimum hot holding temperature is 60°C.", "error");
-      return;
-    }
-    if (q2 !== 'B') {
-      Toast.show("Safety Test Q2 answer is incorrect. Prep surfaces must be sanitized before and after every batch.", "error");
-      return;
-    }
-    if (q3 !== 'A') {
-      Toast.show("Safety Test Q3 answer is incorrect. Eco-friendly insulated packaging is required.", "error");
+    if (!whyJoin.trim()) {
+      Toast.show("Please enter why you want to join Ruchirush.", "error");
       return;
     }
 
     // Compile the message for submission
     const msg = `Hi Ruchi Rush team! I would like to onboard as a home chef:
 
---- CHEF DETAILS ---
+--- PERSONAL INFO ---
 Full Name: ${chefName}
 Phone Number: ${chefPhone}
-Email Address: ${chefEmail}
-Kitchen Name: ${kitchenName}
-Street Address: ${kitchenAddress}
+Age: ${chefAge}
+Area in Hyderabad: ${chefArea}
 
---- KYC & REGULATORY ---
-FSSAI License No: ${fssai}
-PAN Card Number: ${pan}
-GSTIN: ${gstin || 'N/A'}
+--- YOUR COOKING ---
+Cuisine Specialty: ${cuisineSpecialty}
+Orders Per Day: ${ordersPerDay}
+Best Dishes: ${bestDishes}
+Preferred Cooking Time: ${preferredCookingTime}
 
---- SETTLEMENTS & BANKING ---
-Bank Account No: ${bankAccount}
-Bank IFSC Code: ${bankIfsc}
-UPI ID: ${upiId}
-
---- SAFETY QUALIFICATION ---
-Food Safety Quiz: Completed & Passed (A, B, A)`;
+--- YOUR KITCHEN ---
+Do you have packaging?: ${hasPackaging}
+Do you have a smartphone?: ${hasSmartphone}
+Why do you want to join?: ${whyJoin}`;
 
     setFormattedMessage(msg);
     setIsSubmitting(true);
@@ -111,17 +83,16 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
         body: JSON.stringify({
           name: chefName,
           phone: chefPhone,
-          email: chefEmail,
-          kitchenName: kitchenName,
-          address: kitchenAddress,
-          fssai: fssai,
-          pan: pan,
-          bankAccount: bankAccount,
-          bankIfsc: bankIfsc,
-          upiId: upiId,
-          gstin: gstin || 'N/A',
-          quiz: `Q1: ${q1}, Q2: ${q2}, Q3: ${q3}`,
-          _subject: `New Chef Onboarding - ${chefName} (${kitchenName})`
+          age: chefAge,
+          area: chefArea,
+          cuisineSpecialty: cuisineSpecialty,
+          ordersPerDay: ordersPerDay,
+          bestDishes: bestDishes,
+          preferredCookingTime: preferredCookingTime,
+          hasPackaging: hasPackaging,
+          hasSmartphone: hasSmartphone,
+          whyJoin: whyJoin,
+          _subject: `New Chef Onboarding - ${chefName} (${chefArea})`
         }),
         headers: {
           "Content-Type": "application/json",
@@ -175,39 +146,52 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
 
       <div className="max-w-3xl mx-auto">
         <section id="chef-verification-panel" className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-shadow animate-fade-in">
+          
           <div className="text-center mb-8">
-            <span className="text-5xl block animate-bounce">👨‍🍳</span>
-            <h3 className="font-h2 text-2xl font-bold text-primary mt-2">Kitchen Verification & Onboarding</h3>
+            <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader'] block mb-2">RuchiRush</span>
+            <h3 className="font-h1 text-2xl font-bold text-stone-900 leading-tight">Turn your kitchen into a business</h3>
             <p className="text-xs text-stone-500 mt-1 max-w-md mx-auto">
-              To ensure safety and quality, all chefs must complete this onboarding form. Your details will be sent directly to our team for quick verification.
+              Takes 2 minutes. Our team calls you for everything else.
             </p>
+            
+            {/* Pills row */}
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              {['Cook from home', 'Your own timings', 'Weekly payouts', 'Zero investment'].map((pill) => (
+                <span 
+                  key={pill} 
+                  className="px-3 py-1 rounded-full text-xs font-semibold border border-primary/30 text-primary bg-primary/5"
+                >
+                  {pill}
+                </span>
+              ))}
+            </div>
           </div>
 
           <form onSubmit={handleVerificationSubmit} className="space-y-6">
             
-            {/* Core Chef Details */}
+            {/* PERSONAL INFO */}
             <div className="space-y-4">
-              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-stone-400 border-b pb-1">1. Contact & Kitchen Info</h4>
+              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-primary border-b pb-1">PERSONAL INFO</h4>
               
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Full Name</label>
+                  <label className="text-xs font-semibold text-stone-700">Full name</label>
                   <input 
                     type="text" 
                     required 
-                    placeholder="Enter your name" 
+                    placeholder="Your name" 
                     value={chefName} 
                     onChange={e => setChefName(e.target.value)}
                     className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Phone Number (10 Digits)</label>
+                  <label className="text-xs font-semibold text-stone-700">Phone number</label>
                   <input 
                     type="tel" 
                     required 
                     maxLength="10"
-                    placeholder="9908574741" 
+                    placeholder="10 digit number" 
                     value={chefPhone} 
                     onChange={e => setChefPhone(e.target.value)}
                     className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
@@ -217,182 +201,164 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Email Address</label>
+                  <label className="text-xs font-semibold text-stone-700">Age</label>
                   <input 
-                    type="email" 
+                    type="text" 
                     required 
-                    placeholder="name@example.com" 
-                    value={chefEmail} 
-                    onChange={e => setChefEmail(e.target.value)}
+                    placeholder="Your age" 
+                    value={chefAge} 
+                    onChange={e => setChefAge(e.target.value)}
                     className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Kitchen / Brand Name</label>
+                  <label className="text-xs font-semibold text-stone-700">Area in Hyderabad</label>
                   <input 
                     type="text" 
                     required 
-                    placeholder="e.g. Priya's Godavari Kitchen" 
-                    value={kitchenName} 
-                    onChange={e => setKitchenName(e.target.value)}
+                    placeholder="e.g. Miyapur, Kondapur" 
+                    value={chefArea} 
+                    onChange={e => setChefArea(e.target.value)}
                     className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
                   />
                 </div>
               </div>
+            </div>
+
+            {/* YOUR COOKING */}
+            <div className="space-y-4">
+              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-primary border-b pb-1">YOUR COOKING</h4>
+              
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-stone-700">Cuisine specialty</label>
+                  <select 
+                    required 
+                    value={cuisineSpecialty} 
+                    onChange={e => setCuisineSpecialty(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                  >
+                    <option value="Multi cuisine">Multi cuisine</option>
+                    <option value="South Indian">South Indian</option>
+                    <option value="North Indian">North Indian</option>
+                    <option value="Biryani & Pulao">Biryani & Pulao</option>
+                    <option value="Desserts & Bakes">Desserts & Bakes</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-stone-700">Orders per day you can handle</label>
+                  <select 
+                    required 
+                    value={ordersPerDay} 
+                    onChange={e => setOrdersPerDay(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                  >
+                    <option value="10-20 orders">10-20 orders</option>
+                    <option value="5-10 orders">5-10 orders</option>
+                    <option value="20-50 orders">20-50 orders</option>
+                    <option value="50+ orders">50+ orders</option>
+                  </select>
+                </div>
+              </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Full Kitchen Street Address</label>
+                <label className="text-xs font-semibold text-stone-700">Your best dishes</label>
+                <input 
+                  type="text" 
+                  required 
+                  placeholder="e.g. Biryani, Pesarattu, Gongura curry..." 
+                  value={bestDishes} 
+                  onChange={e => setBestDishes(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-stone-700">Preferred cooking time</label>
+                <select 
+                  required 
+                  value={preferredCookingTime} 
+                  onChange={e => setPreferredCookingTime(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                >
+                  <option value="Morning (7am-10am)">Morning (7am-10am)</option>
+                  <option value="Afternoon (11am-2pm)">Afternoon (11am-2pm)</option>
+                  <option value="Evening (5pm-9pm)">Evening (5pm-9pm)</option>
+                  <option value="Full day">Full day</option>
+                </select>
+              </div>
+            </div>
+
+            {/* YOUR KITCHEN */}
+            <div className="space-y-4">
+              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-primary border-b pb-1">YOUR KITCHEN</h4>
+              
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-stone-700">Do you have packaging?</label>
+                  <select 
+                    required 
+                    value={hasPackaging} 
+                    onChange={e => setHasPackaging(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                  >
+                    <option value="Yes, I'm ready">Yes, I'm ready</option>
+                    <option value="No, need help">No, need help</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-stone-700">Do you have a smartphone?</label>
+                  <select 
+                    required 
+                    value={hasSmartphone} 
+                    onChange={e => setHasSmartphone(e.target.value)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900 cursor-pointer"
+                  >
+                    <option value="Yes, Android">Yes, Android</option>
+                    <option value="Yes, iOS">Yes, iOS</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-stone-700">Why do you want to join Ruchirush?</label>
                 <textarea 
                   required 
                   rows="3" 
-                  placeholder="Gachibowli Street No 2, Near Police Station, Hyderabad" 
-                  value={kitchenAddress} 
-                  onChange={e => setKitchenAddress(e.target.value)}
+                  placeholder="Tell us a little about yourself and your passion for cooking..." 
+                  value={whyJoin} 
+                  onChange={e => setWhyJoin(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
                 />
               </div>
             </div>
 
-            {/* KYC & Identity verification */}
-            <div className="space-y-4">
-              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-stone-400 border-b pb-1">2. Regulatory & KYC Details</h4>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">FSSAI License No (14 Digits)</label>
-                  <input 
-                    type="text" 
-                    required 
-                    maxLength="14" 
-                    placeholder="12345678901234" 
-                    value={fssai} 
-                    onChange={e => setFssai(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">PAN Card Number</label>
-                  <input 
-                    type="text" 
-                    required 
-                    maxLength="10" 
-                    placeholder="ABCDE1234F" 
-                    value={pan} 
-                    onChange={e => setPan(e.target.value.toUpperCase())}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Bank Account Number</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="123456789012" 
-                    value={bankAccount} 
-                    onChange={e => setBankAccount(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Bank IFSC Code</label>
-                  <input 
-                    type="text" 
-                    required 
-                    maxLength="11" 
-                    placeholder="SBIN0001234" 
-                    value={bankIfsc} 
-                    onChange={e => setBankIfsc(e.target.value.toUpperCase())}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">Settlement UPI ID</label>
-                  <input 
-                    type="text" 
-                    required 
-                    placeholder="chefname@okaxis" 
-                    value={upiId} 
-                    onChange={e => setUpiId(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold uppercase tracking-wider text-stone-500">GSTIN (Optional)</label>
-                  <input 
-                    type="text" 
-                    maxLength="15" 
-                    placeholder="36ABCDE1234F1Z5" 
-                    value={gstin} 
-                    onChange={e => setGstin(e.target.value.toUpperCase())}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900" 
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Food Safety & Hygiene Quiz */}
-            <div className="border-t border-stone-200 pt-6 mt-6 space-y-4">
-              <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-stone-400 border-b pb-1">3. Food Safety Qualification Test</h4>
-              <p className="text-[11px] text-stone-500">Answer these safety questions correctly to qualify as a verified home chef on Ruchi Rush.</p>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-stone-700">1. What is the correct temperature range for food storage?</label>
-                <select 
-                  required 
-                  value={q1} 
-                  onChange={e => setQ1(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none text-stone-900"
-                >
-                  <option value="">-- Select Answer --</option>
-                  <option value="A">Under 5°C (Refrigerated) or above 60°C (Hot holding)</option>
-                  <option value="B">Room temperature (20°C - 25°C) for all foods</option>
-                  <option value="C">Keeping food warm at 40°C in open containers</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-stone-700">2. How often must kitchen prep surfaces be cleaned and sanitized?</label>
-                <select 
-                  required 
-                  value={q2} 
-                  onChange={e => setQ2(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none  text-stone-900"
-                >
-                  <option value="">-- Select Answer --</option>
-                  <option value="A">Once at the end of every week</option>
-                  <option value="B">Before and after preparing every batch of food</option>
-                  <option value="C">Only when food spills or stains are visible</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-stone-700">3. Which packaging materials are required for delivery orders?</label>
-                <select 
-                  required 
-                  value={q3} 
-                  onChange={e => setQ3(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-xs focus:ring-2 focus:ring-primary/20 focus:outline-none cursor-pointer text-stone-900"
-                >
-                  <option value="">-- Select Answer --</option>
-                  <option value="A">Leak-proof, food-grade, and temperature-insulated containers</option>
-                  <option value="B">Standard plastic bags or aluminum wrap</option>
-                  <option value="C">Open boxes to allow steam to escape</option>
-                </select>
-              </div>
+            {/* Notice Box */}
+            <div className="flex items-start gap-3 bg-stone-50 border border-stone-200/60 p-4 rounded-2xl text-xs text-stone-600 mt-6 leading-relaxed">
+              <span className="material-symbols-outlined text-primary text-xl flex-shrink-0">phone_in_talk</span>
+              <span>
+                Our team will personally call you within 24 hours. Bank details and documents are only collected after your verification call — not here.
+              </span>
             </div>
 
             <button 
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-primary text-white py-3.5 rounded-full font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg mt-6"
             >
-              Verify & Submit Application
+              <span>{isSubmitting ? 'Submitting Application...' : 'Submit My Application'}</span>
+              <span className="material-symbols-outlined text-base">arrow_forward</span>
             </button>
+
+            <div className="text-center mt-6 space-y-1">
+              <p className="text-xs text-stone-500 font-semibold">
+                No fee. No investment. No strangers at your door.
+              </p>
+              <p className="text-xs text-stone-500 font-semibold">
+                Just your cooking, your kitchen, your earning.
+              </p>
+            </div>
           </form>
         </section>
       </div>

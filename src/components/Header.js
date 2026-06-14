@@ -67,7 +67,7 @@ export default function Header({ activeView, navigate }) {
       }`}>
       <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-6 py-4">
         <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
-          <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader']">Ruchi Rush</span>
+          <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader']">RuchiRush</span>
         </div>
 
         <nav className="hidden md:flex gap-6 items-center">
@@ -165,4 +165,3 @@ export default function Header({ activeView, navigate }) {
     </header>
   );
 }
-

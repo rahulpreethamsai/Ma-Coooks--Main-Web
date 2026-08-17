@@ -593,11 +593,14 @@ body {
 @media (min-width: 1024px) {
   .how-works-media-col {
     position: sticky;
-    top: 100px;
-    height: calc(100vh - 150px);
+    top: 120px;
+    height: auto;
+    max-height: 520px;
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: start;
+    z-index: 10;
   }
 }
 
@@ -717,14 +720,50 @@ body {
   .how-works-step-card {
     padding: 1.25rem;
     transform: none !important;
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   .how-works-step-card.active-step {
     opacity: 1;
     border-color: rgba(158, 67, 0, 0.3);
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.85);
   }
+}
+
+/* ── Desktop scroll-reveal step panel states ── */
+.how-works-step-panel {
+  transition: opacity 0.55s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.how-works-step-panel.how-step-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.how-works-step-panel.how-step-inactive {
+  opacity: 0;
+  transform: translateY(28px) scale(0.97);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Left/right panels on desktop */
+.how-works-left-panel .how-works-media-wrapper {
+  position: relative;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(158, 67, 0, 0.12), 0 6px 16px rgba(0,0,0,0.06);
+  border: 1px solid rgba(255,255,255,0.4);
+  aspect-ratio: 16 / 10;
+  width: 100%;
+}
+
+/* Dot indicators hover */
+.how-works-left-panel .how-works-media-wrapper > div span:hover {
+  transform: scaleX(1.3);
 }
 
 /* ============================================================

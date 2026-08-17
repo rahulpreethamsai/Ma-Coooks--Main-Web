@@ -86,9 +86,9 @@ export default function Header({ activeView, navigate }) {
             Why Us
           </a>
           <a
-            href="#what-we-offer"
+            href="#explore-kitchens"
             className="text-primary font-semibold font-['Newsreader'] transition-opacity hover:opacity-80"
-            onClick={(e) => handleLinkClick(e, 'what-we-offer')}
+            onClick={(e) => handleLinkClick(e, 'explore-kitchens')}
           >
             Explore
           </a>
@@ -141,8 +141,8 @@ export default function Header({ activeView, navigate }) {
             Why Us
           </a>
           <a
-            href="#what-we-offer"
-            onClick={(e) => handleLinkClick(e, 'what-we-offer')}
+            href="#explore-kitchens"
+            onClick={(e) => handleLinkClick(e, 'explore-kitchens')}
             className="hover:text-primary transition-colors py-2"
           >
             Explore

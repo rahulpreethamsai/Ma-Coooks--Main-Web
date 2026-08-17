@@ -5,9 +5,9 @@ export const metadata = {
   description: "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
   manifest: "/site.webmanifest",
   icons: {
-    icon: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
-    shortcut: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
-    apple: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
+    icon: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
+    shortcut: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
+    apple: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
   }
 };
 

@@ -33,7 +33,7 @@ export default function Header({ activeView, navigate }) {
   return (
     <header className="nav-anim fixed top-0 left-0 w-full z-[9999] flex justify-between items-center px-6 py-4 backdrop-filter backdrop-blur-lg border-b border-primary/5 bg-inherit">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('landing')}>
-        <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader']">Ruchi Rush</span>
+        <span className="text-2xl font-bold text-primary tracking-tight font-['Newsreader']">RuchiRush</span>
       </div>
 
       <nav className="hidden md:flex gap-6 items-center">

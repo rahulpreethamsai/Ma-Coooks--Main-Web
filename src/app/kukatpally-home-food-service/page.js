@@ -1,7 +1,7 @@
 import ServiceAreaPage from '@/components/ServiceAreaPage';
 
 export const metadata = {
-  title: "Authentic Home Food Service in Kukatpally, Hyderabad | Ruchi Rush",
+  title: "Authentic Home Food Service in Kukatpally, Hyderabad | RuchiRush",
   description: "Enjoy slow-cooked Hyderabadi chicken dum biryani and hot snacks prepared by certified home chefs in Kukatpally. Pure ghee, hand-ground spices."
 };
 

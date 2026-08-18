@@ -81,7 +81,7 @@ export default function ServiceAreaPage({
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "FoodDeliveryService",
-    "name": `Ruchi Rush ${areaName}`,
+    "name": `RuchiRush ${areaName}`,
     "description": metaDescription,
     "url": `https://ruchirush.netlify.app/${areaName.toLowerCase().replace(' ', '-')}-food-delivery`,
     "telephone": "+919908574741",
@@ -92,7 +92,7 @@ export default function ServiceAreaPage({
     },
     "provider": {
       "@type": "Organization",
-      "name": "Ruchi Rush",
+      "name": "RuchiRush",
       "url": "https://ruchirush.netlify.app"
     },
     "hasOfferCatalog": {
@@ -275,7 +275,7 @@ export default function ServiceAreaPage({
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-stone-850">
-                    <span>Ruchi Rush Commission</span>
+                    <span>RuchiRush commission</span>
                     <span className="text-primary">8%</span>
                   </div>
                   <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">
@@ -326,7 +326,7 @@ export default function ServiceAreaPage({
           <div className="grid lg:grid-cols-12 gap-8 items-center relative z-10">
             {/* Left Column: CTA details */}
             <div className="lg:col-span-7 space-y-4 text-center lg:text-left">
-              <span className="text-primary font-bold uppercase tracking-widest text-xs">Ruchi Rush Mobile App</span>
+              <span className="text-primary font-bold uppercase tracking-widest text-xs">RuchiRush is coming to mobile</span>
               <h2 className="font-h2 text-3xl md:text-4xl font-bold font-['Newsreader'] leading-tight text-stone-900">Homemade Warmth, Delivered in a Tap</h2>
               <p className="text-xs text-stone-700 max-w-xl mx-auto lg:mx-0 leading-relaxed font-body-md">
                 Download our mobile app to track deliveries live, chat directly with home chefs, and easily pre-order custom meals for your family.
@@ -372,7 +372,7 @@ export default function ServiceAreaPage({
                 {/* In-app mockup wrapper */}
                 <div className="relative w-full h-full bg-[#fff8f6] rounded-[28px] overflow-hidden flex flex-col p-3 z-10 justify-between border border-stone-100">
                   <div className="flex justify-between items-center text-[9px] text-stone-500">
-                    <span className="font-bold">Ruchi Rush Live</span>
+                    <span className="font-bold">RuchiRush Live</span>
                     <div className="flex gap-1 items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
                       <span className="text-green-600 font-bold uppercase tracking-wider">Active</span>
@@ -430,8 +430,8 @@ export default function ServiceAreaPage({
 
       <footer className="footer w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-primary/10 bg-[#fff8f6] text-stone-750 relative z-10">
         <div className="flex flex-col items-center md:items-start gap-2">
-          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">Ruchi Rush</span>
-          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 Ruchi Rush. Made with love in Hyderabad.</span>
+          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">RuchiRush</span>
+          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 RuchiRush. Made with love in Hyderabad.</span>
         </div>
         <div className="flex gap-6 font-semibold text-sm text-stone-700">
           <button onClick={() => setLegalModal({ isOpen: true, policyType: 'about' })} className="hover:text-primary transition-colors cursor-pointer">About Us</button>

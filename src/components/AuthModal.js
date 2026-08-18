@@ -207,7 +207,7 @@ export default function AuthModal({ isOpen, initialTab, onClose, onAuthSuccess }
         {showRoleSelection ? (
           <div className="text-center space-y-6">
             <h3 className="font-h2 text-2xl text-primary font-bold">Pick Your Profile Role</h3>
-            <p className="text-sm text-stone-600">Welcome! Please tell us how you would like to participate in Ruchi Rush.</p>
+            <p className="text-sm text-stone-600">Welcome! Please tell us how you would like to participate in RuchiRush.</p>
             
             <div className="flex gap-4">
               <button 
@@ -229,7 +229,7 @@ export default function AuthModal({ isOpen, initialTab, onClose, onAuthSuccess }
         ) : (
           <div className="space-y-6">
             <div className="text-center">
-              <h3 className="font-h2 text-3xl text-primary font-bold font-['Newsreader']">Welcome to Ruchi Rush</h3>
+              <h3 className="font-h2 text-3xl text-primary font-bold font-['Newsreader']">Welcome to RuchiRush</h3>
               <p className="text-xs text-stone-500 mt-1">Experience real home-cooked food by local chefs</p>
             </div>
 

@@ -1,7 +1,7 @@
 import ServiceAreaPage from '@/components/ServiceAreaPage';
 
 export const metadata = {
-  title: "Premium Home Chef Delivery in Jubilee Hills, Hyderabad | Ruchi Rush",
+  title: "Premium Home Chef Delivery in Jubilee Hills, Hyderabad | RuchiRush",
   description: "Experience premium home-style breakfasts and healthy meals cooked by verified chefs in Jubilee Hills. Order freshly-ground pesarattu and idli."
 };
 

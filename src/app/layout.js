@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Ruchi Rush — Premium Home Cooked Food Connection",
-  description: "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
+  title: "RuchiRush | Home-Cooked Meal Subscriptions in Hyderabad",
+  description: "Discover trusted home kitchens in Hyderabad. Try homemade lunch or dinner and subscribe to weekly or monthly meal plans in Gachibowli, Kondapur, Madhapur and Hi-Tech City.",
   manifest: "/site.webmanifest",
   icons: {
     icon: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "FoodDeliveryService",
-              "name": "Ruchi Rush",
+              "name": "RuchiRush",
               "image": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1780987405/samples/woman-on-a-football-field.png",
               "@id": "https://ruchirush.netlify.app",
               "url": "https://ruchirush.netlify.app",
@@ -65,28 +65,6 @@ export default function RootLayout({ children }) {
                 { "@type": "AdministrativeArea", "name": "Kukatpally" },
                 { "@type": "AdministrativeArea", "name": "Kondapur" }
               ],
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.8",
-                "bestRating": "5",
-                "ratingCount": "537"
-              },
-              "review": [
-                {
-                  "@type": "Review",
-                  "author": { "@type": "Person", "name": "Rahul Sai" },
-                  "datePublished": "2026-05-28",
-                  "reviewBody": "The spicy parotta and egg curry from Priya's Godavari Kitchen was amazing. Tasted exactly like the meals my grandmother cooks back home in Godavari.",
-                  "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-                },
-                {
-                  "@type": "Review",
-                  "author": { "@type": "Person", "name": "Sneha Reddy" },
-                  "datePublished": "2026-06-02",
-                  "reviewBody": "Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily.",
-                  "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-                }
-              ]
             }) 
           }}
         />

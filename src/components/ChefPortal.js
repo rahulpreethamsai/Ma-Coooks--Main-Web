@@ -77,7 +77,7 @@ export default function ChefPortal({ Toast, navigate }) {
     }
 
     // Compile the message for submission
-    const msg = `Hi Ruchi Rush team! I would like to onboard as a home chef:
+    const msg = `Hi RuchiRush team! I would like to onboard as a home chef:
 
 --- CHEF DETAILS ---
 Full Name: ${chefName}
@@ -298,7 +298,7 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
             {/* Food Safety & Hygiene Quiz */}
             <div className="border-t border-stone-200 pt-6 mt-6 space-y-4">
               <h4 className="font-h3 text-xs font-bold uppercase tracking-wider text-stone-400 border-b pb-1">3. Food Safety Qualification Test</h4>
-              <p className="text-[11px] text-stone-500">Answer these safety questions correctly to qualify as a verified home chef on Ruchi Rush.</p>
+              <p className="text-[11px] text-stone-500">Answer these safety questions correctly to qualify as a verified home chef on RuchiRush.</p>
 
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-stone-700">1. What is the correct temperature range for food storage?</label>
@@ -364,7 +364,7 @@ Food Safety Quiz: Completed & Passed (A, B, A)`;
             <span className="text-5xl block animate-bounce">🎉</span>
             <h3 className="font-h1 text-2xl font-bold text-primary">Onboarding Form Ready!</h3>
             <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-              Your onboarding information has been successfully compiled and validated. Choose how you would like to submit it to the Ruchi Rush team:
+              Your onboarding information has been successfully compiled and validated. Choose how you would like to submit it to the RuchiRush team:
             </p>
 
             <div className="flex flex-col gap-3 pt-2">

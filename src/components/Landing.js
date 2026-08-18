@@ -300,7 +300,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           lastName,
           email,
           message,
-          _subject: "New contact message from Ruchi Rush Next.js App"
+          _subject: "New contact message from RuchiRush Next.js App"
         }),
         headers: {
           "Content-Type": "application/json",
@@ -407,14 +407,10 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           {/* Center Column: Text Content */}
           <div className="hero-text-col text-center flex flex-col items-center">
-            <h1 className="hero-title flex flex-col items-center leading-[1.05] tracking-tight text-on-surface">
-              <span className="hero-word-from-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">FROM HOME</span>
-              <span className="hero-word-kitchens font-h1 text-6xl md:text-7xl lg:text-8xl font-black text-primary block my-1 md:my-2 opacity-0">KITCHENS</span>
-              <span className="hero-word-to-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">TO YOUR HOME</span>
-            </h1>
+            <h1 className="hero-title text-4xl md:text-5xl lg:text-6xl font-h1 font-bold leading-tight tracking-tight text-on-surface">Home-cooked meals from kitchens near you.</h1>
 
-            <p className="hero-subheading font-body-lg text-body-lg text-on-surface-variant my-8 max-w-xl mx-auto leading-relaxed opacity-0">
-              Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that cares.
+            <p className="hero-subheading font-body-lg text-body-lg text-on-surface-variant my-6 max-w-xl mx-auto leading-relaxed opacity-0">
+              Find trusted home kitchens in Hyderabad, try a meal first, and subscribe to weekly or monthly lunch and dinner plans.
             </p>
 
             <div className="hero-cta-buttons flex flex-col sm:flex-row gap-6 justify-center w-full sm:w-auto opacity-0 z-10">
@@ -422,36 +418,35 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 onClick={() => navigate('customer-portal')}
                 className="eat-trigger flex items-center justify-center gap-2 bg-primary p-4 px-8 rounded-full text-white font-bold transition-transform hover:scale-105 active:scale-95 shadow-xl hover:shadow-primary/20 cursor-pointer"
               >
-                I WANT TO EAT
-                <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3J1N3o2cmE0YWkxNXF5NGFwNmF1eHM4ZHJ5NTF0dGxpajkzMHBxayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/jUuhj2J2sYgV7VsW5h/giphy.gif"
-                  width="30" height="30" className="brightness-0 invert" alt="eat icon" />
+                Find Home Food
               </button>
               <button
                 onClick={() => navigate('chef-portal')}
                 className="cook-trigger flex items-center justify-center gap-2 bg-white/80 backdrop-blur-md p-4 px-8 rounded-full text-primary font-bold border border-primary/25 transition-transform hover:scale-105 active:scale-95 shadow-xl hover:bg-white cursor-pointer"
               >
-                I WANT TO COOK
-                <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG44YWZta2l3bWNzeGxxMmh3aHRvOTdneDR3YXRqaDJ1MGlrbzAzdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/SJJhxzipvPyi5zyOvT/giphy.gif"
-                  width="30" height="30" alt="cook icon" />
+                Become a Home Chef
               </button>
             </div>
 
+            <div className="mt-4 text-sm text-stone-700 opacity-0 z-10">📍 Gachibowli · Kondapur · Madhapur · Hi-Tech City</div>
+            <div className="mt-2 text-xs text-stone-600 opacity-0 z-10 font-semibold">Try 1 meal first. Subscribe only if you love it.</div>
+
             <div className="hero-trust-indicators mt-9 w-full max-w-2xl flex flex-wrap justify-center items-center gap-x-8 gap-y-4 border-t border-primary/10 pt-8 opacity-0">
               <div className="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
-                <span className="material-symbols-outlined text-2xl text-primary">verified</span>
-                <span>Verified Kitchens</span>
+                <span className="material-symbols-outlined text-2xl text-primary">home</span>
+                <span>Home kitchens</span>
               </div>
               <div className="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
-                <span className="material-symbols-outlined text-2xl text-primary">female</span>
-                <span>Women-led Home Businesses</span>
+                <span className="material-symbols-outlined text-2xl text-primary">place</span>
+                <span>Nearby kitchens</span>
               </div>
               <div className="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
-                <span className="material-symbols-outlined text-2xl text-primary">soup_kitchen</span>
-                <span>Freshly Cooked</span>
+                <span className="material-symbols-outlined text-2xl text-primary">person</span>
+                <span>Know your cook</span>
               </div>
               <div className="trust-badge flex items-center gap-2 text-sm font-semibold text-on-surface-variant">
-                <span className="material-symbols-outlined text-2xl text-primary">diversity_3</span>
-                <span>Community Driven</span>
+                <span className="material-symbols-outlined text-2xl text-primary">paid</span>
+                <span>Try before you subscribe</span>
               </div>
             </div>
           </div>
@@ -472,50 +467,76 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         </div>
       </section>
 
+      {/* SECTION 3a: HOW IT WORKS (STATIC) */}
+      <section id="how-it-works-static" className="py-12 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <h2 id="how-it-works-heading" className="text-3xl md:text-4xl font-h2 font-bold text-center mb-6">How RuchiRush works</h2>
+          <div className="grid gap-8 sm:grid-cols-2 items-start">
+            {/* Customer Flow */}
+            <div className="bg-stone-50 p-6 rounded-2xl shadow-sm">
+              <h3 className="font-bold text-lg">For Customers</h3>
+              <ol className="mt-4 space-y-3 list-decimal list-inside text-sm text-stone-700">
+                <li><strong>Find</strong> — Enter your area and discover home kitchens near your home or office.</li>
+                <li><strong>Try</strong> — Order one lunch or dinner before committing to a plan.</li>
+                <li><strong>Subscribe</strong> — Choose a weekly or monthly meal plan from the kitchen you like.</li>
+                <li><strong>Pause or skip</strong> — Going out or travelling? Pause or skip according to your subscription policy.</li>
+              </ol>
+              <div className="mt-4">
+                <button onClick={() => navigate('customer-portal')} className="bg-primary text-white px-4 py-2 rounded-full font-semibold">Find Home Food</button>
+              </div>
+            </div>
+
+            {/* Chef Flow */}
+            <div className="bg-stone-50 p-6 rounded-2xl shadow-sm">
+              <h3 className="font-bold text-lg">For Home Chefs</h3>
+              <ol className="mt-4 space-y-3 list-decimal list-inside text-sm text-stone-700">
+                <li><strong>Apply</strong> — Tell us about your kitchen and food.</li>
+                <li><strong>Get verified</strong> — Complete identity, food-safety and kitchen verification steps where required.</li>
+                <li><strong>Set your menu</strong> — Choose dishes, pricing, availability and daily capacity.</li>
+                <li><strong>Cook & earn</strong> — Receive orders, prepare meals and get paid through RuchiRush.</li>
+              </ol>
+              <div className="mt-4">
+                <button onClick={() => navigate('chef-portal')} className="bg-white border border-primary text-primary px-4 py-2 rounded-full font-semibold">Become a Home Chef</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 3: WHY CHOOSE US */}
       <div ref={whyUsRef} className="why-choose-us bg-white">
         <section id="why-us" className="py-20 px-6 max-w-7xl mx-auto">
-          <h2 className="font-h2 text-4xl text-center mb-12 font-bold text-on-primary-fixed-variant">Why choose Ruchi Rush?</h2>
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Other Apps */}
-            <div className="why-left bg-stone-100 p-8 rounded-2xl border border-stone-200 flex flex-col gap-4 opacity-75 grayscale">
-              <h3 className="font-h2 text-2xl text-stone-700 font-bold">Standard Delivery Apps</h3>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2 font-body-md text-stone-600">
-                  <span className="material-symbols-outlined text-red-500 font-bold">close</span>
-                  High 30% commission per order
-                </li>
-                <li className="flex items-center gap-2 font-body-md text-stone-600">
-                  <span className="material-symbols-outlined text-red-500 font-bold">close</span>
-                  Industrial kitchen mass production
-                </li>
-                <li className="flex items-center gap-2 font-body-md text-stone-600">
-                  <span className="material-symbols-outlined text-red-500 font-bold">close</span>
-                  Anonymous, transactional experience
-                </li>
-              </ul>
+          <h2 className="font-h2 text-4xl text-center mb-8 font-bold text-on-primary-fixed-variant">Why RuchiRush</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">home</span>
+              <h3 className="font-bold mt-3">Home kitchens</h3>
+              <p className="text-sm text-stone-500 mt-2">Food prepared by local home cooks in small batches.</p>
             </div>
-
-            {/* Ruchi Rush */}
-            <div className="why-right bg-gradient-to-br from-orange-50 to-orange-100/50 p-8 rounded-2xl border-2 border-primary/20 shadow-xl flex flex-col gap-4">
-              <div className="flex justify-between items-start">
-                <h3 className="font-h2 text-2xl text-primary font-bold">Ruchi Rush Connection</h3>
-                <span className="bg-primary text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider">RECOMMENDED</span>
-              </div>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2 font-body-md font-semibold text-stone-800">
-                  <span className="material-symbols-outlined text-green-600 font-bold">check</span>
-                  Low 8% commission — Chefs keep more
-                </li>
-                <li className="flex items-center gap-2 font-body-md font-semibold text-stone-800">
-                  <span className="material-symbols-outlined text-green-600 font-bold">check</span>
-                  Real homemade food, small batches
-                </li>
-                <li className="flex items-center gap-2 font-body-md font-semibold text-stone-800">
-                  <span className="material-symbols-outlined text-green-600 font-bold">check</span>
-                  Human stories behind every recipe
-                </li>
-              </ul>
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">place</span>
+              <h3 className="font-bold mt-3">Nearby</h3>
+              <p className="text-sm text-stone-500 mt-2">Start with kitchens within practical delivery distance of your area.</p>
+            </div>
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">person</span>
+              <h3 className="font-bold mt-3">Know your cook</h3>
+              <p className="text-sm text-stone-500 mt-2">See the cook, kitchen profile, menu, availability and reviews.</p>
+            </div>
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">restaurant</span>
+              <h3 className="font-bold mt-3">Try first</h3>
+              <p className="text-sm text-stone-500 mt-2">Order one meal before choosing a weekly or monthly plan.</p>
+            </div>
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">calendar_month</span>
+              <h3 className="font-bold mt-3">Weekly & monthly plans</h3>
+              <p className="text-sm text-stone-500 mt-2">Make home food part of your routine instead of deciding every day.</p>
+            </div>
+            <div className="p-6 bg-white rounded-2xl shadow-sm text-center">
+              <span className="material-symbols-outlined text-3xl text-primary">pause_circle</span>
+              <h3 className="font-bold mt-3">Flexible subscriptions</h3>
+              <p className="text-sm text-stone-500 mt-2">Pause or skip deliveries according to your plan rules.</p>
             </div>
           </div>
         </section>
@@ -586,7 +607,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* SECTION 6: HOW IT WORKS CAROUSEL */}
       <section ref={howWorksRef} className="pt-20 pb-12 px-6 bg-white" id="how-it-works">
         <div className="max-w-7xl p-6 mx-auto">
-          <h2 className="how-works-title text-4xl font-bold font-['Newsreader'] text-center mb-10 text-on-primary-fixed-variant">How Ruchi Rush Works</h2>
+          <h2 className="how-works-title text-4xl font-bold font-['Newsreader'] text-center mb-10 text-on-primary-fixed-variant">How RuchiRush works</h2>
 
           <div className="how-works-grid">
             {/* Sticky Media Column */}
@@ -637,42 +658,12 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
       <section className="py-20 px-6 bg-gradient-to-br from-stone-50 to-orange-50/20" id="testimonials">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-xl mx-auto mb-16">
-            <span className="text-primary font-bold uppercase tracking-widest text-xs">What Our Customers Say</span>
-            <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Loved by Neighbors, Made by Hand</h2>
-            <p className="text-sm text-stone-500 mt-3 font-body-md">See why families and professionals across Hyderabad trust Ruchi Rush for daily home cooking.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col justify-between hover:shadow-md transition-shadow relative"
-              >
-                <span className="text-6xl text-yellow-500 absolute top-4 right-6 font-serif">“</span>
-                <div className="space-y-4">
-                  <div className="flex gap-1 text-yellow-500">
-                    {[...Array(t.rating)].map((_, i) => (
-                      <span key={i} className="material-symbols-outlined fill-current text-sm">star</span>
-                    ))}
-                  </div>
-                  <p className="text-black text-sm leading-relaxed font-medium italic">
-                    "{t.quote}"
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4 mt-8 pt-4 border-t border-stone-100 dark:border-stone-800">
-                  <img src={t.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-primary/10" alt={t.name} />
-                  <div>
-                    <h4 className="font-bold text-stone-900 dark:text-white text-sm">{t.name}</h4>
-                    <p className="text-[11px] text-stone-500 font-semibold">{t.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">Early feedback</span>
+            <h2 className="font-h2 text-3xl font-bold mt-2 text-black font-['Newsreader']">Early feedback</h2>
+            <p className="text-sm text-stone-500 mt-3">Real feedback from our early users and interviews. We will publish verified testimonials here as we collect them.</p>
           </div>
         </div>
       </section>
@@ -706,31 +697,12 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 We keep our operational costs low and pass the savings back to our neighborhood partners.
               </p>
 
-              {/* Commission bars comparison */}
               <div className="space-y-4 pt-2">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold text-stone-500">
-                    <span>Other Apps Commission</span>
-                    <span className="text-red-600">30%</span>
-                  </div>
-                  <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
-                    <div className="bg-red-500 h-full rounded-full" style={{ width: '30%' }}></div>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold text-stone-850">
-                    <span>Ruchi Rush Commission</span>
-                    <span className="text-primary">8%</span>
-                  </div>
-                  <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full rounded-full" style={{ width: '8%' }}></div>
-                  </div>
-                </div>
+                <p className="text-sm text-stone-700">Keep more of what you earn. RuchiRush maintains a low commission to help neighborhood kitchens stay profitable. Learn exact rates when you apply.</p>
               </div>
 
               <div className="pt-4 border-t border-stone-200 text-center">
-                <span className="text-xs font-black text-primary">Chefs Retain 92% of Sales Payouts!</span>
+                <span className="text-xs font-black text-primary">We prioritise fair payouts for home chefs.</span>
               </div>
             </div>
 
@@ -773,36 +745,20 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative z-10">
           {/* Left Column: CTA details */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <span className="text-primary font-bold uppercase tracking-widest text-xs">Ruchi Rush Mobile App</span>
-            <h2 className="font-h2 text-4xl lg:text-5xl font-bold font-['Newsreader'] leading-tight text-stone-900">Homemade Warmth, Delivered in a Tap</h2>
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">RuchiRush is coming to mobile</span>
+            <h2 className="font-h2 text-4xl lg:text-5xl font-bold font-['Newsreader'] leading-tight text-stone-900">RuchiRush is coming to mobile.</h2>
             <p className="text-sm text-stone-700 max-w-xl mx-auto lg:mx-0 leading-relaxed font-body-md">
-              Download our mobile app to track deliveries live, chat directly with home chefs, and easily pre-order custom meals for your family.
+              We're starting with our web experience and direct onboarding while we build the first Hyderabad kitchen network.
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-4">
-              {/* Mock PlayStore Button */}
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); Toast.show("App downloading starts shortly...", "success"); }}
-                className="bg-black border border-stone-850 hover:bg-stone-900 text-white flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+              <button
+                onClick={(e) => { e.preventDefault(); Toast.show('Thanks — we''ll keep you updated!', 'success'); }}
+                className="bg-primary text-white flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
               >
-                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M5 3.00005C4.7 3.00005 4.4 3.10005 4.2 3.30005L13.8 12.9L18.4 8.30005L5.7 1.20005C5.4 1.00005 5.2 3.00005 5 3.00005ZM3.2 4.30005C3.1 4.50005 3 4.70005 3 5.00005V19C3 19.3 3.1 19.5 3.2 19.7L12.4 11.5L3.2 4.30005ZM14.8 13.9L4.2 20.7C4.4 20.9 4.7 21 5 21C5.2 21 5.4 20.9 5.7 20.8L18.4 13.7L14.8 13.9ZM14.8 12.5L20.1 9.50005C20.6 9.20005 21 8.60005 21 8.00005C21 7.40005 20.6 6.80005 20.1 6.50005L14.8 9.50005L13.8 10.5L14.8 12.5Z" />
-                </svg>
-                <div className="text-left">
-                  <p className="text-[10px] text-stone-400 uppercase leading-none font-bold">GET IT ON</p>
-                  <p className="text-sm font-black mt-0.5 leading-none">Google Play</p>
-                </div>
-              </a>
-
-              {/* Mock AppStore Button */}
-              <a
-                href="#"
-                onClick={(e) => { e.preventDefault(); Toast.show("App downloading starts shortly...", "success"); }}
-                className="bg-black border border-stone-850 hover:bg-stone-900 text-white flex items-center gap-3 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-              >
-                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.48C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.1 16.67C20.08 16.74 19.67 18.11 18.71 19.5ZM15.97 4.17C16.63 3.37 17.07 2.28 16.95 1C16 1.04 14.9 1.6 14.24 2.38C13.68 3.04 13.19 4.14 13.34 5.39C14.39 5.47 15.4 4.88 15.97 4.17Z" />
+                Join the Launch
+              </button>
+            </div>
                 </svg>
                 <div className="text-left">
                   <p className="text-[10px] text-stone-400 uppercase leading-none font-bold">Download on the</p>
@@ -824,7 +780,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
                 {/* Mock header */}
                 <div className="flex justify-between items-center text-[10px] text-stone-500">
-                  <span className="font-bold">Ruchi Rush Live</span>
+                  <span className="font-bold">RuchiRush Live</span>
                   <div className="flex gap-1 items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
                     <span className="text-green-600 font-bold uppercase tracking-wider">Active</span>
@@ -975,11 +931,11 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       {/* FOOTER */}
       <footer className="footer w-full py-8 px-8 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-primary/10 bg-[#fff8f6] text-stone-750">
         <div className="flex flex-col items-center md:items-start gap-2">
-          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">Ruchi Rush</span>
-          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 Ruchi Rush. Made with love.</span>
+          <span className="text-3xl font-bold text-stone-900 font-['Newsreader']">RuchiRush</span>
+          <span className="text-stone-500 text-sm font-['Newsreader']">© 2026 RuchiRush. Made with love.</span>
         </div>
         <div>
-          <h1 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-2">Follow Us</h1>
+          <h3 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-2">Follow Us</h3>
           <div className="flex gap-2 items-center">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-stone-700 hover:text-primary transition-colors p-2" aria-label="Facebook">
               <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1004,7 +960,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <button onClick={() => openLegalModal('terms')} className="hover:text-primary transition-colors cursor-pointer">Terms of Service</button>
         </div>
         <div className="text-center md:text-right text-stone-700 font-medium">
-          <h1 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-1">Address</h1>
+          <h3 className="text-stone-900 text-md font-bold uppercase tracking-wider mb-1">Address</h3>
           <p className="text-stone-650 text-sm">Gachibowli, Hyderabad, TS</p>
         </div>
       </footer>

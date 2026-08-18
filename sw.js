@@ -1,5 +1,5 @@
 // ============================================================
-// Ruchi Rush — Service Worker (sw.js)
+// RuchiRush — Service Worker (sw.js)
 // Handles caching for PWA / offline support
 // ============================================================
 

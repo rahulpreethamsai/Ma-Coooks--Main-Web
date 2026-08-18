@@ -1,97 +1,189 @@
 import "./globals.css";
+import { Plus_Jakarta_Sans, Newsreader, Solway } from 'next/font/google';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  variable: '--font-h2',
+  display: 'swap',
+});
+
+const solway = Solway({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-h1',
+  display: 'swap',
+});
 
 export const metadata = {
-  title: "Ruchi Rush — Premium Home Cooked Food Connection",
-  description: "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
+  metadataBase: new URL("https://www.ruchirush.com"),
+  title: "RuchiRush | Home-Cooked Meal Subscriptions in Hyderabad",
+  description: "Discover trusted home kitchens in Hyderabad. Try homemade lunch or dinner and subscribe to weekly or monthly meal plans in Gachibowli, Kondapur, Madhapur and Hi-Tech City.",
+  alternates: {
+    canonical: "https://www.ruchirush.com",
+  },
   manifest: "/site.webmanifest",
+  openGraph: {
+    title: "RuchiRush | Home-Cooked Meal Subscriptions in Hyderabad",
+    description: "Discover trusted home kitchens in Hyderabad. Try homemade lunch or dinner and subscribe to weekly or monthly meal plans in Gachibowli, Kondapur, Madhapur and Hi-Tech City.",
+    url: "https://www.ruchirush.com",
+    siteName: "RuchiRush",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=1200&h=630&fit=crop&q=80",
+        width: 1200,
+        height: 630,
+        alt: "RuchiRush - Home-cooked meal subscriptions in Hyderabad",
+      }
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RuchiRush | Home-Cooked Meal Subscriptions in Hyderabad",
+    description: "Discover trusted home kitchens in Hyderabad. Try homemade lunch or dinner and subscribe to weekly or monthly meal plans in Gachibowli, Kondapur, Madhapur and Hi-Tech City.",
+    images: ["https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=1200&h=630&fit=crop&q=80"],
+  },
   icons: {
-    icon: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
-    shortcut: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
-    apple: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1778754150/cld-sample.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   }
 };
 
 export default function RootLayout({ children }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.ruchirush.com/#organization",
+        "name": "RuchiRush",
+        "url": "https://www.ruchirush.com",
+        "logo": "https://www.ruchirush.com/favicon.ico",
+        "description": "Hyderabad-focused marketplace connecting customers with verified local home kitchens and weekly meal subscriptions.",
+        "email": "hello@ruchirush.com",
+        "telephone": "+919908574741",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Gachibowli",
+          "addressLocality": "Hyderabad",
+          "addressRegion": "Telangana",
+          "postalCode": "500032",
+          "addressCountry": "IN"
+        },
+        "areaServed": [
+          { "@type": "City", "name": "Hyderabad" },
+          { "@type": "AdministrativeArea", "name": "Gachibowli" },
+          { "@type": "AdministrativeArea", "name": "Kondapur" },
+          { "@type": "AdministrativeArea", "name": "Madhapur" },
+          { "@type": "AdministrativeArea", "name": "Hi-Tech City" }
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.ruchirush.com/#website",
+        "url": "https://www.ruchirush.com",
+        "name": "RuchiRush",
+        "description": "Home-cooked meal subscriptions from kitchens near you in Hyderabad.",
+        "publisher": {
+          "@id": "https://www.ruchirush.com/#organization"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.ruchirush.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is RuchiRush?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "RuchiRush connects customers with local home kitchens offering wholesome home-cooked meals and recurring weekly or monthly meal plans in Hyderabad."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is RuchiRush another Swiggy/Zomato?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. RuchiRush focuses specifically on nearby home kitchens, small-batch cooking, and regular home meal subscriptions instead of commercial restaurant delivery."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I try food before subscribing?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Customers can order a single trial meal before committing to a weekly or monthly subscription."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Where are you launching in Hyderabad?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "We are initially onboarding kitchens in Hyderabad's IT corridor, starting with Gachibowli, Kondapur, Madhapur, and Hi-Tech City."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I pause my subscription?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, you can easily pause or skip deliveries according to the flexible pause/skip rules of your selected meal plan."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How are kitchens verified?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Home cooks undergo identity verification, kitchen hygiene audits, food-safety training, and FSSAI registration before their kitchen storefront is activated."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do home chefs join?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Home chefs apply online, complete verification, configure their menu and pricing, set their daily cooking capacity, and receive repeat orders through RuchiRush."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do you deliver everywhere in Hyderabad?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not initially. RuchiRush is starting hyperlocally in the IT corridor (Gachibowli, Kondapur, Madhapur, Hi-Tech City) and expanding neighborhood by neighborhood."
+            }
+          }
+        ]
+      }
+    ]
+  };
+
   return (
-    <html lang="en" className="h-full scroll-smooth">
+    <html lang="en" className={`h-full scroll-smooth ${plusJakartaSans.variable} ${newsreader.variable} ${solway.variable}`}>
       <head>
-        {/* Preconnect hints */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* Google Fonts */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-          rel="stylesheet"
-        />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-          rel="stylesheet"
-        />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Italiana&family=Nixie+One&family=Solway:wght@300;400;500;700;800&family=Special+Elite&display=swap" 
           rel="stylesheet"
         />
         <script 
           type="application/ld+json" 
           dangerouslySetInnerHTML={{ 
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FoodDeliveryService",
-              "name": "Ruchi Rush",
-              "image": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1780987405/samples/woman-on-a-football-field.png",
-              "@id": "https://ruchirush.netlify.app",
-              "url": "https://ruchirush.netlify.app",
-              "telephone": "+919999999999",
-              "priceRange": "$$",
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": "Gachibowli Street No 2",
-                "addressLocality": "Hyderabad",
-                "addressRegion": "TS",
-                "postalCode": "500032",
-                "addressCountry": "IN"
-              },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": 17.4483,
-                "longitude": 78.3741
-              },
-              "areaServed": [
-                { "@type": "AdministrativeArea", "name": "Hyderabad" },
-                { "@type": "AdministrativeArea", "name": "Gachibowli" },
-                { "@type": "AdministrativeArea", "name": "Madhapur" },
-                { "@type": "AdministrativeArea", "name": "Jubilee Hills" },
-                { "@type": "AdministrativeArea", "name": "Kukatpally" },
-                { "@type": "AdministrativeArea", "name": "Kondapur" }
-              ],
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.8",
-                "bestRating": "5",
-                "ratingCount": "537"
-              },
-              "review": [
-                {
-                  "@type": "Review",
-                  "author": { "@type": "Person", "name": "Rahul Sai" },
-                  "datePublished": "2026-05-28",
-                  "reviewBody": "The spicy parotta and egg curry from Priya's Godavari Kitchen was amazing. Tasted exactly like the meals my grandmother cooks back home in Godavari.",
-                  "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-                },
-                {
-                  "@type": "Review",
-                  "author": { "@type": "Person", "name": "Sneha Reddy" },
-                  "datePublished": "2026-06-02",
-                  "reviewBody": "Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily.",
-                  "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-                }
-              ]
-            }) 
+            __html: JSON.stringify(structuredData)
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-on-surface antialiased">
+      <body className="min-h-full flex flex-col bg-background text-on-surface antialiased font-sans">
         {children}
       </body>
     </html>

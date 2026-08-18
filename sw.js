@@ -1,9 +1,9 @@
 // ============================================================
-// Ruchi Rush — Service Worker (sw.js)
+// RuchiRush — Service Worker (sw.js)
 // Handles caching for PWA / offline support
 // ============================================================
 
-const CACHE_NAME = "ruchirush-v1";
+const CACHE_NAME = "ruchirush-v2";
 const CACHE_VERSION = "1.0.0";
 
 // Files to cache immediately on install

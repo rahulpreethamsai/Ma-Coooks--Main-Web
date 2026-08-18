@@ -65,7 +65,7 @@
 }
 
 /* ============================================================
-   Ruchi Rush — Premium Stylesheet (globals.css)
+   RuchiRush — Stylesheet (globals.css)
    ============================================================ */
 
 body {
@@ -73,48 +73,8 @@ body {
   color: #241913;
   font-family: 'Plus Jakarta Sans', sans-serif;
   overflow-x: hidden;
-}
-
-.what-we-offer {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1780568885/cld-sample-2.png");
-}
-
-.get-in-touch {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
-  background-position: left;
-  background-size: cover;
-}
-
-.footer {
-  background-color: #c1a479;
-}
-
-.hero {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
-  background-size: cover;
-  background-position: center;
-}
-
-.how-it-works {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
-  background-size: cover;
-  background-position: center;
-}
-
-.cta-section {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-5.png");
-  background-position: center;
-}
-
-.why-choose-us {
-  background-image: url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1780657155/cld-sample-3.png");
-  background-size: cover;
-  background-position: center;
-}
-
-.trust-section {
-  background-size: cover;
-  background-position: center;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* --- Custom Scrollbar Hide & Style --- */
@@ -127,7 +87,6 @@ body {
   scrollbar-width: none;
 }
 
-/* Custom design scrollbar for views */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -149,103 +108,19 @@ body {
 /* --- Noise Grain Texture --- */
 .grain-texture {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+  opacity: 0.025;
   pointer-events: none;
 }
 
-/* --- Gradients --- */
-.hero-gradient {
-  background: radial-gradient(circle at top right, #ffdbcb 0%, #fff8f6 60%);
-}
-
-.premium-gradient {
-  background: linear-gradient(135deg, #ffeae0 0%, #fff1eb 100%);
-}
-
-.accent-gradient {
-  background: linear-gradient(135deg, #ff7f32 0%, #9e4300 100%);
-}
-
-/* --- Glassmorphism UI Elements --- */
-.glass-card {
-  background: rgba(255, 255, 255, 0.45);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px 0 rgba(158, 67, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.65);
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 12px 40px 0 rgba(158, 67, 0, 0.08);
-}
-
-.glass-modal {
-  background: rgba(255, 255, 255, 0.8);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 24px 64px rgba(36, 25, 19, 0.15);
-}
-
-.glass-dark-card {
-  background: rgba(36, 25, 19, 0.85);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-}
-
-/* --- Floating Button & Inputs --- */
-.glass-btn {
-  background: rgba(255, 255, 255, 0.25);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transition: all 0.3s ease;
-}
-
-.glass-btn:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 6px 20px rgba(158, 67, 0, 0.1);
-}
-
-.input-glow:focus {
-  outline: none;
-  border-color: #9e4300;
-  box-shadow: 0 0 0 3px rgba(158, 67, 0, 0.2);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-
-/* --- Live Stove Cooking Sim Animation --- */
-@keyframes simmer {
-
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.6;
-  }
-
-  50% {
-    transform: translateY(-8px) scale(1.15);
-    opacity: 0.9;
-  }
-}
-
-.simmer-flame-1 {
-  animation: simmer 1.2s infinite ease-in-out;
-}
-
-.simmer-flame-2 {
-  animation: simmer 1.5s infinite ease-in-out 0.3s;
-}
-
-.simmer-flame-3 {
-  animation: simmer 1.8s infinite ease-in-out 0.6s;
+/* --- Canvas element positioning --- */
+.hero-connection-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* --- Custom Toast Notification --- */
@@ -262,20 +137,20 @@ body {
 }
 
 .toast-msg {
-  min-width: 300px;
+  min-width: 280px;
   max-width: 90vw;
   background: rgba(36, 25, 19, 0.95);
   color: #fff8f6;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-left: 4px solid #ff7f32;
-  padding: 14px 20px;
+  padding: 12px 18px;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
-  gap: 12px;
-  animation: toast-slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  gap: 10px;
+  animation: toast-slide-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   pointer-events: auto;
 }
 
@@ -294,487 +169,19 @@ body {
 @keyframes toast-slide-in {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.9);
+    transform: translateY(20px) scale(0.95);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-.toast-slide-out {
-  animation: toast-slide-out-anim 0.3s ease forwards !important;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes toast-slide-out-anim {
-  to {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.9);
-  }
-}
-
-/* --- Active Tracker Indicators --- */
-.tracker-pulse {
-  position: relative;
-}
-
-.tracker-pulse::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid #ff7f32;
-  animation: tracker-pulse-anim 1.8s infinite ease-out;
-}
-
-@keyframes tracker-pulse-anim {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-
-/* --- Custom Switches --- */
-.switch-checkbox:checked+.switch-label {
-  background-color: #9e4300;
-}
-
-.switch-checkbox:checked+.switch-label .switch-toggle {
-  transform: translateX(20px);
-}
-
-/* ============================================================
-   Ruchi Rush — Redesigned Hero Section Custom Scoped CSS
-   ============================================================ */
-#hero-storytelling {
-  position: relative;
-  background: radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  background-size: cover;
-  background-position: center;
-}
-
-.hero-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3rem;
-}
-
-@media (min-width: 1024px) {
-  .hero-container {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr 1fr;
-    gap: 2rem;
-    align-items: center;
-  }
-}
-
-/* Left Column: Chef Hat */
-.chef-hat-wrapper {
-  position: relative;
-  width: 330px;
-  height: 330px;
-  margin: 0 auto;
-  transform: rotate(-3deg);
-  transition: transform 0.3s ease;
-  filter: drop-shadow(0 15px 30px rgba(158, 67, 0, 0.12));
-}
-
-.chef-hat-wrapper:hover {
-  transform: rotate(0deg) scale(1.02);
-}
-
-.chef-hat-svg-outline {
-  position: absolute;
-  inset: -6px;
-  width: calc(100% + 12px);
-  height: calc(100% + 12px);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.chef-hat-dashed-outline {
-  animation: chef-hat-dash 20s linear infinite;
-}
-
-@keyframes chef-hat-dash {
-  to {
-    stroke-dashoffset: -40;
-  }
-}
-
-.chef-hat-video-container {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  clip-path: url(#chef-hat-clip);
-  background: #ecd6cc;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.chef-hat-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  scale: 1.1;
-}
-
-/* Right Column: Plate */
-.plate-wrapper {
-  position: relative;
-  width: 290px;
-  height: 290px;
-  margin: 0 auto;
-  border-radius: 50%;
-  padding: 14px;
-  background: linear-gradient(135deg, #fbf7f4 0%, #ecd6cc 100%);
-  filter: drop-shadow(0 15px 30px rgba(158, 67, 0, 0.12));
-  transition: transform 0.3s ease;
-}
-
-.plate-wrapper:hover {
-  transform: scale(1.03) rotate(5deg);
-}
-
-.plate-rim-circle-1 {
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  border: 1px dashed rgba(255, 127, 50, 0.25);
-  pointer-events: none;
-}
-
-.plate-rim-circle-2 {
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  pointer-events: none;
-}
-
-.plate-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: inset 0 8px 16px rgba(158, 67, 0, 0.15);
-  background: #dfc0b2;
-}
-
-.plate-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  scale: 1.05;
-}
-
-/* Labels on video elements */
-.chef-hat-label,
-.plate-label {
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(158, 67, 0, 0.15);
-  border-radius: 9999px;
-  padding: 4px 14px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #7a5446;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(158, 67, 0, 0.05);
-  z-index: 5;
-}
-
-/* Parallax classes */
-.parallax-bg {
-  transition: transform 0.1s ease-out;
-}
-
-/* Canvas element positioning */
-.hero-connection-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-}
-
-/* Media query adjustments for mobile/tablet */
-@media (max-width: 1023px) {
-  .hero-media-col {
-    display: none !important;
-  }
-
-  .hero-connection-canvas {
-    display: none !important;
-  }
-
-  .hero-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-  }
-
-  .hero-text-col {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-}
-
-#chef-promise {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
-  background-size: cover;
-  background-position: bottom;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-}
-
-/* ============================================================
-   Ruchi Rush — Redesigned How It Works Custom Scoped CSS
-   ============================================================ */
-#how-it-works {
-  position: relative;
-  background: linear-gradient(180deg, rgba(255, 248, 246, 0.9) 0%, rgba(255, 248, 246, 0.95) 100%),
-    url("https://res.cloudinary.com/dt79nhjkc/image/upload/v1778741240/cld-sample-2.png");
-  background-size: cover;
-  background-position: center;
-}
-
-.how-works-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-@media (min-width: 1024px) {
-  .how-works-grid {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
-}
-
-/* Left Column: Sticky Media */
-.how-works-media-col {
-  position: relative;
-  width: 100%;
-}
-
-@media (min-width: 1024px) {
-  .how-works-media-col {
-    position: sticky;
-    top: 100px;
-    height: calc(100vh - 150px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
-.how-works-media-wrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(158, 67, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.2);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.how-works-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-.how-works-video.active-media {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Right Column: Step Cards */
-.how-works-steps-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.how-works-step-card {
-  background: rgba(255, 255, 255, 0.3);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 1.25rem;
-  padding: 1.75rem;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  opacity: 0.5;
-  transform: scale(0.96);
-  box-shadow: 0 4px 20px rgba(158, 67, 0, 0.02);
-}
-
-.how-works-step-card:hover {
-  background: rgba(255, 255, 255, 0.55);
-  border-color: rgba(158, 67, 0, 0.15);
-  opacity: 0.8;
-}
-
-.how-works-step-card.active-step {
-  opacity: 1;
-  transform: scale(1.02);
-  border-color: rgba(158, 67, 0, 0.3);
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 12px 30px rgba(158, 67, 0, 0.08);
-}
-
-.step-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 1rem;
-  transition: all 0.4s ease;
-}
-
-.how-works-step-card.active-step .step-badge {
-  background-color: #9e4300;
-  color: #ffffff;
-  transform: scale(1.1);
-}
-
-.how-works-step-card:not(.active-step) .step-badge {
-  background-color: #f4ded4;
-  color: #7a5446;
-}
-
-/* Title text styling */
-.how-works-title {
-  font-family: 'Newsreader', serif;
-  font-size: 2.5rem;
-  line-height: 1.2;
-  font-weight: 600;
-  color: #341100;
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
-
-@media (max-width: 1023px) {
-  .how-works-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .how-works-media-wrapper {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border-radius: 1rem;
-  }
-
-  .how-works-step-card {
-    padding: 1.25rem;
-    transform: none !important;
-    opacity: 0.6;
-  }
-
-  .how-works-step-card.active-step {
-    opacity: 1;
-    border-color: rgba(158, 67, 0, 0.3);
-    background: rgba(255, 255, 255, 0.7);
-  }
-}
-
-/* ============================================================
-   Ruchi Rush — Play Store App Download Mockup Animations
-   ============================================================ */
-@keyframes bike-drive {
-  0% {
-    transform: translateX(-30px);
-    opacity: 0;
-  }
-
-  15% {
-    opacity: 1;
-  }
-
-  85% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateX(190px);
-    opacity: 0;
-  }
-}
-
-@keyframes pulse-radar {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.4;
-  }
-
-  50% {
-    transform: scale(1.4);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: scale(0.9);
-    opacity: 0.4;
-  }
-}
-
-@keyframes status-bounce {
-
-  0%,
-  100% {
-    transform: translateY(4px);
-  }
-
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.ani-bike {
-  animation: bike-drive 4s linear infinite;
-}
-
-.ani-radar {
-  animation: pulse-radar 2s infinite ease-in-out;
-}
-
-.ani-status-card {
-  animation: status-bounce 3s infinite ease-in-out;
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

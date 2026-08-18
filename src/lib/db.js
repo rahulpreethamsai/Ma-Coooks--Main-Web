@@ -2,10 +2,6 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
-
 let cached = global.mongoose;
 
 if (!cached) {
@@ -13,6 +9,11 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  if (!MONGODB_URI) {
+    // Graceful fallback during build or offline development
+    return null;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -257,39 +258,48 @@ async function seedDatabase() {
 
 export const dbHelper = {
   async getChefs() {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return defaultChefs;
     return await Chef.find().lean();
   },
   async saveChef(chef) {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return chef;
     return await Chef.findOneAndUpdate({ id: chef.id }, chef, { upsert: true, new: true }).lean();
   },
   async getMenu() {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return defaultMenu;
     return await Dish.find().lean();
   },
   async saveDish(dish) {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return dish;
     return await Dish.findOneAndUpdate({ id: dish.id }, dish, { upsert: true, new: true }).lean();
   },
   async deleteDish(dishId) {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return;
     await Dish.deleteOne({ id: dishId });
   },
   async getOrders() {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return initialOrders;
     return await Order.find().lean();
   },
   async saveOrder(order) {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return order;
     return await Order.findOneAndUpdate({ id: order.id }, order, { upsert: true, new: true }).lean();
   },
   async getUsers() {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return defaultUsers;
     return await User.find().lean();
   },
   async saveUser(user) {
-    await dbConnect();
+    const conn = await dbConnect();
+    if (!conn) return user;
     const cleanEmail = user.email.toLowerCase().trim();
     return await User.findOneAndUpdate({ email: cleanEmail }, user, { upsert: true, new: true }).lean();
   }

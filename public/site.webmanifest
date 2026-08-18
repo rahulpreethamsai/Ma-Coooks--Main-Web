@@ -1,0 +1,16 @@
+{
+  "name": "RuchiRush",
+  "short_name": "RuchiRush",
+  "description": "Home-cooked meals from kitchens near you in Hyderabad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff8f6",
+  "theme_color": "#9e4300",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -57,33 +57,36 @@ export default function CustomerPortal({ currentUser, Toast, navigate, openAuthM
   };
 
   useEffect(() => {
-    loadData();
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('ruchirush_cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        setCart([]);
-      }
-    }
-
-    // Inspect URL area pre-filters (from city pages)
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const urlArea = params.get('area');
-      const cachedFilter = localStorage.getItem('ruchirush_delivery_area_filter');
-      const targetArea = urlArea || cachedFilter;
-      if (targetArea) {
-        // Match selection dropdown format
-        const validAreas = ["Gachibowli", "Madhapur", "Jubilee Hills", "Kukatpally", "Kondapur"];
-        const matched = validAreas.find(a => a.toLowerCase() === targetArea.toLowerCase());
-        if (matched) {
-          setUserLocation(matched);
+    const timer = setTimeout(() => {
+      loadData();
+      // Load cart from localStorage
+      const savedCart = localStorage.getItem('ruchirush_cart');
+      if (savedCart) {
+        try {
+          setCart(JSON.parse(savedCart));
+        } catch (e) {
+          setCart([]);
         }
-        localStorage.removeItem('ruchirush_delivery_area_filter');
       }
-    }
+
+      // Inspect URL area pre-filters (from city pages)
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const urlArea = params.get('area');
+        const cachedFilter = localStorage.getItem('ruchirush_delivery_area_filter');
+        const targetArea = urlArea || cachedFilter;
+        if (targetArea) {
+          const validAreas = ["Gachibowli", "Madhapur", "Jubilee Hills", "Kukatpally", "Kondapur"];
+          const matched = validAreas.find(a => a.toLowerCase() === targetArea.toLowerCase());
+          if (matched) {
+            setUserLocation(matched);
+          }
+          localStorage.removeItem('ruchirush_delivery_area_filter');
+        }
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Save cart changes
@@ -517,7 +520,7 @@ export default function CustomerPortal({ currentUser, Toast, navigate, openAuthM
               
               {orders.filter(o => o.customerEmail === currentUser?.email).length === 0 ? (
                 <div className="py-16 text-center bg-white rounded-2xl border border-stone-200">
-                  <p className="text-stone-500">You haven't placed any orders yet!</p>
+                  <p className="text-stone-500">You haven&apos;t placed any orders yet!</p>
                 </div>
               ) : (
                 <div className="space-y-4">

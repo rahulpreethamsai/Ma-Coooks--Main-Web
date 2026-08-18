@@ -2,13 +2,21 @@ import "./globals.css";
 
 export const metadata = {
   title: "Ruchi Rush — Premium Home Cooked Food Connection",
-  description: "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
+  description:
+    "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
+
+  verification: {
+    google: "w7LKjIBGepncp8z90O3vQAcAVPG98hpjB5Qz8lZ1e2c",
+  },
+
   manifest: "/site.webmanifest",
+
   icons: {
     icon: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
-    shortcut: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
+    shortcut:
+      "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
     apple: "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
-  }
+  },
 };
 
 export default function RootLayout({ children }) {

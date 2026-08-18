@@ -29,32 +29,68 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
   // How It Works State
   const [activeStep, setActiveStep] = useState(0);
 
-  const testimonials = [
+  const faqs = [
     {
-      name: "Nagamani Kamatam",
-      role: "Customer from Gachibowli",
-      avatar: "https://static.vecteezy.com/system/resources/previews/029/197/032/non_2x/icon-of-social-media-avatar-girl-indian-girl-from-india-indian-culture-portrait-of-a-young-woman-of-national-image-flat-graphic-illustration-vector.jpg",
-      rating: 5,
-      date: "May 28, 2026",
-      quote: "The spicy parotta and egg curry from Priya's Godavari Kitchen was amazing. Tasted exactly like the meals my grandmother cooks back home in Godavari. Verified hygiene scores give me total peace of mind!"
+      q: "What is RuchiRush?",
+      a: "RuchiRush connects customers with near by local home kitchens offering wholesome home-cooked meals and recurring weekly or monthly meal plans in Hyderabad."
     },
     {
-      name: "Nasleen Sheik",
-      role: "Customer from Madhapur",
-      avatar: "https://img.freepik.com/premium-vector/beautiful-indian-woman-sari-indian-woman-wearing-saree_726899-98.jpg",
-      rating: 5,
-      date: "June 2, 2026",
-      quote: "As a busy software engineer working in Madhapur, I was tired of ordering oily restaurant food. Finding Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily."
+      q: "Is RuchiRush another Swiggy/Zomato?",
+      a: "No. RuchiRush focuses specifically on nearby home kitchens and regular home meal subscriptions, not on commercial restaurant delivery."
     },
     {
-      name: "Arjun",
-      role: "Customer from Jubilee Hills",
-      avatar: "https://static.vecteezy.com/system/resources/thumbnails/051/187/635/small_2x/demure-indian-man-in-cardigan-with-white-shirt-2d-linear-avatar-illustration-south-asian-guy-cartoon-character-face-portrait-head-and-shoulders-round-frame-flat-user-profile-image-isolated-vector.jpg",
-      rating: 5,
-      date: "June 5, 2026",
-      quote: "Arjun's Hyderabadi Dum Biryani is authentic slow-cooked gold. You can smell the pure ghee and whole spices the moment you unbox it. The live courier tracking is super reliable."
+      q: "Can I try food before subscribing?",
+      a: "Yes. Customers can try an individual meal before choosing a weekly or monthly plan."
+    },
+    {
+      q: "Where are you launching?",
+      a: "We are initially onboarding kitchens in Hyderabad's IT corridor, starting with Gachibowli, Kondapur, Madhapur, and Hi-Tech City."
+    },
+    {
+      q: "Can I pause my subscription?",
+      a: "Yes, according to the pause/skip rules of your selected plan. You can easily skip meals when travelling or dining out."
+    },
+    {
+      q: "How are kitchens verified?",
+      a: "Home chefs undergo government FSSAI registration validation, identity verification, kitchen hygiene audits, and food safety qualification before onboarding."
+    },
+    {
+      q: "How do home chefs join?",
+      a: "Home chefs can apply, complete verification, create their menu, and set their pricing, availability, and daily cooking capacity."
+    },
+    {
+      q: "Do you deliver everywhere in Hyderabad?",
+      a: "Not initially. RuchiRush is starting hyperlocally and expanding area by area to maintain food warmth and practical delivery costs."
     }
   ];
+
+
+  // const testimonials = [
+  //   {
+  //     name: "Nagamani Kamatam",
+  //     role: "Customer from Gachibowli",
+  //     avatar: "https://static.vecteezy.com/system/resources/previews/029/197/032/non_2x/icon-of-social-media-avatar-girl-indian-girl-from-india-indian-culture-portrait-of-a-young-woman-of-national-image-flat-graphic-illustration-vector.jpg",
+  //     rating: 5,
+  //     date: "May 28, 2026",
+  //     quote: "The spicy parotta and egg curry from Priya's Godavari Kitchen was amazing. Tasted exactly like the meals my grandmother cooks back home in Godavari. Verified hygiene scores give me total peace of mind!"
+  //   },
+  //   {
+  //     name: "Nasleen Sheik",
+  //     role: "Customer from Madhapur",
+  //     avatar: "https://img.freepik.com/premium-vector/beautiful-indian-woman-sari-indian-woman-wearing-saree_726899-98.jpg",
+  //     rating: 5,
+  //     date: "June 2, 2026",
+  //     quote: "As a busy software engineer working in Madhapur, I was tired of ordering oily restaurant food. Finding Lakshmi's millet breakfasts was a lifesaver. Extremely light, fresh, and delivered hot daily."
+  //   },
+  //   {
+  //     name: "Arjun",
+  //     role: "Customer from Jubilee Hills",
+  //     avatar: "https://static.vecteezy.com/system/resources/thumbnails/051/187/635/small_2x/demure-indian-man-in-cardigan-with-white-shirt-2d-linear-avatar-illustration-south-asian-guy-cartoon-character-face-portrait-head-and-shoulders-round-frame-flat-user-profile-image-isolated-vector.jpg",
+  //     rating: 5,
+  //     date: "June 5, 2026",
+  //     quote: "Arjun's Hyderabadi Dum Biryani is authentic slow-cooked gold. You can smell the pure ghee and whole spices the moment you unbox it. The live courier tracking is super reliable."
+  //   }
+  // ];
   const stepVideos = [
     "https://videos.pexels.com/video-files/13441336/13441336-sd_360_640_24fps.mp4",
     "https://videos.pexels.com/video-files/8279561/8279561-hd_1080_1920_24fps.mp4",
@@ -384,6 +420,12 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
     }
   };
 
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
   return (
     <div id="landing-view" className="transition-all duration-300">
 
@@ -391,7 +433,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       <section
         ref={heroRef}
         id="hero-storytelling"
-        className="relative overflow-hidden pt-28 pb-12 px-6 flex items-center justify-center min-h-[95vh] bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)"
+        className="relative overflow-hidden pt-28 pb-15 px-6 flex items-center justify-center min-h-[95vh] bg-radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%)"
         style={{
           backgroundImage: `radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%), url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
           backgroundSize: 'cover'
@@ -465,14 +507,13 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           {/* Center Column: Text Content */}
           <div className="hero-text-col text-center flex flex-col items-center">
             <h1 className="hero-title flex flex-col items-center leading-[1.05] tracking-tight text-on-surface">
-              <span className="hero-word-from-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">FROM HOME</span>
-              <span className="hero-word-kitchens font-h1 text-6xl md:text-7xl lg:text-8xl font-black text-primary block my-1 md:my-2 opacity-0">KITCHENS</span>
-              <span className="hero-word-to-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">TO YOUR HOME</span>
+              <span className="hero-word-from-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">HOME COOKED</span>
+              <span className="hero-word-kitchens font-h1 text-6xl md:text-7xl lg:text-8xl font-black text-primary block my-1 md:my-2 opacity-0">MEALS</span>
+              <span className="hero-word-to-home font-h1 text-5xl md:text-6xl lg:text-7xl font-bold opacity-0">AT YOUR DOOR</span>
             </h1>
 
             <p className="hero-subheading font-body-lg text-body-lg text-on-surface-variant my-8 max-w-xl mx-auto leading-relaxed opacity-0">
-              Not restaurant food. Real home food made by real people. Experience the warmth of a kitchen that cares.
-            </p>
+              Tired of eating restaurant food every day? Find home-cooked meals from kitchens near you </p>
 
             <div className="hero-cta-buttons flex flex-row flex-wrap sm:flex-nowrap gap-3.5 justify-center items-center w-full sm:w-auto opacity-0 z-10">
               <button
@@ -600,7 +641,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           {/* 6 Grid Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
+
             {/* Card 1 */}
             <div className="bg-stone-50/80 border border-stone-200/80 p-6 rounded-2xl shadow-xs hover:shadow-lg hover:border-primary/25 transition-all space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-orange-100/70 text-primary flex items-center justify-center">
@@ -681,7 +722,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
+
             {/* 1. Daily Meal Subscriptions */}
             <div className="bg-white rounded-2xl p-6 overflow-hidden flex flex-col justify-between shadow-sm border border-stone-200 hover:shadow-xl transition-all">
               <div className="space-y-3">
@@ -773,7 +814,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           {/* 3 Kitchen Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            
+
             {/* Card 1: Lakshmi's Home Kitchen */}
             <div className="flex flex-col rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-stone-200 bg-white">
               {/* Card Header Strip */}
@@ -1053,7 +1094,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <div className="text-center max-w-3xl mx-auto mb-14">
             <span className="text-primary font-bold uppercase tracking-widest text-xs">Operational Foundation</span>
             <h2 className="font-h2 text-3xl md:text-5xl my-3 font-bold text-stone-900 font-['Newsreader']">
-              Built to Last: Why RuchiRush Operations Survive
+              How We Build Trust
             </h2>
             <p className="font-body-lg text-stone-700 text-sm md:text-base leading-relaxed">
               Most food startups fail because of chaotic delivery costs or poor quality control. Here is how RuchiRush solves both:
@@ -1062,7 +1103,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
           {/* 6 Operational Pillars */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
+
             {/* Pillar 1: Quality & Delay Policy */}
             <div className="bg-white/90 backdrop-blur-sm border border-stone-200 p-6 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all flex flex-col justify-between space-y-3">
               <div>
@@ -1147,7 +1188,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
 
       {/* TESTIMONIALS SECTION */}
-      <section className="py-20 px-6 bg-gradient-to-br from-stone-50 to-orange-50/20" id="testimonials">
+      {/* <section className="py-20 px-6 bg-gradient-to-br from-stone-50 to-orange-50/20" id="testimonials">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-16">
             <span className="text-primary font-bold uppercase tracking-widest text-xs">What Our Customers Say</span>
@@ -1184,7 +1225,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* SECTION 7: QUOTE BAR */}
       <section className="relative h-[360px] flex items-center justify-center overflow-hidden">
@@ -1202,9 +1243,9 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
       <div id="chef-promise">
         <section className="py-20 px-6 max-w-7xl mx-auto border-t border-primary/10">
           <div className="text-center max-w-xl mx-auto mb-16">
-            <span className="text-primary font-bold uppercase tracking-widest text-xs">Our Commitment</span>
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">Keep more of what you earn.</span>
             <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Our Promise to Home Chefs</h2>
-            <p className="text-sm text-stone-500 mt-3 font-body-md">We believe in a fair, community-first food economy. Here is our pledge to every culinary partner on our platform.</p>
+            <p className="text-sm text-stone-500 mt-3 font-body-md">You decide your menu, price, availability and daily capacity. We bring repeat subscription customers to your door.</p>
           </div>
 
           <div className="grid lg:grid-cols-12 gap-10 items-center">
@@ -1328,6 +1369,48 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         </div>
       </section>
 
+      {/* FAQ's Section */}
+      <section id="faq" className="py-20 px-6 bg-[#fffaf5] border-t border-primary/10" style={{
+        backgroundImage: `radial-gradient(circle at center, rgba(255, 253, 250, 0.75) 0%, rgba(253, 245, 237, 0.9) 100%), url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        backgroundSize: 'cover'
+      }}>
+        <div className="max-w-3xl mx-auto space-y-10">
+
+          <div className="text-center space-y-3">
+            <span className="text-primary font-bold uppercase tracking-widest text-xs">Got Questions?</span>
+            <h2 className="font-h2 text-3xl sm:text-4xl font-bold text-stone-900 font-['Newsreader']">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-stone-200 overflow-hidden transition-all shadow-sm"
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full p-5 text-left flex justify-between items-center gap-4 font-bold text-sm sm:text-base text-stone-900 cursor-pointer hover:text-primary transition-colors"
+                  aria-expanded={openFaq === index}
+                >
+                  <span>{faq.q}</span>
+                  <span className="material-symbols-outlined text-primary text-xl">
+                    {openFaq === index ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                {openFaq === index && (
+                  <div className="px-5 pb-5 text-xs sm:text-sm text-stone-600 leading-relaxed font-body-md border-t border-stone-100 pt-3">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
       {/* SECTION 9: CONTACT & LAUNCH REGISTRATION */}
       <section className="py-20 px-6 max-w-7xl mx-auto" id="contact">
         <div className="grid md:grid-cols-2 gap-8 bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-xl">
@@ -1397,22 +1480,20 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                   <button
                     type="button"
                     onClick={() => setFormTab('customer')}
-                    className={`py-2 text-xs md:text-sm font-bold rounded-full transition-all cursor-pointer ${
-                      formTab === 'customer'
-                        ? 'bg-white text-[#b84704] shadow-sm'
-                        : 'text-stone-600 hover:text-stone-900'
-                    }`}
+                    className={`py-2 text-xs md:text-sm font-bold rounded-full transition-all cursor-pointer ${formTab === 'customer'
+                      ? 'bg-white text-[#b84704] shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                      }`}
                   >
                     Order Home Meals
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormTab('chef')}
-                    className={`py-2 text-xs md:text-sm font-bold rounded-full transition-all cursor-pointer ${
-                      formTab === 'chef'
-                        ? 'bg-white text-[#b84704] shadow-sm'
-                        : 'text-stone-600 hover:text-stone-900'
-                    }`}
+                    className={`py-2 text-xs md:text-sm font-bold rounded-full transition-all cursor-pointer ${formTab === 'chef'
+                      ? 'bg-white text-[#b84704] shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900'
+                      }`}
                   >
                     Cook as Home Chef
                   </button>
@@ -1521,8 +1602,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                     {sending
                       ? 'Submitting...'
                       : formTab === 'chef'
-                      ? 'Submit Chef Application'
-                      : 'Join Customer Waitlist'}
+                        ? 'Submit Chef Application'
+                        : 'Join Customer Waitlist'}
                   </span>
                   {sending && (
                     <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
@@ -1558,11 +1639,11 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
         <div>
           <h1 className="text-stone-900 text-xs font-bold uppercase tracking-wider mb-2 text-center md:text-left">Follow Us</h1>
           <div className="flex gap-3 items-center justify-center md:justify-start">
-            <a 
-              href="https://www.linkedin.com/company/ruchirush/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-stone-700 hover:text-[#0077b5] transition-colors p-2 bg-white/80 hover:bg-white rounded-full shadow-xs" 
+            <a
+              href="https://www.linkedin.com/company/ruchirush/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-700 hover:text-[#0077b5] transition-colors p-2 bg-white/80 hover:bg-white rounded-full shadow-xs"
               aria-label="LinkedIn"
               title="RuchiRush on LinkedIn"
             >
@@ -1570,11 +1651,11 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
               </svg>
             </a>
-            <a 
-              href="https://www.instagram.com/ruchirush_india?igsh=MWttZ3Z1dmlweWhlOA==" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-stone-700 hover:text-pink-600 transition-colors p-2 bg-white/80 hover:bg-white rounded-full shadow-xs" 
+            <a
+              href="https://www.instagram.com/ruchirush_india?igsh=MWttZ3Z1dmlweWhlOA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-700 hover:text-pink-600 transition-colors p-2 bg-white/80 hover:bg-white rounded-full shadow-xs"
               aria-label="Instagram"
               title="RuchiRush on Instagram"
             >

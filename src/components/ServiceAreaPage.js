@@ -93,7 +93,7 @@ export default function ServiceAreaPage({
     },
     "provider": {
       "@type": "Organization",
-      "name": "Ruchi Rush",
+      "name": "RuchiRush",
       "url": "https://ruchirush.netlify.app"
     },
     "hasOfferCatalog": {

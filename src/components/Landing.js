@@ -15,6 +15,8 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
   const offerRef = useRef(null);
   const howWorksRef = useRef(null);
 
+  const [howWorksTab, setHowWorksTab] = useState('customer');
+
   // Contact & Launch Registration Form State
   const [formTab, setFormTab] = useState('customer'); // 'customer' or 'chef'
   const [fullName, setFullName] = useState('');
@@ -597,7 +599,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <div className="inline-flex items-center gap-2 bg-stone-900/90 border border-stone-700/80 px-4 py-2 rounded-full shadow-inner text-xs md:text-sm">
             <span className="text-base leading-none">🚀</span>
             <span className="text-amber-400 font-bold">Pre–Launch Phase:</span>
-            <span className="text-stone-300 font-medium">Join 340+ early waitlist subscribers receiving launch meal invites</span>
+            <span className="text-stone-300 font-medium">Join 30+ early waitlist subscribers receiving launch meal invites</span>
           </div>
         </div>
       </div>
@@ -721,7 +723,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             <p className="font-body-md text-stone-600 text-sm">Wholesome meal subscriptions, office lunch catering, single trial orders, and certified home chefs.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
 
             {/* 1. Daily Meal Subscriptions */}
             <div className="bg-white rounded-2xl p-6 overflow-hidden flex flex-col justify-between shadow-sm border border-stone-200 hover:shadow-xl transition-all">
@@ -775,7 +777,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             </div>
 
             {/* 4. Audited Chef Kitchens */}
-            <div className="bg-white rounded-2xl p-6 overflow-hidden flex flex-col justify-between shadow-sm border border-stone-200 hover:shadow-xl transition-all">
+            {/* <div className="bg-white rounded-2xl p-6 overflow-hidden flex flex-col justify-between shadow-sm border border-stone-200 hover:shadow-xl transition-all">
               <div className="space-y-3">
                 <div className="w-12 h-12 rounded-xl bg-orange-100/70 text-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-2xl">verified_user</span>
@@ -789,11 +791,187 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                 <span>FSSAI Verified & Audited</span>
                 <span>→</span>
               </div>
-            </div>
+            </div> */}
 
           </div>
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 3: HOW IT WORKS (Priority 1)
+      ───────────────────────────────────────────────────────────── */}
+        <section id="how-it-works" className="py-20 px-6 bg-[#fffaf5]">
+          <div className="max-w-6xl mx-auto space-y-12">
+
+            <div className="text-center space-y-3 max-w-2xl mx-auto">
+              <span className="text-primary font-bold uppercase tracking-widest text-xs">Simple &amp; Transparent</span>
+              <h2 className="font-h2 text-3xl sm:text-4xl font-bold text-stone-900 font-['Newsreader']">
+                How RuchiRush Works
+              </h2>
+              <p className="text-stone-600 text-sm sm:text-base font-body-md">
+                Whether you are looking for wholesome daily food or sharing your family recipes, our loop is built for routine.
+              </p>
+
+              {/* Toggle switch between customer & chef flows */}
+              <div className="inline-flex p-1 bg-stone-200/80 rounded-full mt-4">
+                <button
+                  onClick={() => setHowWorksTab('customer')}
+                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${howWorksTab === 'customer'
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-stone-700 hover:text-stone-900'
+                    }`}
+                >
+                  For Customers
+                </button>
+                <button
+                  onClick={() => setHowWorksTab('chef')}
+                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${howWorksTab === 'chef'
+                      ? 'bg-primary text-white shadow-md'
+                      : 'text-stone-700 hover:text-stone-900'
+                    }`}
+                >
+                  For Home Chefs
+                </button>
+              </div>
+            </div>
+
+            {/* Customer 4-Step Flow */}
+            {howWorksTab === 'customer' && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      1
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Find</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Enter your area and discover home kitchens near your home or office.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">📍 Hyperlocal discovery</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      2
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Try</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Order one lunch or dinner before committing to a plan.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">🍱 Single meal trial</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      3
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Subscribe</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Choose a weekly or monthly meal plan from the kitchen you like.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">📅 Weekly / Monthly routine</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      4
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Pause or skip</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Going out or travelling? Pause or skip according to the subscription policy.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">⏸️ Total schedule flexibility</span>
+                </div>
+              </div>
+            )}
+
+            {/* Chef 4-Step Flow */}
+            {howWorksTab === 'chef' && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      1
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Apply</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Tell us about your kitchen and food.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">📝 Quick online form</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      2
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Get verified</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Complete the required identity, food-safety and kitchen verification process.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">🛡️ FSSAI &amp; Hygiene checks</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      3
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Set your menu</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Choose your dishes, pricing, availability and daily capacity.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">🍲 Complete autonomy</span>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
+                      4
+                    </div>
+                    <h3 className="font-h3 text-lg font-bold text-stone-900">Cook &amp; earn</h3>
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Receive orders, prepare meals and get paid through RuchiRush.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-semibold text-primary pt-4 block">💰 10% low commission</span>
+                </div>
+              </div>
+            )}
+
+            <div className="text-center pt-2">
+              {howWorksTab === 'customer' ? (
+                <button
+                  onClick={() => {
+                    const el = document.getElementById('join-launch');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
+                >
+                  Find Home Food in Hyderabad
+                </button>
+              ) : (
+                <button
+                  onClick={() => navigate('chef-portal')}
+                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
+                >
+                  Start Your Kitchen Onboarding
+                </button>
+              )}
+            </div>
+
+          </div>
+        </section>
 
       {/* SECTION 4.5: SAMPLE KITCHEN SHOWCASE & SUBSCRIPTION PLANS (IMAGE 3) */}
       <section id="explore-kitchens" className="py-20 px-6 bg-white border-t border-primary/5">
@@ -1193,7 +1371,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
           <div className="text-center max-w-xl mx-auto mb-16">
             <span className="text-primary font-bold uppercase tracking-widest text-xs">What Our Customers Say</span>
             <h2 className="font-h2 text-4xl font-bold mt-2 text-black font-['Newsreader']">Loved by Neighbors, Made by Hand</h2>
-            <p className="text-sm text-stone-500 mt-3 font-body-md">See why families and professionals across Hyderabad trust Ruchi Rush for daily home cooking.</p>
+            <p className="text-sm text-stone-500 mt-3 font-body-md">See why families and professionals across Hyderabad trust RuchiRush for daily home cooking.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -1270,7 +1448,7 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-stone-850">
-                    <span>Ruchi Rush Commission</span>
+                    <span>RuchiRush Commission</span>
                     <span className="text-primary">10%</span>
                   </div>
                   <div className="w-full bg-stone-100 h-3 rounded-full overflow-hidden">

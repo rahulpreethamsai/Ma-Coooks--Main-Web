@@ -11,4 +11,4 @@ Allow: /
 # Disallow: /api/
 
 # Sitemap location — submit this URL to Google Search Console too!
-Sitemap: https://www.ruchirush.com/sitemap.xml
+Sitemap: https://ruchirush.netlify.app/sitemap.xml

@@ -82,7 +82,7 @@ export default function ServiceAreaPage({
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "FoodDeliveryService",
-    "name": `Ruchi Rush ${areaName}`,
+    "name": `RuchiRush ${areaName}`,
     "description": metaDescription,
     "url": `https://ruchirush.netlify.app/${areaName.toLowerCase().replace(' ', '-')}-food-delivery`,
     "telephone": "+919908574741",
@@ -276,7 +276,7 @@ export default function ServiceAreaPage({
 
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs font-bold text-stone-850">
-                    <span>Ruchi Rush Commission</span>
+                    <span>RuchiRush Commission</span>
                     <span className="text-primary">10%</span>
                   </div>
                   <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">

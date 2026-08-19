@@ -1,9 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Ruchi Rush — Premium Home Cooked Food Connection",
+  title: "RuchiRush | Home Chefs & Homemade Food Platform in Hyderabad",
   description:
-    "Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
+    "RuchiRush connects verified home chefs, especially women-led home kitchens, with customers looking for authentic homemade food in Hyderabad. Connecting verified home chefs and local food lovers through trust, homemade food, and community. Real food made by real people.",
 
   verification: {
     google: "w7LKjIBGepncp8z90O3vQAcAVPG98hpjB5Qz8lZ1e2c",
@@ -47,9 +47,9 @@ export default function RootLayout({ children }) {
               "@context": "https://schema.org",
               "@type": "FoodDeliveryService",
               "name": "RuchiRush",
-              "image": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1780987405/samples/woman-on-a-football-field.png",
-              "@id": "https://helloruchirush.netlify.app",
-              "url": "https://helloruchirush.netlify.app",
+              "image": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
+              "@id": "https://ruchirush.netlify.app",
+              "url": "https://ruchirush.netlify.app",
               "telephone": "+919908574741",
               "priceRange": "$$",
               "address": {

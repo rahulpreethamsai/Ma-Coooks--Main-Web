@@ -114,7 +114,7 @@ export default function Home() {
     } catch (err) {
       console.error(err);
       showToast("Submission failed. Opening WhatsApp...", "error");
-      const body = `Hi Ruchi Rush team! I would like to join the customer waitlist:\n\nName: ${waitlistName}\nEmail: ${waitlistEmail}\nLocation: ${waitlistLocation}`;
+      const body = `Hi RuchiRush team! I would like to join the customer waitlist:\n\nName: ${waitlistName}\nEmail: ${waitlistEmail}\nLocation: ${waitlistLocation}`;
       const waUrl = `https://wa.me/919908574741?text=${encodeURIComponent(body)}`;
       window.open(waUrl, "_blank");
       setWaitlistName('');

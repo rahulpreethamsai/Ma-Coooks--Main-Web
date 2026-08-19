@@ -54,7 +54,7 @@ export default function ChefPortal({ Toast, navigate }) {
     }
 
     // Compile the message for submission
-    const msg = `Hi Ruchi Rush team! I would like to onboard as a home chef:
+    const msg = `Hi RuchiRush team! I would like to onboard as a home chef:
 
 --- PERSONAL INFO ---
 Full Name: ${chefName}
@@ -375,7 +375,7 @@ Why do you want to join?: ${whyJoin}`;
             <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
               {submissionStatus === 'success' 
                 ? 'Your onboarding application has been successfully submitted to our team! If you would like to chat with us directly or ask any questions, feel free to use the options below:' 
-                : 'Your onboarding information has been compiled and validated. Direct submission had an issue, but you can choose how you would like to submit it to the Ruchi Rush team below:'}
+                : 'Your onboarding information has been compiled and validated. Direct submission had an issue, but you can choose how you would like to submit it to the RuchiRush team below:'}
             </p>
 
             <div className="flex flex-col gap-3 pt-2">

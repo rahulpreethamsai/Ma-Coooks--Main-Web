@@ -9,7 +9,7 @@ export default function LegalModal({ isOpen, policyType, onClose }) {
       body: `
         <p class="font-semibold text-stone-900 text-lg mb-2">Connecting Neighbors Through Homemade Food</p>
         <p><strong>Ruchi Rush</strong> is a premium, community-first platform designed to bridge the gap between verified home chefs and local customers seeking clean, authentic, and wholesome homemade meals.</p>
-        <p class="mt-4">Unlike commercial kitchen aggregators that mass-produce food using generic ingredients and industrial setups, Ruchi Rush empowers local culinary creators—many of whom are skilled homemakers—to share their cooking heritage in small, fresh batches.</p>
+        <p class="mt-4">Unlike commercial kitchen aggregators that mass-produce food using generic ingredients and industrial setups, RuchiRush empowers local culinary creators—many of whom are skilled homemakers—to share their cooking heritage in small, fresh batches.</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">Our 5-Step Verification Standards:</h4>
         <ul class="list-disc pl-5 space-y-1">
           <li><strong>ID & KYC Auditing</strong>: Complete identity verification of all chefs.</li>
@@ -43,13 +43,13 @@ export default function LegalModal({ isOpen, policyType, onClose }) {
       title: "Terms of Service",
       body: `
         <p class="text-xs text-stone-500 mb-4">Last updated: June 9, 2026</p>
-        <p>By accessing the Ruchi Rush platform, you agree to comply with and be bound by the following Terms of Service:</p>
+        <p>By accessing the RuchiRush platform, you agree to comply with and be bound by the following Terms of Service:</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">1. User Account Terms</h4>
         <p>Users must provide authentic profile info. Home chefs are required to hold a valid FSSAI license or obtain one during their onboarding flow to activate public storefronts.</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">2. Order Operations</h4>
         <p>Payment operations on this platform are fully simulated for prototype demonstration. Home chefs must list accurate preparation times, menu descriptions, and allergen disclosures.</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">3. Platform Limitations</h4>
-        <p>Ruchi Rush acts as a connecting facilitator between customers, home chefs, and couriers. We are not liable for direct quality discrepancies, though we run active verification and sample testing to maintain premium standards.</p>
+        <p>RuchiRush acts as a connecting facilitator between customers, home chefs, and couriers. We are not liable for direct quality discrepancies, though we run active verification and sample testing to maintain premium standards.</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">4. Cancellation and Refund Policy</h4>
         <p>Orders can be cancelled free of charge up to 12 hours prior to the start of the scheduled delivery time slot. Cancellations requested less than 12 hours before the delivery slot incur a 50% ingredient recovery fee to compensate the home chef for purchased produce. If an order is not delivered, or the delivered food fails to meet verified hygiene or quality standards, customers are entitled to a full 100% refund. Approved refunds are credited back to the customer's UPI or bank account within 2-3 business days. Refund claims must be submitted to our support team within 4 hours of the delivery slot.</p>
         <h4 class="font-bold text-stone-900 mt-4 mb-2 text-md">5. Customer Support Operations</h4>

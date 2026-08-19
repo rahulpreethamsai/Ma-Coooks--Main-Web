@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 const baseUrl = "https://ruchirush.netlify.app";
 
 export default function robots() {

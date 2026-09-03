@@ -214,26 +214,34 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
 
     // ── 3. ScrollTrigger Animations ──
     const whyUsCtx = gsap.context(() => {
-      gsap.from(".why-left", {
-        x: -100,
-        opacity: 0,
-        duration: 1,
-        scrollTrigger: {
-          trigger: ".why-left",
-          start: "top 80%",
-          toggleActions: "play reverse play reverse"
-        }
-      });
-      gsap.from(".why-right", {
-        x: 100,
-        opacity: 0,
-        duration: 1,
-        scrollTrigger: {
-          trigger: ".why-right",
-          start: "top 80%",
-          toggleActions: "play reverse play reverse"
-        }
-      });
+      const whyLeft = whyUsRef.current?.querySelector(".why-left");
+      const whyRight = whyUsRef.current?.querySelector(".why-right");
+
+      if (whyLeft) {
+        gsap.from(whyLeft, {
+          x: -100,
+          opacity: 0,
+          duration: 1,
+          scrollTrigger: {
+            trigger: whyLeft,
+            start: "top 80%",
+            toggleActions: "play reverse play reverse"
+          }
+        });
+      }
+
+      if (whyRight) {
+        gsap.from(whyRight, {
+          x: 100,
+          opacity: 0,
+          duration: 1,
+          scrollTrigger: {
+            trigger: whyRight,
+            start: "top 80%",
+            toggleActions: "play reverse play reverse"
+          }
+        });
+      }
     }, whyUsRef);
 
     const offerCtx = gsap.context(() => {
@@ -816,21 +824,23 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
               <div className="inline-flex p-1 bg-stone-200/80 rounded-full mt-4">
                 <button
                   onClick={() => setHowWorksTab('customer')}
-                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${howWorksTab === 'customer'
+                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 ${howWorksTab === 'customer'
                       ? 'bg-primary text-white shadow-md'
                       : 'text-stone-700 hover:text-stone-900'
                     }`}
                 >
-                  For Customers
+                  <span className="material-symbols-outlined text-base">person</span>
+                  <span>For Customers</span>
                 </button>
                 <button
                   onClick={() => setHowWorksTab('chef')}
-                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${howWorksTab === 'chef'
+                  className={`px-6 py-2 rounded-full text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 ${howWorksTab === 'chef'
                       ? 'bg-primary text-white shadow-md'
                       : 'text-stone-700 hover:text-stone-900'
                     }`}
                 >
-                  For Home Chefs
+                  <span className="material-symbols-outlined text-base">skillet</span>
+                  <span>For Home Chefs</span>
                 </button>
               </div>
             </div>
@@ -838,56 +848,80 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             {/* Customer 4-Step Flow */}
             {howWorksTab === 'customer' && (
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      1
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">travel_explore</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">01</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Find</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Enter your area and discover home kitchens near your home or office.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">📍 Hyperlocal discovery</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">location_on</span>
+                    <span>Hyperlocal discovery</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      2
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">restaurant</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">02</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Try</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Order one lunch or dinner before committing to a plan.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">🍱 Single meal trial</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">lunch_dining</span>
+                    <span>Single meal trial</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      3
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">calendar_month</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">03</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Subscribe</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Choose a weekly or monthly meal plan from the kitchen you like.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">📅 Weekly / Monthly routine</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">event_repeat</span>
+                    <span>Weekly / Monthly routine</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      4
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">pause_circle</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">04</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Pause or skip</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Going out or travelling? Pause or skip according to the subscription policy.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">⏸️ Total schedule flexibility</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">tune</span>
+                    <span>Total schedule flexibility</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -895,56 +929,80 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
             {/* Chef 4-Step Flow */}
             {howWorksTab === 'chef' && (
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      1
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">edit_document</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">01</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Apply</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Tell us about your kitchen and food.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">📝 Quick online form</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">assignment</span>
+                    <span>Quick online form</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      2
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">verified_user</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">02</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Get verified</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Complete the required identity, food-safety and kitchen verification process.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">🛡️ FSSAI &amp; Hygiene checks</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">health_and_safety</span>
+                    <span>FSSAI &amp; Hygiene checks</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      3
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">soup_kitchen</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">03</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Set your menu</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Choose your dishes, pricing, availability and daily capacity.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">🍲 Complete autonomy</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">restaurant_menu</span>
+                    <span>Complete autonomy</span>
+                  </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 text-primary font-bold flex items-center justify-center text-sm">
-                      4
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100/80 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-xl">payments</span>
+                      </div>
+                      <span className="text-xs font-bold text-stone-400 font-mono tracking-wider">04</span>
                     </div>
                     <h3 className="font-h3 text-lg font-bold text-stone-900">Cook &amp; earn</h3>
                     <p className="text-xs text-stone-600 leading-relaxed">
                       Receive orders, prepare meals and get paid through RuchiRush.
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-primary pt-4 block">💰 10% low commission</span>
+                  <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-primary">
+                    <span className="material-symbols-outlined text-sm shrink-0 leading-none">percent</span>
+                    <span>10% low commission</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -956,315 +1014,24 @@ export default function Landing({ navigate, openAuthModal, openLegalModal, Toast
                     const el = document.getElementById('join-launch');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
+                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
-                  Find Home Food in Hyderabad
+                  <span>Find Home Food in Hyderabad</span>
+                  <span className="material-symbols-outlined text-base leading-none">arrow_forward</span>
                 </button>
               ) : (
                 <button
                   onClick={() => navigate('chef-portal')}
-                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer"
+                  className="bg-primary text-white text-xs font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-700 transition-colors cursor-pointer inline-flex items-center gap-2"
                 >
-                  Start Your Kitchen Onboarding
+                  <span>Start Your Kitchen Onboarding</span>
+                  <span className="material-symbols-outlined text-base leading-none">arrow_forward</span>
                 </button>
               )}
             </div>
 
           </div>
         </section>
-
-      {/* SECTION 4.5: SAMPLE KITCHEN SHOWCASE & SUBSCRIPTION PLANS (IMAGE 3) */}
-      <section id="explore-kitchens" className="py-20 px-6 bg-white border-t border-primary/5">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-1.5 bg-[#fef9c3] border border-amber-300 text-amber-900 text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-full mb-4 shadow-xs">
-              <span className="text-amber-700 text-sm">⚠️</span>
-              <span>SAMPLE KITCHEN SHOWCASE — ONBOARDING IN PROGRESS</span>
-            </div>
-            <h2 className="font-h2 text-3xl md:text-5xl font-bold text-stone-900 font-['Newsreader'] tracking-tight mb-4">
-              Preview Kitchen Profiles & Meal Subscription Plans
-            </h2>
-            <p className="font-body-md text-stone-600 text-sm md:text-base leading-relaxed">
-              We are actively onboarding and auditing home kitchens in Gachibowli, Kondapur, and Madhapur. Here is how partner kitchen profiles look on RuchiRush:
-            </p>
-          </div>
-
-          {/* 3 Kitchen Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-
-            {/* Card 1: Lakshmi's Home Kitchen */}
-            <div className="flex flex-col rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-stone-200 bg-white">
-              {/* Card Header Strip */}
-              <div className="bg-[#181412] text-white px-5 py-2.5 flex justify-between items-center text-[11px] font-bold tracking-widest uppercase">
-                <span className="text-stone-300">SAMPLE KITCHEN PROFILE</span>
-                <span className="text-amber-400">HYGIENE AUDIT PENDING</span>
-              </div>
-              {/* Card Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-xl md:text-2xl text-stone-900 font-['Newsreader']">Lakshmi's Home Kitchen</h3>
-                    <span className="shrink-0 bg-[#fff5ee] text-[#b84704] border border-orange-200 text-xs font-bold px-3 py-1 rounded-full">
-                      1.2 km away
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500 mt-1">Gachibowli (DLF & Cyber City Area)</p>
-                  <p className="text-xs font-bold text-[#b84704] mt-0.5">Cook: Lakshmi Reddy</p>
-                </div>
-
-                {/* Gray Sample Menu Box */}
-                <div className="bg-stone-50/90 border border-stone-100 rounded-2xl p-4 space-y-1">
-                  <h4 className="font-bold text-sm text-stone-900">Telangana Home Meals & Millet Breakfasts</h4>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    <span className="font-semibold text-stone-800">Today's Sample Menu: </span>
-                    Ragi Sangati, Pappu & Tomato Curry, Fresh Buttermilk
-                  </p>
-                </div>
-
-                {/* Pricing Bubbles */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">SINGLE TRIAL MEAL</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹120 <span className="text-xs font-semibold text-stone-500">/meal</span>
-                    </p>
-                  </div>
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">6–DAY WEEKLY PLAN</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹700 <span className="text-xs font-semibold text-stone-500">/week</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Specs */}
-                <div className="space-y-2 text-xs pt-1 border-t border-stone-100">
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">tune</span>
-                      <span>Daily Batch Limit:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">15 meals/slot capacity cap</span>
-                  </div>
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">schedule</span>
-                      <span>Available Windows:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">Lunch (12–2) | Dinner (7:30–9:30)</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2 pt-2">
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20try%201%20meal%20from%20Lakshmi%27s%20Home%20Kitchen%20(Gachibowli).%20Please%20share%20today%27s%20menu."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-[#b84704] hover:bg-[#a23d02] text-white py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-                  >
-                    <span>Try 1 Meal (WhatsApp Inquiry)</span>
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
-                    </svg>
-                  </a>
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20view%20weekly%20subscription%20plan%20details%20for%20Lakshmi%27s%20Home%20Kitchen%20(Gachibowli)."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-white hover:bg-stone-50 border border-stone-300 text-stone-900 py-2.5 rounded-full font-bold text-xs text-center block shadow-xs transition-all active:scale-95 cursor-pointer"
-                  >
-                    View Weekly Plan Details
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Godavari Ruchulu */}
-            <div className="flex flex-col rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-stone-200 bg-white">
-              {/* Card Header Strip */}
-              <div className="bg-[#181412] text-white px-5 py-2.5 flex justify-between items-center text-[11px] font-bold tracking-widest uppercase">
-                <span className="text-stone-300">SAMPLE KITCHEN PROFILE</span>
-                <span className="text-amber-400">HYGIENE AUDIT PENDING</span>
-              </div>
-              {/* Card Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-xl md:text-2xl text-stone-900 font-['Newsreader']">Godavari Ruchulu</h3>
-                    <span className="shrink-0 bg-[#fff5ee] text-[#b84704] border border-orange-200 text-xs font-bold px-3 py-1 rounded-full">
-                      2.1 km away
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500 mt-1">Kondapur (Botanical Garden Area)</p>
-                  <p className="text-xs font-bold text-[#b84704] mt-0.5">Cook: Priya Varma</p>
-                </div>
-
-                {/* Gray Sample Menu Box */}
-                <div className="bg-stone-50/90 border border-stone-100 rounded-2xl p-4 space-y-1">
-                  <h4 className="font-bold text-sm text-stone-900">Andhra Home Thali & Spicy Godavari Curries</h4>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    <span className="font-semibold text-stone-800">Today's Sample Menu: </span>
-                    Gongura Chicken, Gutti Vankaya, Steamed Sona Masoori Rice
-                  </p>
-                </div>
-
-                {/* Pricing Bubbles */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">SINGLE TRIAL MEAL</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹130 <span className="text-xs font-semibold text-stone-500">/meal</span>
-                    </p>
-                  </div>
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">6–DAY WEEKLY PLAN</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹750 <span className="text-xs font-semibold text-stone-500">/week</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Specs */}
-                <div className="space-y-2 text-xs pt-1 border-t border-stone-100">
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">tune</span>
-                      <span>Daily Batch Limit:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">20 meals/slot capacity cap</span>
-                  </div>
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">schedule</span>
-                      <span>Available Windows:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">Lunch (12–2) | Dinner (7:30–9:30)</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2 pt-2">
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20try%201%20meal%20from%20Godavari%20Ruchulu%20(Kondapur).%20Please%20share%20today%27s%20menu."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-[#b84704] hover:bg-[#a23d02] text-white py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-                  >
-                    <span>Try 1 Meal (WhatsApp Inquiry)</span>
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
-                    </svg>
-                  </a>
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20view%20weekly%20subscription%20plan%20details%20for%20Godavari%20Ruchulu%20(Kondapur)."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-white hover:bg-stone-50 border border-stone-300 text-stone-900 py-2.5 rounded-full font-bold text-xs text-center block shadow-xs transition-all active:scale-95 cursor-pointer"
-                  >
-                    View Weekly Plan Details
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Swad North Home Kitchen */}
-            <div className="flex flex-col rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-stone-200 bg-white">
-              {/* Card Header Strip */}
-              <div className="bg-[#181412] text-white px-5 py-2.5 flex justify-between items-center text-[11px] font-bold tracking-widest uppercase">
-                <span className="text-stone-300">SAMPLE KITCHEN PROFILE</span>
-                <span className="text-amber-400">HYGIENE AUDIT PENDING</span>
-              </div>
-              {/* Card Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-xl md:text-2xl text-stone-900 font-['Newsreader']">Swad North Home Kitchen</h3>
-                    <span className="shrink-0 bg-[#fff5ee] text-[#b84704] border border-orange-200 text-xs font-bold px-3 py-1 rounded-full">
-                      1.8 km away
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500 mt-1">Madhapur (Mindspace IT Park Area)</p>
-                  <p className="text-xs font-bold text-[#b84704] mt-0.5">Cook: Sunita Sharma</p>
-                </div>
-
-                {/* Gray Sample Menu Box */}
-                <div className="bg-stone-50/90 border border-stone-100 rounded-2xl p-4 space-y-1">
-                  <h4 className="font-bold text-sm text-stone-900">North Indian Home Phulka & Dal Tadka</h4>
-                  <p className="text-xs text-stone-600 leading-relaxed">
-                    <span className="font-semibold text-stone-800">Today's Sample Menu: </span>
-                    Phulkas with Pure Ghee, Yellow Dal Tadka, Seasonal Sabzi
-                  </p>
-                </div>
-
-                {/* Pricing Bubbles */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">SINGLE TRIAL MEAL</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹125 <span className="text-xs font-semibold text-stone-500">/meal</span>
-                    </p>
-                  </div>
-                  <div className="bg-[#fff8f5] border border-orange-100 rounded-2xl p-3 text-center shadow-xs">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">6–DAY WEEKLY PLAN</p>
-                    <p className="text-[#b84704] font-black text-xl mt-0.5">
-                      ₹720 <span className="text-xs font-semibold text-stone-500">/week</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Specs */}
-                <div className="space-y-2 text-xs pt-1 border-t border-stone-100">
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">tune</span>
-                      <span>Daily Batch Limit:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">15 meals/slot capacity cap</span>
-                  </div>
-                  <div className="flex items-center justify-between text-stone-600">
-                    <div className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[#b84704] text-base">schedule</span>
-                      <span>Available Windows:</span>
-                    </div>
-                    <span className="font-bold text-stone-900">Lunch (12–2) | Dinner (7:30–9:30)</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-2 pt-2">
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20try%201%20meal%20from%20Swad%20North%20Home%20Kitchen%20(Madhapur).%20Please%20share%20today%27s%20menu."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-[#b84704] hover:bg-[#a23d02] text-white py-3 rounded-full font-bold text-xs flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-                  >
-                    <span>Try 1 Meal (WhatsApp Inquiry)</span>
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
-                    </svg>
-                  </a>
-                  <a
-                    href="https://wa.me/919908574741?text=Hi%20RuchiRush!%20I%20would%20like%20to%20view%20weekly%20subscription%20plan%20details%20for%20Swad%20North%20Home%20Kitchen%20(Madhapur)."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-white hover:bg-stone-50 border border-stone-300 text-stone-900 py-2.5 rounded-full font-bold text-xs text-center block shadow-xs transition-all active:scale-95 cursor-pointer"
-                  >
-                    View Weekly Plan Details
-                  </a>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Footnote */}
-          <p className="text-center text-xs text-stone-500 mt-10 max-w-2xl mx-auto font-body-md leading-relaxed">
-            * Note: Detailed kitchen listings, daily menus, and live order slots will activate automatically as partner chefs complete verification in your neighborhood.
-          </p>
-        </div>
-      </section>
 
       {/* SECTION 5: OPERATIONAL FOUNDATION & TRANSPARENCY */}
       <div className="trust-section bg-gradient-to-br from-orange-50 to-orange-100/50 text-stone-900 border-y border-primary/10 py-20 px-6">

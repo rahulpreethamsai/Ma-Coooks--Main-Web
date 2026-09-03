@@ -40,7 +40,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Italiana&family=Nixie+One&family=Solway:wght@300;400;500;700;800&family=Special+Elite&display=swap"
           rel="stylesheet"
         />
-        // app/layout.js
+        {/* Structured data for search engines */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

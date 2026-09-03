@@ -1,0 +1,16 @@
+{
+  "name": "RuchiRush",
+  "short_name": "RuchiRush",
+  "description": "Home-cooked meals from verified local kitchens in Hyderabad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffdf9",
+  "theme_color": "#b84704",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/dt79nhjkc/image/upload/v1786990240/cld-sample.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}
